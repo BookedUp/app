@@ -1,3 +1,15 @@
 <resources>
     <string name="app_name">BookedUp</string>
+    <string name="prompt_email">Email address</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="action_sign_in">Sign in</string>
+    <string name="action_register">Register</string>
+    <string name="prompt_register_email">Email address</string>
+    <string name="prompt_register_firstname">First name</string>
+    <string name="prompt_register_last_name">Last name</string>
+    <string name="prompt_register_address">Address</string>
+    <string name="prompt_register_phone">Mobile phone</string>
+    <string name="prompt_confirm_password">Confirm password</string>
+    <string name="action_continue_register">Continue register</string>
 </resources>
