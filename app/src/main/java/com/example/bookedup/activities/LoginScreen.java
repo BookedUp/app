@@ -36,7 +36,7 @@ public class LoginScreen extends AppCompatActivity {
             public void onClick(View v) {
                 // Ovde dodajte kod za proveru unetih podataka i eventualni prelazak na HomeScreen
                 // Primer: Kada su podaci ispravni, prelazi se na HomeScreen
-                Intent homeIntent = new Intent(LoginScreen.this, HostMainScreen.class);
+                Intent homeIntent = new Intent(LoginScreen.this, GuestMainScreen.class);
                 startActivity(homeIntent);
             }
         });
@@ -51,7 +51,7 @@ public class LoginScreen extends AppCompatActivity {
         });
 
         // Postavljanje klika na TextView za registraciju
-        registerTextView.setOnClickListener(new View.OnClickListener() {
+        forgotPasswordTextView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // Prelazak na RegisterScreenActivity

@@ -30,7 +30,7 @@ public class ConfirmPasswordScreen extends AppCompatActivity {
             public void onClick(View v) {
                 // Ovde dodajte kod za proveru unetih podataka i eventualni prelazak na HomeScreen
                 // Primer: Kada su podaci ispravni, prelazi se na HomeScreen
-                Intent homeIntent = new Intent(ConfirmPasswordScreen.this, HostMainScreen.class);
+                Intent homeIntent = new Intent(ConfirmPasswordScreen.this, GuestMainScreen.class);
                 startActivity(homeIntent);
             }
         });

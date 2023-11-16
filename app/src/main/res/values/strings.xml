@@ -12,4 +12,17 @@
     <string name="prompt_register_phone">Mobile phone</string>
     <string name="prompt_confirm_password">Confirm password</string>
     <string name="action_continue_register">Continue register</string>
+    <string name="prompt_forgot_email">Your email address</string>
+    <string name="action_send_reset_link">Send reset link</string>
+    <string name="language">Language</string>
+    <string name="notifications">Notifications</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="prompt_existFirstName">Loren</string>
+    <string name="prompt_existLastName">Smith</string>
+    <string name="prompt_existAddress">St. Lorem Ipsum</string>
+    <string name="prompt_existPhoneNumer">+381621734192</string>
+    <string name="action_delete_account">Delete account</string>
+    <string name="prompt_existPhoneNumber">+38162177492</string>
+    <string name="action_log_out">Log out</string>
 </resources>
