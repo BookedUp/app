@@ -25,4 +25,6 @@
     <string name="action_delete_account">Delete account</string>
     <string name="prompt_existPhoneNumber">+38162177492</string>
     <string name="action_log_out">Log out</string>
+    <string name="open_nav">Open Navigation Drawer</string>
+    <string name="close_nav">Close Navigation Drawer</string>
 </resources>

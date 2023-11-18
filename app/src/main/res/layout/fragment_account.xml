@@ -16,7 +16,7 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="32dp"
-        android:layout_marginTop="3dp"
+        android:layout_marginTop="45dp"
         android:layout_marginEnd="32dp"
         android:src="@drawable/guest"
         app:layout_constraintDimensionRatio="2:1"
@@ -141,37 +141,37 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_gravity="start"
-        android:layout_marginStart="30dp"
+        android:layout_marginStart="100dp"
         android:layout_marginTop="16dp"
-        android:layout_marginEnd="8dp"
+        android:layout_marginEnd="0dp"
         android:layout_marginBottom="64dp"
         android:enabled="true"
         android:text="@string/action_delete_account"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/log_out"
+
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/account_phoneNumber"
         app:layout_constraintVertical_bias="0.2"
         app:layout_constraintWidth_percent="0.4" />
 
     <!-- Button: Log Out -->
-    <Button
-        android:id="@+id/log_out"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_gravity="start"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="30dp"
-        android:layout_marginBottom="64dp"
-        android:enabled="true"
-        android:text="@string/action_log_out"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/delete_account"
-        app:layout_constraintTop_toBottomOf="@+id/account_phoneNumber"
-        app:layout_constraintVertical_bias="0.2"
-        app:layout_constraintWidth_percent="0.4" />
+<!--    <Button-->
+<!--        android:id="@+id/log_out"-->
+<!--        android:layout_width="0dp"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_gravity="start"-->
+<!--        android:layout_marginStart="8dp"-->
+<!--        android:layout_marginTop="16dp"-->
+<!--        android:layout_marginEnd="30dp"-->
+<!--        android:layout_marginBottom="64dp"-->
+<!--        android:enabled="true"-->
+<!--        android:text="@string/action_log_out"-->
+<!--        app:layout_constraintBottom_toBottomOf="parent"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintStart_toEndOf="@+id/delete_account"-->
+<!--        app:layout_constraintTop_toBottomOf="@+id/account_phoneNumber"-->
+<!--        app:layout_constraintVertical_bias="0.2"-->
+<!--        app:layout_constraintWidth_percent="0.4" />-->
 
     <ProgressBar
         android:id="@+id/loading"
