@@ -17,11 +17,11 @@
             android:id="@+id/CatImg"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            app:srcCompat="@drawable/hotelbuild"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"/>
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/motel" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <TextView
