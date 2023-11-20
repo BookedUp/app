@@ -8,10 +8,12 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.view.Gravity;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.example.bookedup.R;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -60,16 +62,16 @@ public class SplashScreen extends AppCompatActivity {
         toast.setGravity(Gravity.CENTER, 0, 0);
         toast.show();
 
-        // Alternativno, možete koristiti Snackbar za bolje korisničko iskustvo
-        /*Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content),
-                "Niste povezani na internet. Povežite se i pokušajte ponovo.", Snackbar.LENGTH_INDEFINITE)
-                .setAction("Poveži se", new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        // Dodajte kod za povezivanje na internet ako je korisnik pritisnuo "Poveži se"
-                    }
-                });
-        snackbar.show();*/
+
+//        Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content),
+//                "Niste povezani na internet. Povežite se i pokušajte ponovo.", Snackbar.LENGTH_INDEFINITE)
+//                .setAction("Poveži se", new View.OnClickListener() {
+//                    @Override
+//                    public void onClick(View view) {
+//                        // Dodajte kod za povezivanje na internet ako je korisnik pritisnuo "Poveži se"
+//                    }
+//                });
+//        snackbar.show();
     }
     @Override
     protected void onStart() {

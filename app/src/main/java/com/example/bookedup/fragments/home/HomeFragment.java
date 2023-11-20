@@ -120,9 +120,9 @@ public class HomeFragment extends Fragment {
         ArrayList<Category> categoryList = new ArrayList<>();
         categoryList.add(new Category("Hotels", "hotel"));
         categoryList.add(new Category("Hostel", "hostel"));
-        categoryList.add(new Category("Apartment", "apartment"));
-        categoryList.add(new Category("Resort", "resort"));
-        categoryList.add(new Category("Villa", "villa"));
+        categoryList.add(new Category("Apartment", "apartmentpic"));
+        categoryList.add(new Category("Resort", "resortpic"));
+        categoryList.add(new Category("Villa", "villapic"));
 
         recyclerViewCategory.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
         adapterCategory = new CategoryAdapter(categoryList);

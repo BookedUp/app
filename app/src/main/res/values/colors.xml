@@ -7,5 +7,8 @@
     <color name="grey">#909090</color>
     <color name="brown">#be9b7b</color>
     <color name="neutral">#FAFAD2</color>
+    <color name="gold_star">#FFC107</color>
+    <color name="dark_grey">#5A5A5A</color>
+
 
 </resources>

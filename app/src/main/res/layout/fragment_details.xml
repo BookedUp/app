@@ -32,7 +32,20 @@
                     app:layout_constraintTop_toTopOf="parent"
                     app:srcCompat="@drawable/hotel1" />
 
+                <ImageView
+                    android:id="@+id/fav"
+                    android:layout_width="45dp"
+                    android:layout_height="45dp"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginBottom="232dp"
+                    android:elevation="1dp"
+                    app:layout_constraintBottom_toBottomOf="@+id/picImg"
+                    app:layout_constraintEnd_toEndOf="@+id/picImg"
+                    app:srcCompat="@drawable/ic_favorites" />
+
+
             </androidx.constraintlayout.widget.ConstraintLayout>
+
 
             <TextView
                 android:id="@+id/titleTxt"
@@ -60,7 +73,7 @@
                 <ImageView
                     android:id="@+id/imageView6"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     app:srcCompat="@drawable/ic_location" />
 
                 <TextView
@@ -71,12 +84,12 @@
                     android:layout_weight="1"
                     android:text="Paris"
                     android:textColor="@color/black"
-                    android:textSize="17sp" />
+                    android:textSize="20sp" />
 
                 <ImageView
                     android:id="@+id/imageView7"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     app:srcCompat="@drawable/ic_star" />
 
                 <TextView
@@ -85,6 +98,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:text="4.8"
+                    android:textSize="24sp"
                     android:textColor="@color/black" />
             </LinearLayout>
 
@@ -213,39 +227,32 @@
                 android:layout_marginTop="16dp"
                 android:layout_marginEnd="32dp"
                 android:layout_marginBottom="16dp"
-
                 android:orientation="horizontal">
 
                 <TextView
                     android:id="@+id/priceTxt"
-                    android:layout_width="0dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="clip_vertical"
-                    android:layout_weight="0.5"
                     android:text="$120/per night"
                     android:textColor="@color/black"
                     android:textSize="20sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:gravity="bottom" />
 
-                <androidx.appcompat.widget.AppCompatButton
-                    android:id="@+id/button"
-                    style="@android:style/Widget.Button"
-                    android:layout_width="0dp"
+
+
+                <Button
+                    android:layout_width="match_parent"
                     android:layout_height="50dp"
+                    android:background="@drawable/btn_rounded_corner"
                     android:layout_marginBottom="16dp"
-                    android:layout_weight="0.5"
-                    android:background="@color/gold"
+                    android:layout_marginStart="32dp"
                     android:text="Book now"
-                    android:textColor="@color/white"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
+                    android:id="@+id/button"/>
 
-                <ImageView
-                    android:id="@+id/fav"
-                    android:layout_width="45dp"
-                    android:layout_height="45dp"
-                    app:srcCompat="@drawable/ic_favorites" />
             </LinearLayout>
+
+
         </LinearLayout>
     </ScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>
