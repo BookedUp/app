@@ -70,11 +70,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="10dp"
+        android:autofillHints="@string/prompt_password"
+
         android:hint="Password"
-        android:inputType="text"
         android:layout_margin="10dp"
         android:background="@drawable/edit_text_rounded_corner"
         android:elevation="5dp"
+        android:inputType="textPassword"
+        android:selectAllOnFocus="true"
+
         android:id="@+id/profile_password"
         />
 
