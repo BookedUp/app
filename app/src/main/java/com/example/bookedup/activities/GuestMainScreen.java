@@ -219,28 +219,5 @@ public class GuestMainScreen extends AppCompatActivity implements NavigationView
     }
 
 
-//    private void initRecycleView(){
-//        ArrayList<Accommodation> items = new ArrayList<>();
-//        items.add(new Accommodation("Lorem ipsum", "Miami", "description", 2, 4.8, "pic1", true, 1000));
-//        items.add(new Accommodation("Lorem ipsum", "Miami", "description", 2, 4.8, "pic1", true, 1000));
-//        items.add(new Accommodation("Lorem ipsum", "Miami", "description", 2, 4.8, "pic1", true, 1000));
-//
-//        //recyclerViewPopular.findViewById(R.id.view_pop);
-//        recyclerViewPopular.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-//        adapterPopular = new PopularAdapter(items);
-//        recyclerViewPopular.setAdapter(adapterPopular);
-//
-//        ArrayList<Category> categoryList = new ArrayList<>();
-//        categoryList.add(new Category("Hotels", "guest"));
-//        categoryList.add(new Category("Motels", "guest"));
-//        categoryList.add(new Category("Vilas", "guest"));
-//        categoryList.add(new Category("Apartments", "guest"));
-//        categoryList.add(new Category("Studios", "guest"));
-//
-//        //recyclerViewCategory.findViewById(R.id.view_category);
-//        recyclerViewCategory.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-//        adapterCategory = new CategoryAdapter(categoryList);
-//        recyclerViewCategory.setAdapter(adapterCategory);
-//    }
 
 }
