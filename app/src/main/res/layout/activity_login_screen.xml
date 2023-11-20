@@ -47,11 +47,9 @@
         android:autofillHints="@string/prompt_email"
         android:hint="@string/prompt_email"
         android:elevation="5dp"
-        android:enabled="false"
         android:inputType="textEmailAddress"
         android:minHeight="48dp"
         android:padding="8dp"
-
         android:selectAllOnFocus="true"
         android:background="@drawable/edit_text_rounded_corner"
         app:layout_constraintEnd_toEndOf="parent"
@@ -60,29 +58,28 @@
 
 
     <!-- Password EditText -->
+
     <EditText
         android:id="@+id/login_password"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="24dp"
         android:layout_marginEnd="24dp"
+        android:background="@drawable/edit_text_rounded_corner"
+        android:elevation="5dp"
         android:autofillHints="@string/prompt_password"
         android:hint="@string/prompt_password"
-        android:padding="8dp"
         android:imeActionLabel="@string/action_sign_in_short"
         android:imeOptions="actionDone"
         android:inputType="textPassword"
         android:minHeight="48dp"
-        android:elevation="5dp"
-        android:enabled="false"
+        android:padding="8dp"
+
         android:selectAllOnFocus="true"
-        android:background="@drawable/edit_text_rounded_corner"
-        android:textColorHint="#757575"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/login_username" />
-
     <!-- Register Button -->
     <TextView
         android:id="@+id/login_forgotPasswordTextView"
@@ -90,7 +87,7 @@
         android:layout_height="wrap_content"
         android:text="Forgot password?"
         android:textColor="@color/gold"
-        android:textStyle="bold"
+        android:textColorHint="#757575"
         android:layout_marginStart="28dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
