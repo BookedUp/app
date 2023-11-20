@@ -4,12 +4,16 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.bookedup.R;
 import com.example.bookedup.adapters.PopularAdapter;
 import com.example.bookedup.adapters.CategoryAdapter;
+import com.example.bookedup.fragments.accommodations.FilterFragment;
 import com.example.bookedup.model.Accommodation;
 import com.example.bookedup.model.Category;
 import java.util.ArrayList;
@@ -18,6 +22,8 @@ public class HomeFragment extends Fragment {
 
     private RecyclerView recyclerViewPopular, recyclerViewCategory;
     private RecyclerView.Adapter adapterPopular, adapterCategory;
+
+    private ImageView filter;
 
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
@@ -55,28 +61,68 @@ public class HomeFragment extends Fragment {
 
         recyclerViewPopular = view.findViewById(R.id.view_pop);
         recyclerViewCategory = view.findViewById(R.id.view_category);
+        filter = view.findViewById(R.id.filter);
 
         initRecycleView();
+        setFilterClickListener();
 
         return view;
     }
 
+    private void setFilterClickListener() {
+        filter.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openFilterFragment();
+            }
+        });
+    }
+
+    private void openFilterFragment() {
+        // Create a new instance of FilterFragment
+        FilterFragment filterFragment = FilterFragment.newInstance(null, null);
+
+        // Begin the transaction
+        FragmentTransaction transaction = requireActivity().getSupportFragmentManager().beginTransaction();
+
+        // Replace the current fragment with the new fragment
+        transaction.replace(R.id.frame_layout, filterFragment);
+
+        // Add the transaction to the back stack so the user can navigate back
+        transaction.addToBackStack(null);
+
+        // Commit the transaction
+        transaction.commit();
+    }
+
     private void initRecycleView() {
         ArrayList<Accommodation> items = new ArrayList<>();
-        items.add(new Accommodation("Lakeside Motel", "Paris", "description", 2, 4.8, "hotel1", true, 1000));
-        items.add(new Accommodation("Julia Dens Resort", "Greece", "description", 2, 4.5, "hotel2", true, 1000));
-        items.add(new Accommodation("Marineford Hotel", "Turkey", "description", 2, 4.7, "hotel3", true, 1000));
+        items.add(new Accommodation("Lakeside Motel", "Paris", "Featuring free WiFi throughout the property, Lakeside Motel Waterfront offers accommodations in Lakes Entrance, 19 mi from Bairnsdale. Free private parking is available on site.\n" +
+                "\n" +
+                "Each room at this motel is air conditioned and comes with a flat-screen TV. You will find a kettle, toaster and a microwave in the room. Each room is fitted with a private bathroom. Guests have access to barbecue facilities and a lovely large lawn area. Metung is 6.8 mi from Lakeside Motel Waterfront, while Paynesville is 14 mi from the property.\n" +
+                "\n" +
+                "Couples in particular like the location – they rated it 9.2 for a two-person trip.", 2, 4.8, "hotel1", true, true, 180));
+        items.add(new Accommodation("Julia Dens Resort", "Greece", "Featuring free WiFi throughout the property, Lakeside Motel Waterfront offers accommodations in Lakes Entrance, 19 mi from Bairnsdale. Free private parking is available on site.\n" +
+                "\n" +
+                "Each room at this motel is air conditioned and comes with a flat-screen TV. You will find a kettle, toaster and a microwave in the room. Each room is fitted with a private bathroom. Guests have access to barbecue facilities and a lovely large lawn area. Metung is 6.8 mi from Lakeside Motel Waterfront, while Paynesville is 14 mi from the property.\n" +
+                "\n" +
+                "Couples in particular like the location – they rated it 9.2 for a two-person trip.", 2, 4.5, "hotel2", true, true, 220));
+        items.add(new Accommodation("Marineford Hotel", "Turkey", "Featuring free WiFi throughout the property, Lakeside Motel Waterfront offers accommodations in Lakes Entrance, 19 mi from Bairnsdale. Free private parking is available on site.\n" +
+                "\n" +
+                "Each room at this motel is air conditioned and comes with a flat-screen TV. You will find a kettle, toaster and a microwave in the room. Each room is fitted with a private bathroom. Guests have access to barbecue facilities and a lovely large lawn area. Metung is 6.8 mi from Lakeside Motel Waterfront, while Paynesville is 14 mi from the property.\n" +
+                "\n" +
+                "Couples in particular like the location – they rated it 9.2 for a two-person trip.", 2, 4.7, "hotel3", false, true, 250));
 
         recyclerViewPopular.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
         adapterPopular = new PopularAdapter(items);
         recyclerViewPopular.setAdapter(adapterPopular);
 
         ArrayList<Category> categoryList = new ArrayList<>();
-        categoryList.add(new Category("Hotels", "hotelbuild"));
-        categoryList.add(new Category("Motels", "motel"));
-        categoryList.add(new Category("Villas", "villa"));
-        categoryList.add(new Category("Apartments", "apartment"));
-        categoryList.add(new Category("Resorts", "resort"));
+        categoryList.add(new Category("Hotels", "hotel"));
+        categoryList.add(new Category("Hostel", "hostel"));
+        categoryList.add(new Category("Apartment", "apartment"));
+        categoryList.add(new Category("Resort", "resort"));
+        categoryList.add(new Category("Villa", "villa"));
 
         recyclerViewCategory.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
         adapterCategory = new CategoryAdapter(categoryList);

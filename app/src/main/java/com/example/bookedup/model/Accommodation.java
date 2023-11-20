@@ -10,23 +10,26 @@ public class Accommodation implements Serializable {
 
     private String description;
 
-    private int bad;
+    private int bed;
 
     private double score;
 
     private String pic;
 
+    private boolean parking;
+
     private boolean wifi;
 
     private int price;
 
-    public Accommodation(String title, String location, String description, int bad, double score, String pic, boolean wifi, int price) {
+    public Accommodation(String title, String location, String description, int bed, double score, String pic, boolean parking, boolean wifi, int price) {
         this.title = title;
         this.location = location;
         this.description = description;
-        this.bad = bad;
+        this.bed = bed;
         this.score = score;
         this.pic = pic;
+        this.parking = parking;
         this.wifi = wifi;
         this.price = price;
     }
@@ -55,12 +58,12 @@ public class Accommodation implements Serializable {
         this.description = description;
     }
 
-    public int getBad() {
-        return bad;
+    public int getBed() {
+        return bed;
     }
 
-    public void setBad(int bad) {
-        this.bad = bad;
+    public void setBed(int bed) {
+        this.bed = bed;
     }
 
     public double getScore() {
@@ -95,5 +98,11 @@ public class Accommodation implements Serializable {
         this.price = price;
     }
 
+    public boolean isParking() {
+        return parking;
+    }
 
+    public void setParking(boolean parking) {
+        this.parking = parking;
+    }
 }
