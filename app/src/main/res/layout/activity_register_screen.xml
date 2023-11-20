@@ -31,6 +31,7 @@
         android:text="Register"
         android:textSize="24sp"
         android:typeface="sans"
+
         app:layout_constraintBottom_toTopOf="@+id/register_email_address"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -46,6 +47,10 @@
         android:layout_marginEnd="24dp"
         android:autofillHints="@string/prompt_register_email"
         android:hint="@string/prompt_register_email"
+        android:padding="8dp"
+
+        android:background="@drawable/edit_text_rounded_corner"
+        android:elevation="5dp"
         android:inputType="textEmailAddress"
         android:minHeight="48dp"
         android:selectAllOnFocus="true"
@@ -61,8 +66,12 @@
         android:layout_marginStart="24dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="24dp"
+        android:background="@drawable/edit_text_rounded_corner"
+        android:elevation="5dp"
         android:autofillHints="@string/prompt_register_firstname"
         android:hint="@string/prompt_register_firstname"
+        android:padding="8dp"
+
         android:minHeight="48dp"
         android:selectAllOnFocus="true"
         app:layout_constraintEnd_toEndOf="parent"
@@ -77,6 +86,10 @@
         android:layout_marginStart="24dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="24dp"
+        android:background="@drawable/edit_text_rounded_corner"
+        android:elevation="5dp"
+        android:padding="8dp"
+
         android:autofillHints="@string/prompt_register_last_name"
         android:hint="@string/prompt_register_last_name"
         android:inputType="textPersonName"
@@ -98,7 +111,11 @@
         android:hint="@string/prompt_register_address"
         android:inputType="textPostalAddress"
         android:minHeight="48dp"
+        android:padding="8dp"
+
         android:selectAllOnFocus="true"
+        android:background="@drawable/edit_text_rounded_corner"
+        android:elevation="5dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/register_last_name" />
@@ -110,9 +127,13 @@
         android:layout_marginStart="24dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="24dp"
+        android:background="@drawable/edit_text_rounded_corner"
+        android:elevation="5dp"
         android:autofillHints="@string/prompt_register_phone"
         android:hint="@string/prompt_register_phone"
         android:inputType="textPhonetic"
+        android:padding="8dp"
+
         android:minHeight="48dp"
         android:selectAllOnFocus="true"
         app:layout_constraintEnd_toEndOf="parent"
@@ -124,7 +145,7 @@
     <!-- Login Button -->
     <Button
         android:id="@+id/continue_register"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="start"
         android:layout_marginStart="48dp"
@@ -133,6 +154,7 @@
         android:layout_marginBottom="64dp"
         android:enabled="true"
         android:text="@string/action_continue_register"
+        android:background="@drawable/btn_rounded_corner"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

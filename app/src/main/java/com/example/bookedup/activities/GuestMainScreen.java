@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Dialog;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
@@ -97,11 +98,13 @@ public class GuestMainScreen extends AppCompatActivity implements NavigationView
                    return true;
                }
                else if(itemId == R.id.nav_reservations) {
-                   openFragment(new AccountFragment());
+                   Toast.makeText(GuestMainScreen.this,"Reservations clicked",Toast.LENGTH_SHORT).show();
+                   //openFragment(new AccountFragment());
                    return true;
                }
                else if(itemId == R.id.nav_favorites){
-                   openFragment(new AccountFragment());
+                   Toast.makeText(GuestMainScreen.this,"Favorites clicked",Toast.LENGTH_SHORT).show();
+                   //openFragment(new AccountFragment());
                    return true;
                }
                else if(itemId == R.id.nav_account){
@@ -171,21 +174,27 @@ public class GuestMainScreen extends AppCompatActivity implements NavigationView
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int itemId = item.getItemId();
-        Toast.makeText(GuestMainScreen.this,"Item clicked",Toast.LENGTH_SHORT).show();
         if (itemId == R.id.nav_language){
+            //Toast.makeText(GuestMainScreen.this,"LANGUAGE clicked",Toast.LENGTH_SHORT).show();
             openFragment(new LanguageFragment());
         }
         else if(itemId == R.id.nav_settings) {
+            //Toast.makeText(GuestMainScreen.this,"SETTINGS clicked",Toast.LENGTH_SHORT).show();
             openFragment(new SettingsFragment());
         }
         else if(itemId == R.id.nav_aboutus){
+            //Toast.makeText(GuestMainScreen.this,"ABOUTUS clicked",Toast.LENGTH_SHORT).show();
             openFragment(new AboutUsFragment());
         }
         else if(itemId == R.id.nav_notifications){
+            //Toast.makeText(GuestMainScreen.this,"NOTIFICATIONS clicked",Toast.LENGTH_SHORT).show();
             openFragment(new NotificationsFragment());
         }
         else if(itemId == R.id.nav_logout){
             Toast.makeText(GuestMainScreen.this,"Log out",Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(this,SplashScreen.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
         }
         drawerLayout.closeDrawer(GravityCompat.START);
 

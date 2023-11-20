@@ -1,47 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/gold">
 
-
-
     <FrameLayout
-        android:id="@+id/frame_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:id="@+id/frame_layout1"/>
 
     <com.google.android.material.bottomappbar.BottomAppBar
-        android:id="@+id/bottomAppBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:id="@+id/bottomAppBar1"
         android:layout_gravity="bottom"
-        android:background="@color/white"
+        android:backgroundTint="@color/white"
         app:fabCradleMargin="10dp"
         app:fabCradleRoundedCornerRadius="50dp">
 
         <com.google.android.material.bottomnavigation.BottomNavigationView
-            android:id="@+id/bottomNavigationView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:id="@+id/bottomNavigationView1"
             android:layout_marginEnd="20dp"
-            android:background="@android:color/transparent"
             app:labelVisibilityMode="labeled"
-            app:menu="@menu/bottom_navbar_menu" />
+            app:menu="@menu/bottom_navbar_menu"
+            android:background="@android:color/transparent"/>
 
     </com.google.android.material.bottomappbar.BottomAppBar>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center"
         android:backgroundTint="@color/white"
         android:src="@drawable/ic_baseline_add_24"
-        app:layout_anchor="@id/bottomAppBar"
         app:maxImageSize="40dp"
-        android:id="@+id/fab"
+        android:layout_marginBottom="16dp"
         app:tint="@color/gold" />
-
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
