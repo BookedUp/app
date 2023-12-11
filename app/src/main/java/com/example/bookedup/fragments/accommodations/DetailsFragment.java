@@ -1,5 +1,6 @@
 package com.example.bookedup.fragments.accommodations;
 
+import android.app.Dialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +15,7 @@ import com.bumptech.glide.Glide;
 import com.example.bookedup.R;
 import com.example.bookedup.activities.GuestMainScreen;
 import com.example.bookedup.model.Accommodation;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 public class DetailsFragment extends Fragment {
 
@@ -22,6 +24,10 @@ public class DetailsFragment extends Fragment {
     private ImageView picImg, fav;
 
     private boolean isFavorite = false;
+
+    private FloatingActionButton commentPopup;
+
+    private Dialog commentDialog;
 
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
@@ -60,7 +66,6 @@ public class DetailsFragment extends Fragment {
         initView(view);
         setVariable();
         setupFavoriteIcon();
-
         return view;
     }
 
@@ -124,5 +129,23 @@ public class DetailsFragment extends Fragment {
         picImg = view.findViewById(R.id.picImg);
         priceTxt = view.findViewById(R.id.priceTxt);
         fav = view.findViewById(R.id.fav);
+        commentPopup = view.findViewById(R.id.addCommentBtn);
+
+        commentPopup.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showCommentDialog();
+            }
+        });
     }
+
+
+    private void showCommentDialog() {
+        commentDialog = new Dialog(requireContext());
+        commentDialog.setContentView(R.layout.comment_popup);
+        commentDialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        commentDialog.show();
+    }
+
+
 }

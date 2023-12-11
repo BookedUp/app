@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/nav_homeAdmin"
+        android:title="Home"
+        android:icon="@drawable/ic_home"/>
+
+    <item
+        android:id="@+id/nav_accommodation"
+        android:title="Hotels"
+        android:icon="@drawable/ic_accommodation"
+        />
+
+
+    <item
+        android:id="@+id/nav_users"
+        android:title="Users"
+        android:icon="@drawable/ic_user" />
+
+    <item
+        android:id="@+id/nav_comments"
+        android:title="Comments"
+        android:icon="@drawable/ic_comments" />
+
+
+
+</menu>

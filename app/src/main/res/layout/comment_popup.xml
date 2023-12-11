@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="350dp"
+    android:layout_height="450dp"
+    android:layout_gravity="center"
+    android:background="@drawable/comment_backgorund">
+
+    <ImageView
+        android:id="@+id/person"
+        android:layout_width="150dp"
+        android:layout_height="130dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="18dp"
+        android:src="@drawable/commss"
+        />
+    <TextView
+        android:id="@+id/usernameTxt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Leave a commment!"
+        android:textSize="24sp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="18dp"
+        android:layout_below="@id/person"
+        ></TextView>
+    <EditText
+        android:id="@+id/commentInput"
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        android:hint="comment"
+        android:textSize="18sp"
+        android:layout_below="@id/person"
+        android:layout_marginTop="70dp"
+        android:gravity="center"
+        android:layout_marginRight="22dp"
+        android:layout_marginLeft="22dp"
+        />
+
+    <Button
+        android:id="@+id/postButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Post"
+        android:textSize="18sp"
+        android:layout_below="@id/commentInput"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="18dp"
+        android:padding="10dp" />
+
+    </RelativeLayout>
