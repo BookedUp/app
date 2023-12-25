@@ -35,9 +35,6 @@ public class LoginScreen extends AppCompatActivity {
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Ovde dodajte kod za proveru unetih podataka i eventualni prelazak na HomeScreen
-                // Primer: Kada su podaci ispravni, prelazi se na HomeScreen
-                Log.d("LoginScreen", "TREEEEEBA DDA UDJEE U GUESTMAINSCREEEEEEEEEN");
                 Intent homeIntent = new Intent(LoginScreen.this, GuestMainScreen.class);
                 startActivity(homeIntent);
             }

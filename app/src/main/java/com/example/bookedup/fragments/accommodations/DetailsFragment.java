@@ -44,7 +44,7 @@ public class DetailsFragment extends Fragment {
     private String drawableResId;
 
     private Accommodation accommodation;
-    
+
 
     public DetailsFragment() {
         // Required empty public constructor

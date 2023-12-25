@@ -18,6 +18,7 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.example.bookedup.R;
 import com.example.bookedup.fragments.about.AboutUsFragment;
+import com.example.bookedup.fragments.accommodations.AccommodationRequestFragment;
 import com.example.bookedup.fragments.account.AccountFragment;
 //import com.example.bookedup.fragments.admin.user.AdminManageUsersFragment;
 import com.example.bookedup.fragments.home.HomeFragment;
@@ -67,8 +68,8 @@ public class AdministratorMainScreen extends AppCompatActivity implements Naviga
                     return true;
                 }
                 else if(itemId==R.id.nav_accommodation){
-                    Toast.makeText(AdministratorMainScreen.this,"Reservations clicked",Toast.LENGTH_SHORT).show();
-                    //openFragment(new AccountFragment());
+                    Toast.makeText(AdministratorMainScreen.this,"Accommodation request clicked",Toast.LENGTH_SHORT).show();
+                    openFragment(new AccommodationRequestFragment());
                     return true;
                 }
                 else if(itemId==R.id.nav_users){

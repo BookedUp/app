@@ -1,7 +1,7 @@
 package com.example.bookedup.model;
 
 public class Photo {
-    private int id;
+    private Long id;
     private String url;
     private String caption;
     private boolean active;
@@ -12,18 +12,18 @@ public class Photo {
         // Prazan konstruktor
     }
 
-    public Photo(int id, String url, String caption, boolean active) {
+    public Photo(Long id, String url, String caption, boolean active) {
         this.id = id;
         this.url = url;
         this.caption = caption;
         this.active = active;
     }
 
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

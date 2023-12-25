@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:layout_margin="20dp"
+    tools:context=".fragments.reservations.ReservationListFragment">
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:gravity="end"
+        android:id="@+id/frl_recyclerType"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:nestedScrollingEnabled="false"
+        android:orientation="horizontal"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        itemSpace="@{@dimen/_10pxh}" tools:itemCount="6" tools:listitem="@layout/row_type"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/cards_myReservations"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:nestedScrollingEnabled="false"
+        android:orientation="vertical"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        tools:listitem="@layout/card_reservation"/>
+
+
+</LinearLayout>

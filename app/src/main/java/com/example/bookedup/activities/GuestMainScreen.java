@@ -37,6 +37,7 @@ import com.example.bookedup.fragments.account.AccountFragment;
 import com.example.bookedup.fragments.home.HomeFragment;
 import com.example.bookedup.fragments.language.LanguageFragment;
 import com.example.bookedup.fragments.notifications.NotificationsFragment;
+import com.example.bookedup.fragments.reservations.ReservationListFragment;
 import com.example.bookedup.fragments.settings.SettingsFragment;
 import com.example.bookedup.model.Accommodation;
 import com.example.bookedup.model.Category;
@@ -91,34 +92,32 @@ public class GuestMainScreen extends AppCompatActivity implements NavigationView
 
         bottomNavigationView.setBackground(null);
         Log.d("GuestMainScreen", "TUUU JEEE 1");
-//       bottomNavigationView.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
-//           @Override
-//           public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-//               Log.d("GuestMainScreen", "TUUU JEEE 2");
-//
-//               int itemId = item.getItemId();
-//               if (itemId == R.id.nav_home){
-//                   Log.d("GuestMainScreen", "ISPREDDD HOME FRAGMEEEENT JEEE");
-//                   openFragment(new HomeFragment());
-//                   return true;
-//               }
-//               else if(itemId == R.id.nav_reservations) {
-//                   Toast.makeText(GuestMainScreen.this,"Reservations clicked",Toast.LENGTH_SHORT).show();
-//                   //openFragment(new AccountFragment());
-//                   return true;
-//               }
-//               else if(itemId == R.id.nav_favorites){
-//                   Toast.makeText(GuestMainScreen.this,"Favorites clicked",Toast.LENGTH_SHORT).show();
-//                   //openFragment(new AccountFragment());
-//                   return true;
-//               }
-//               else if(itemId == R.id.nav_account){
-//                   openFragment(new AccountFragment());
-//                   return true;
-//               }
-//               return false;
-//           }
-//       });
+       bottomNavigationView.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
+           @Override
+           public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+
+               int itemId = item.getItemId();
+               if (itemId == R.id.nav_home){
+                   openFragment(new HomeFragment());
+                   return true;
+               }
+               else if(itemId == R.id.nav_reservations) {
+                   Toast.makeText(GuestMainScreen.this,"Reservations clicked",Toast.LENGTH_SHORT).show();
+                   openFragment(new ReservationListFragment());
+                   return true;
+               }
+               else if(itemId == R.id.nav_favorites){
+                   Toast.makeText(GuestMainScreen.this,"Favorites clicked",Toast.LENGTH_SHORT).show();
+                   //openFragment(new AccountFragment());
+                   return true;
+               }
+               else if(itemId == R.id.nav_account){
+                   openFragment(new AccountFragment());
+                   return true;
+               }
+               return false;
+           }
+       });
 
         Log.d("GuestMainScreen", "TUUU JEEE 3");
        fragmentManager = getSupportFragmentManager();

@@ -30,10 +30,13 @@ import java.util.ArrayList;
 public class PopularAdapter extends RecyclerView.Adapter<PopularAdapter.ViewHolder>{
     ArrayList<Accommodation> items;
 
+    int layout;
+
     //DecimalFormat formatter;
 
-    public PopularAdapter(ArrayList<Accommodation> items) {
+    public PopularAdapter(ArrayList<Accommodation> items, int beforeLayout) {
         this.items = items;
+        this.layout = beforeLayout;
         //formatter = new DecimalFormat("###,###,###,###");
     }
 
@@ -71,7 +74,7 @@ public class PopularAdapter extends RecyclerView.Adapter<PopularAdapter.ViewHold
 
                     // Replace the existing fragment (HomeFragment) with the new fragment (DetailsFragment)
                     FragmentTransaction transaction = activity.getSupportFragmentManager().beginTransaction();
-                    transaction.replace(R.id.frame_layout, detailsFragment);
+                    transaction.replace(layout, detailsFragment);
                     transaction.addToBackStack(null);  // Optional: Adds the transaction to the back stack
                     transaction.commit();
                 } else {

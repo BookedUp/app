@@ -151,9 +151,9 @@ public class SearchFilterFragment extends Fragment implements DatePickerDialog.O
         photos.add(photo);
 
 
-        items.add(new Accommodation("Lakeside Motel", photos, address, 5.0, AccommodationType.Apartment, 500, PriceType.PerGuest));
-        items.add(new Accommodation("Lakeside Motel", photos, address, 5.0, AccommodationType.Apartment, 500, PriceType.PerGuest));
-        items.add(new Accommodation("Lakeside Motel", photos, address, 5.0, AccommodationType.Apartment, 500, PriceType.PerGuest));
+        items.add(new Accommodation("Lakeside Motel", photos, address, 5.0, AccommodationType.Apartment, 500, PriceType.PER_GUEST));
+        items.add(new Accommodation("Lakeside Motel", photos, address, 5.0, AccommodationType.Apartment, 500, PriceType.PER_GUEST));
+        items.add(new Accommodation("Lakeside Motel", photos, address, 5.0, AccommodationType.Apartment, 500, PriceType.PER_GUEST));
 
 
 

@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- card_layout.xml -->
+<!-- res/layout/card_accommodation_request.xml -->
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- Image Layout -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <!-- Hotel Image -->
+        <ImageView
+            android:id="@+id/resReq_imageHotel"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:scaleType="centerCrop"
+            android:src="@drawable/hotel1" />
+
+        <!-- Accommodation Details Layout -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <!-- Naziv smestaja -->
+            <TextView
+                android:id="@+id/resReq_Title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Naziv smestaja"
+                android:layout_marginLeft="12dp"
+                />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="8dp">
+
+                <ImageView
+                    android:id="@+id/resReq_iconRating"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_star"
+                    android:contentDescription="Rating Icon"
+                    android:layout_marginLeft="12dp"/>
+
+                <!-- Tekst za ocenu -->
+                <TextView
+                    android:id="@+id/resReq_averageRating"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Ocena"
+                    android:layout_marginLeft="8dp"/>
+            </LinearLayout>
+
+
+            <!-- Status smestaja -->
+            <TextView
+                android:id="@+id/resReq_status"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Status"
+                android:layout_marginLeft="12dp"
+                android:layout_marginTop="6dp"
+
+                />
+
+            <TextView
+                android:id="@+id/resReq_price"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:layout_marginLeft="12dp"
+
+
+                android:text="150$"/>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginLeft="12dp"
+                >
+
+                <TextView
+                    android:id="@+id/resReq_checkIn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Check In: "/>
+
+                <TextView
+                    android:id="@+id/resReq_checkInDate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="12.2.2024."/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginLeft="12dp"
+                >
+
+                <TextView
+                    android:id="@+id/resReq_checkOut"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Check Out: "/>
+
+                <TextView
+                    android:id="@+id/resReq_checkOutDate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="12.2.2024."/>
+            </LinearLayout>
+            <!-- View Details Button -->
+
+            <Button
+                android:id="@+id/resReq_btnViewDetails"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:layout_marginLeft="12dp"
+                android:text="View Details"
+                />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Buttons Layout -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="12dp"
+        android:layout_marginLeft="12dp">
+
+        <!-- Accept Button -->
+        <Button
+            android:id="@+id/resReq_btnAccept"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Accept"
+            />
+
+        <!-- Reject Button -->
+        <Button
+            android:id="@+id/resReq_btnReject"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Reject" />
+    </LinearLayout>
+</LinearLayout>

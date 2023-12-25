@@ -15,8 +15,11 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.example.bookedup.R;
+import com.example.bookedup.fragments.accommodations.AccommodationListFragment;
 import com.example.bookedup.fragments.account.AccountFragment;
 import com.example.bookedup.fragments.home.HomeFragment;
+import com.example.bookedup.fragments.reservations.ReservationListFragment;
+import com.example.bookedup.fragments.reservations.ReservationRequestFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
 import com.google.android.material.navigation.NavigationView;
@@ -60,13 +63,13 @@ public class HostMainScreen extends AppCompatActivity implements NavigationView.
                     return true;
                 }
                 else if(itemId==R.id.nav_accommodationHost){
-                    Toast.makeText(HostMainScreen.this,"Reservations clicked",Toast.LENGTH_SHORT).show();
-                    //openFragment(new AccountFragment());
+                    Toast.makeText(HostMainScreen.this,"Accommodation list clicked",Toast.LENGTH_SHORT).show();
+                    openFragment(new AccommodationListFragment());
                     return true;
                 }
                 else if(itemId==R.id.nav_reservationsHost){
-                    Toast.makeText(HostMainScreen.this,"Reservations clicked",Toast.LENGTH_SHORT).show();
-                    //openFragment(new AccountFragment());
+                    Toast.makeText(HostMainScreen.this,"Reservations request clicked",Toast.LENGTH_SHORT).show();
+                    openFragment(new ReservationRequestFragment());
                     return true;
                 }
                 else if(itemId==R.id.nav_reportHost){

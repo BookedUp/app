@@ -1,6 +1,8 @@
 package com.example.bookedup.fragments.home;
 
 import android.app.DatePickerDialog;
+import android.content.ComponentName;
+import android.content.Intent;
 import android.media.Image;
 import android.os.Bundle;
 import android.util.Log;
@@ -50,44 +52,38 @@ public class HomeFragment extends Fragment implements DatePickerDialog.OnDateSet
     private boolean isStartDateButtonClicked;
     private boolean isEndDateButtonClicked;
 
-    private static final String ARG_PARAM1 = "param1";
+    private static final String ARG_TARGET = "arg_target";
     private static final String ARG_PARAM2 = "param2";
 
     // TODO: Rename and change types of parameters
-    private String mParam1;
+    private Integer mParam1;
     private String mParam2;
+
+    private static int targetLayout;
 
     public HomeFragment() {
         // Required empty public constructor
     }
-
-    public static HomeFragment newInstance(String param1, String param2) {
-        HomeFragment fragment = new HomeFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
-    }
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        Log.d("HomeFragment", "USAAAAAAO U HOMEEE ");
         View view = inflater.inflate(R.layout.fragment_home, container, false);
+
+        Intent intent = getActivity().getIntent();
+//        Log.d("HomeFragment", "onCreateView called with targetLayout: " + intent);
+        ComponentName componentName = intent.getComponent();
+//        Log.d("HomeFragment", "onCreateView called with targetLayout: " + componentName.getClassName());
+        if (componentName.getClassName().equals("com.example.bookedup.activities.GuestMainScreen")) {
+//            Log.d("HomeFragment", "Trenutna aktivnost je GuestMainScreen");
+            targetLayout = R.id.frame_layout;
+        } else if (componentName.getClassName().equals("com.example.bookedup.activities.AdministratorMainScreen")){
+            targetLayout = R.id.frame_layoutAdmin;
+        } else if (componentName.getClassName().equals("com.example.bookedup.activities.HostMainScreen")){
+            targetLayout = R.id.frame_layoutHost;
+        }
 
         recyclerViewPopular = view.findViewById(R.id.view_pop);
         recyclerViewDestinations = view.findViewById(R.id.view_destinations);
-
         initRecycleView();
 
         ImageView startDateBtn =  view.findViewById(R.id.startDate);
@@ -118,22 +114,29 @@ public class HomeFragment extends Fragment implements DatePickerDialog.OnDateSet
         searchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Log.d("HomeFragment", "Kliknuo");
                 openSearchFilterFragment();
             }
         });
 
+
+
+
         return view;
     }
 
+    public void setTargetLayout(int target){
+        this.targetLayout = target;
+    }
+
     private void openSearchFilterFragment() {
-        // Create a new instance of SearchFilterFragment
         SearchFilterFragment searchFilterFragment = new SearchFilterFragment();
 
         // Begin the transaction
         FragmentTransaction transaction = requireActivity().getSupportFragmentManager().beginTransaction();
 
         // Replace the current fragment with the new fragment
-        transaction.replace(R.id.frame_layout, searchFilterFragment);
+        transaction.replace(targetLayout, searchFilterFragment);
 
         // Add the transaction to the back stack so the user can navigate back if needed
         transaction.addToBackStack(null);
@@ -143,7 +146,6 @@ public class HomeFragment extends Fragment implements DatePickerDialog.OnDateSet
     }
 
     private void initRecycleView() {
-
 
         ArrayList<Accommodation> items = new ArrayList<>();
         Photo photo = new Photo();
@@ -157,7 +159,7 @@ public class HomeFragment extends Fragment implements DatePickerDialog.OnDateSet
 
         recyclerViewPopular.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
         Log.d("HomeFragment", "ISPREDDDDDDDDDDDDDDDD ");
-        adapterPopular = new PopularAdapter(items);
+        adapterPopular = new PopularAdapter(items, targetLayout);
         recyclerViewPopular.setAdapter(adapterPopular);
 
         ArrayList<Destination> destinationList = new ArrayList<>();
