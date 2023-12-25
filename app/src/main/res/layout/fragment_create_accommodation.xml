@@ -7,7 +7,8 @@
     android:orientation="vertical"
     android:gravity="center"
     tools:context=".fragments.accommodations.CreateAccommodationFragment"
-    android:layout_margin="20dp">
+    android:layout_marginTop="70dp"
+    android:layout_marginBottom="80dp">
 
     <ScrollView
         xmlns:android="http://schemas.android.com/apk/res/android"
@@ -345,6 +346,7 @@
                     android:orientation="horizontal">
 
                     <CheckBox
+                        android:id="@+id/hotelCheckBox"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:checked="false"
@@ -358,6 +360,7 @@
                         android:textSize="16sp"/>
 
                     <CheckBox
+                        android:id="@+id/hostelCheckBox"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:checked="false"
@@ -379,6 +382,7 @@
                     android:orientation="horizontal">
 
                     <CheckBox
+                        android:id="@+id/villaCheckBox"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:checked="false"
@@ -392,6 +396,7 @@
                         android:textSize="16sp"/>
 
                     <CheckBox
+                        android:id="@+id/apartmentCheckBox"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:checked="false"
@@ -413,6 +418,7 @@
                     android:orientation="horizontal">
 
                     <CheckBox
+                        android:id="@+id/resortCheckBox"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:checked="false"
@@ -526,12 +532,36 @@
                 android:layout_marginBottom="16dp"
                 android:layout_centerHorizontal="true" />
 
+            <TextView
+                android:id="@+id/startRangeDateView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/calendarView"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="8dp"
+                android:text=""
+                android:textColor="#2b2c28"
+                android:textSize="14sp"
+                />
+
+            <TextView
+                android:id="@+id/endRangeDateView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/startRangeDateView"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="8dp"
+                android:text=""
+                android:textColor="#2b2c28"
+                android:textSize="14sp"
+                />
+
             <!-- Add buttons for managing availability and price -->
             <Button
                 android:id="@+id/addAvailabilityBtn"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/calendarView"
+                android:layout_below="@id/endRangeDateView"
                 android:layout_marginTop="16dp"
                 android:text="Add Availability" />
 
@@ -607,7 +637,7 @@
 
 
             <Button
-                android:id="@+id/addImageBtn"
+                android:id="@+id/addAccommodationBtn"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/newPriceEditText"

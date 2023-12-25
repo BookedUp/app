@@ -1,9 +1,15 @@
 package com.example.bookedup.fragments.accommodations;
 
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
 
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,7 +17,9 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CalendarView;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -38,8 +46,16 @@ public class CreateAccommodationFragment extends Fragment {
             cancellationEditText;
 
     private CheckBox perNightCheckBox, perGuestCheckBox;
+    private CheckBox hotelCheckBox, hostelCheckBox, villaCheckBox, apartmentCheckBox, resortCheckBox;
+
     private SwitchMaterial toggleSwitch;
-    private Button addImageBtn, addAvailabilityBtn, removeAvailabilityBtn, addNewPriceBtn;
+
+
+    private ImageView accommodationImageView;
+    private static final int PICK_IMAGE_REQUEST = 1;
+    private Button addImageBtn, addAvailabilityBtn, removeAvailabilityBtn, addNewPriceBtn, addAccommodationBtn;
+    private EditText specialPriceEditText; // Add this field for the associated EditText
+
 
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
@@ -47,6 +63,8 @@ public class CreateAccommodationFragment extends Fragment {
     private String mParam1;
     private String mParam2;
     private TextView availabilityTextView;
+    private TextView startRangeDateView;
+    private TextView endRangeDateView;
     private List<DateRange> addedDates = new ArrayList<>(); // Assuming you have a DateRange class
 
     private CalendarView calendarView;
@@ -92,7 +110,6 @@ public class CreateAccommodationFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_create_accommodation, container, false);
-        Log.d("CreateAccommodationFragment", "TUUUUUUUUUUUUU SMPPPPPPPPPPP");
 
         // Initialize UI components and set up listeners
         initView(view);
@@ -119,40 +136,99 @@ public class CreateAccommodationFragment extends Fragment {
 
         perNightCheckBox = view.findViewById(R.id.perNightCheckBox);
         perGuestCheckBox = view.findViewById(R.id.perGuestCheckBox);
+
+        // Set the initial state
+        perNightCheckBox.setChecked(true);
+        perGuestCheckBox.setChecked(false);
+        perNightCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    // If perNightCheckBox is checked, uncheck perGuestCheckBox
+                    perGuestCheckBox.setChecked(false);
+                }
+            }
+        });
+
+        perGuestCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    // If perGuestCheckBox is checked, uncheck perNightCheckBox
+                    perNightCheckBox.setChecked(false);
+                }
+            }
+        });
+
+        hotelCheckBox = view.findViewById(R.id.hotelCheckBox);
+        hostelCheckBox = view.findViewById(R.id.hostelCheckBox);
+        villaCheckBox = view.findViewById(R.id.villaCheckBox);
+        apartmentCheckBox = view.findViewById(R.id.apartmentCheckBox);
+        resortCheckBox = view.findViewById(R.id.resortCheckBox);
+
+        // Set the initial state
+        hotelCheckBox.setChecked(false);
+        hostelCheckBox.setChecked(false);
+        villaCheckBox.setChecked(false);
+        apartmentCheckBox.setChecked(false);
+        resortCheckBox.setChecked(false);
+
+        // Add listeners to checkboxes
+        hotelCheckBox.setOnCheckedChangeListener(createCheckedChangeListener(hostelCheckBox, villaCheckBox, apartmentCheckBox, resortCheckBox));
+        hostelCheckBox.setOnCheckedChangeListener(createCheckedChangeListener(hotelCheckBox, villaCheckBox, apartmentCheckBox, resortCheckBox));
+        villaCheckBox.setOnCheckedChangeListener(createCheckedChangeListener(hotelCheckBox, hostelCheckBox, apartmentCheckBox, resortCheckBox));
+        apartmentCheckBox.setOnCheckedChangeListener(createCheckedChangeListener(hotelCheckBox, hostelCheckBox, villaCheckBox, resortCheckBox));
+        resortCheckBox.setOnCheckedChangeListener(createCheckedChangeListener(hotelCheckBox, hostelCheckBox, villaCheckBox, apartmentCheckBox));
+
         toggleSwitch = view.findViewById(R.id.toggleSwitch);
 
-        addImageBtn = view.findViewById(R.id.addImageBtn);
+        startRangeDateView = view.findViewById(R.id.startRangeDateView);
+        endRangeDateView = view.findViewById(R.id.endRangeDateView);
+        addImageBtn = view.findViewById(R.id.selectImageBtn);
+        accommodationImageView = view.findViewById(R.id.selectedImageView);
+
         calendarView = view.findViewById(R.id.calendarView);
 
         addAvailabilityBtn = view.findViewById(R.id.addAvailabilityBtn);
         removeAvailabilityBtn = view.findViewById(R.id.removeAvailabilityBtn);
+
+        specialPriceEditText = view.findViewById(R.id.newPriceEditText); // Replace with the actual ID of your EditText
+
         addNewPriceBtn = view.findViewById(R.id.addNewPriceBtn);
 
         availabilityTextView = view.findViewById(R.id.availabilityTextView);
 
+        addAccommodationBtn = view.findViewById(R.id.addAccommodationBtn);
         // Add any additional setup or listeners here
     }
 
-    private void setInitialDate() {
-        // Get today's date
-        Calendar today = Calendar.getInstance();
-
-        // Set today's date to the CalendarView
-        calendarView.setDate(today.getTimeInMillis());
+    // Helper method to create a common listener for each group
+    private CompoundButton.OnCheckedChangeListener createCheckedChangeListener(CheckBox... checkboxes) {
+        return new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                // If the current checkbox is checked, uncheck the others in the group
+                if (isChecked) {
+                    for (CheckBox checkbox : checkboxes) {
+                        checkbox.setChecked(false);
+                    }
+                }
+            }
+        };
     }
+
 
     private void setupListeners() {
         addImageBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Handle button click for adding a new accommodation
+                openGallery();
             }
         });
 
         addAvailabilityBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d("CreateAccommodationFragment", "KLIKNUOO AVAALL");
                 addDateRange();
             }
         });
@@ -168,47 +244,82 @@ public class CreateAccommodationFragment extends Fragment {
         addNewPriceBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Handle button click for adding a new price
+                checkAndShowPopup();
             }
         });
 
         calendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
             @Override
             public void onSelectedDayChange(CalendarView view, int year, int month, int dayOfMonth) {
-                System.out.println("Selected day change: " + year + "-" + (month + 1) + "-" + dayOfMonth);
+                Log.d("CreateAccommodationFragment", "Selected day change: " + year + "-" + (month + 1) + "-" + dayOfMonth);
                 handleDateSelection(year, month, dayOfMonth);
             }
         });
+
+        addAccommodationBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //implement logic here
+                showSuccessPopupBigger("Accommodation successfully created!");
+            }
+        });
+    }
+
+    private void setInitialDate() {
+        // Get today's date
+        Calendar today = Calendar.getInstance();
+
+        // Set today's date to the CalendarView
+        calendarView.setDate(today.getTimeInMillis());
     }
 
     private void handleDateSelection(int year, int month, int dayOfMonth) {
         Calendar selectedDate = Calendar.getInstance();
         selectedDate.set(year, month, dayOfMonth);
 
-        if (this.selectedRange.getStartDate()== null){
+        if (this.selectedRange.getStartDate() == null) {
             this.selectedRange.setStartDate(selectedDate.getTime());
-        } else if(this.selectedRange.getEndDate() == null){
-            // if start date is already selected, update end date
+            updateStartDateView();
+        } else if (this.selectedRange.getEndDate() == null) {
             this.selectedRange.setEndDate(selectedDate.getTime());
-            addedDates.add(this.selectedRange);
-            addedDates = mergeOverlappingDateRanges(addedDates);
-            updateAvailabilityTextView();
-        } else{
-            // if both dates are currently selected, go from the beginning
+            updateEndDateView();
+        } else {
             this.selectedRange.setStartDate(selectedDate.getTime());
             this.selectedRange.setEndDate(null);
+            setInitialDate();
+            updateStartDateView();
+            updateEndDateView();
         }
-        System.out.println("Tu sam " + this.selectedRange.toString());
-        updateCalendarView();
+    }
+
+    private void updateStartDateView() {
+        if (this.selectedRange.getStartDate() != null) {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
+            String startDateStr = dateFormat.format(this.selectedRange.getStartDate());
+            startRangeDateView.setText("Start Range Date: " + startDateStr);
+        }else{
+            startRangeDateView.setText("Start Range Date: none" );
+        }
+    }
+
+    private void updateEndDateView() {
+        if (this.selectedRange.getEndDate() != null) {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
+            String endDateStr = dateFormat.format(this.selectedRange.getEndDate());
+            endRangeDateView.setText("End Range Date: " + endDateStr);
+        }else{
+            endRangeDateView.setText("End Range Date: none");
+        }
     }
 
 
     private void addDateRange() {
-
         if (this.selectedRange.getEndDate() != null) {
-            addedDates.add(this.selectedRange);
-            addedDates = mergeOverlappingDateRanges(addedDates);
+            addedDates.add(new DateRange(this.selectedRange.getStartDate(), this.selectedRange.getEndDate()));
 
+            mergeOverlappingDateRanges(addedDates);
+
+            updateAvailabilityTextView();
             this.selectedRange.setStartDate(null);
             this.selectedRange.setEndDate(null);
 
@@ -217,34 +328,11 @@ public class CreateAccommodationFragment extends Fragment {
         }
     }
 
-    private void updateCalendarView() {
-        // Clear any previous selections
-        calendarView.setDate(0);
-
-        // Iterate through the added date ranges and handle selection manually
-        for (DateRange range : addedDates) {
-            Calendar startDate = Calendar.getInstance();
-            startDate.setTime(range.getStartDate());
-
-            Calendar endDate = Calendar.getInstance();
-            endDate.setTime(range.getEndDate());
-
-            // Highlight the selected range in the calendar manually
-            while (!startDate.after(endDate)) {
-                calendarView.setDate(Calendar.DAY_OF_MONTH);
-                startDate.add(Calendar.DAY_OF_MONTH, 1);
-            }
-        }
-
-        // Optionally, trigger a redraw or update method in your CalendarView
-        calendarView.invalidate();
-    }
-
-    private List<DateRange> mergeOverlappingDateRanges(List<DateRange> dateRanges) {
+    private void mergeOverlappingDateRanges(List<DateRange> dateRanges) {
         List<DateRange> mergedRanges = new ArrayList<>();
 
         if (dateRanges.isEmpty()) {
-            return mergedRanges;
+            return;
         }
 
         dateRanges.sort((a, b) -> a.getStartDate().compareTo(b.getStartDate()));
@@ -257,6 +345,10 @@ public class CreateAccommodationFragment extends Fragment {
             if (currentRange.getEndDate().compareTo(nextRange.getStartDate()) >= 0) {
                 // Overlapping ranges, merge them
                 currentRange.setEndDate(max(currentRange.getEndDate(), nextRange.getEndDate()));
+            } else if (currentRange.getEndDate().equals(nextRange.getStartDate())) {
+                // End date of current range is the same as the start date of the next range
+                // Connect these ranges
+                currentRange.setEndDate(nextRange.getEndDate());
             } else {
                 // Non-overlapping ranges, add the current range to the result
                 mergedRanges.add(currentRange);
@@ -267,7 +359,7 @@ public class CreateAccommodationFragment extends Fragment {
         // Add the last range
         mergedRanges.add(currentRange);
 
-        return mergedRanges;
+        this.addedDates = mergedRanges;
     }
 
     private Date max(Date date1, Date date2) {
@@ -315,13 +407,13 @@ public class CreateAccommodationFragment extends Fragment {
                 }
             }
 
-            addedDates = mergeOverlappingDateRanges(updatedDateRanges);
+            mergeOverlappingDateRanges(updatedDateRanges);
             updateAvailabilityTextView();
         }
     }
 
     private void updateAvailabilityTextView() {
-        availabilityTextView.setText(getString(R.string.availability_label));
+        availabilityTextView.setText("\n");
 
         if (addedDates.size() > 0) {
             SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
@@ -337,4 +429,68 @@ public class CreateAccommodationFragment extends Fragment {
             availabilityTextView.append(dateRangeText.toString());
         }
     }
+    private void checkAndShowPopup() {
+        String specialPrice = specialPriceEditText.getText().toString().trim();
+
+        if (!specialPrice.isEmpty()) {
+            // Successfully added special price
+            showSuccessPopup("Successfully added special price!");
+        } else {
+            // Error: You didn't enter a value for special price
+            showErrorPopup("You didn't enter a value for special price");
+        }
+    }
+
+    private void showSuccessPopup(String message) {
+        // You can implement your own logic to show a success popup here
+        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
+    }
+
+    private void showSuccessPopupBigger(String message) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        builder.setTitle("Success")
+                .setMessage(message)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.dismiss();
+                    }
+                });
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    private void showErrorPopup(String errorMessage) {
+        // You can implement your own logic to show an error popup here
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        builder.setTitle("Error")
+                .setMessage(errorMessage)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.dismiss();
+                    }
+                });
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    private void openGallery() {
+        Intent galleryIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        startActivityForResult(galleryIntent, PICK_IMAGE_REQUEST);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK && data != null) {
+            Uri selectedImageUri = data.getData();
+            loadImage(selectedImageUri);
+        }
+    }
+
+    private void loadImage(Uri imageUri) {
+        // Set the selected image to the ImageView
+        accommodationImageView.setImageURI(imageUri);
+    }
+
 }
