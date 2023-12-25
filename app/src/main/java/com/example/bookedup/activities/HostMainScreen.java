@@ -10,17 +10,28 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import android.app.Dialog;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.example.bookedup.R;
 import com.example.bookedup.fragments.accommodations.AccommodationListFragment;
+import com.example.bookedup.fragments.accommodations.CreateAccommodationFragment;
 import com.example.bookedup.fragments.account.AccountFragment;
 import com.example.bookedup.fragments.home.HomeFragment;
 import com.example.bookedup.fragments.reservations.ReservationListFragment;
 import com.example.bookedup.fragments.reservations.ReservationRequestFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationBarView;
 import com.google.android.material.navigation.NavigationView;
 
@@ -31,6 +42,8 @@ public class HostMainScreen extends AppCompatActivity implements NavigationView.
     private BottomNavigationView bottomNavigationView;
 
     private FragmentManager fragmentManager;
+
+    private FloatingActionButton fab;
 
     private Toolbar toolbar;
 
@@ -45,6 +58,7 @@ public class HostMainScreen extends AppCompatActivity implements NavigationView.
         NavigationView navigationView=findViewById(R.id.nav_viewHost);
         navigationView.setNavigationItemSelectedListener(this);
         toolbar=findViewById(R.id.toolbarHost); //Ignore red line errors
+        fab = findViewById(R.id.fabHostScreen);
 
 
         setSupportActionBar(toolbar);
@@ -77,11 +91,11 @@ public class HostMainScreen extends AppCompatActivity implements NavigationView.
                     //openFragment(new AccountFragment());
                     return true;
                 }
-                else if(itemId==R.id.nav_commentsHost){
-                    Toast.makeText(HostMainScreen.this,"Favorites clicked",Toast.LENGTH_SHORT).show();
-                    //openFragment(new AccountFragment());
-                    return true;
-                }
+//                else if(itemId==R.id.nav_commentsHost){
+//                    Toast.makeText(HostMainScreen.this,"Favorites clicked",Toast.LENGTH_SHORT).show();
+//                    //openFragment(new AccountFragment());
+//                    return true;
+//                }
                 return false;
             }
         });
@@ -90,6 +104,48 @@ public class HostMainScreen extends AppCompatActivity implements NavigationView.
         fragmentManager=getSupportFragmentManager();
         openFragment(new HomeFragment());
 
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showBottomDialog();
+            }
+        });
+
+
+
+    }
+
+    private void showBottomDialog() {
+
+        final Dialog dialog = new Dialog(this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.bottom_sheets_host);
+
+        LinearLayout videoLayout = dialog.findViewById(R.id.layout_accommodation);
+        ImageView cancelButton = dialog.findViewById(R.id.cancelButtonHost);
+
+        videoLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                dialog.dismiss();
+                openFragment(new CreateAccommodationFragment());
+
+            }
+        });
+
+        cancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.dismiss();
+            }
+        });
+
+        dialog.show();
+        dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.WRAP_CONTENT);
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        dialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation;
+        dialog.getWindow().setGravity(Gravity.BOTTOM);
 
     }
 

@@ -1,0 +1,620 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:gravity="center"
+    tools:context=".fragments.accommodations.CreateAccommodationFragment"
+    android:layout_margin="20dp">
+
+    <ScrollView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            xmlns:tools="http://schemas.android.com/tools"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#f4f4f4"
+            android:paddingLeft="16dp"
+            android:paddingTop="16dp"
+            android:paddingRight="16dp"
+            android:paddingBottom="16dp"
+            tools:context=".AddNewFragment">
+
+            <ImageView
+                android:id="@+id/selectedImageView"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:layout_centerHorizontal="true"
+                android:src="@drawable/add_image"/>
+
+            <Button
+                android:id="@+id/selectImageBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/selectedImageView"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="16dp"
+                android:text="Select Image"/>
+
+            <TextView
+                android:id="@+id/nameTitleTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/selectImageBtn"
+                android:layout_marginTop="16dp"
+                android:text="Accommodation Name"
+                android:textSize="18sp"
+                android:textColor="@android:color/black"/>
+
+            <EditText
+                android:id="@+id/nameEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/nameTitleTextView"
+                android:layout_marginTop="8dp"
+                android:background="@android:color/transparent"
+                android:padding="8dp"
+                android:hint="Enter name of accommodation here.."
+                android:textColor="@android:color/black"/>
+
+            <TextView
+                android:id="@+id/addressTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/nameEditText"
+                android:layout_marginTop="16dp"
+                android:text="Address"
+                android:textSize="18sp"
+                android:textColor="@android:color/black"/>
+
+            <EditText
+                android:id="@+id/addressStreetEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/addressTextView"
+                android:layout_marginTop="8dp"
+                android:background="@android:color/transparent"
+                android:padding="8dp"
+                android:hint="Enter street and number here.."
+                android:textColor="@android:color/black"/>
+
+            <EditText
+                android:id="@+id/addressCityEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/addressStreetEditText"
+                android:layout_marginTop="8dp"
+                android:background="@android:color/transparent"
+                android:padding="8dp"
+                android:hint="Enter city here.."
+                android:textColor="@android:color/black"/>
+
+            <EditText
+                android:id="@+id/addressPostalCodeEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/addressCityEditText"
+                android:layout_marginTop="8dp"
+                android:background="@android:color/transparent"
+                android:padding="8dp"
+                android:hint="Enter postal code here.."
+                android:textColor="@android:color/black"/>
+
+            <EditText
+                android:id="@+id/addressCountryEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/addressPostalCodeEditText"
+                android:layout_marginTop="8dp"
+                android:background="@android:color/transparent"
+                android:padding="8dp"
+                android:hint="Enter country here.."
+                android:textColor="@android:color/black"/>
+
+            <TextView
+                android:id="@+id/priceTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/addressCountryEditText"
+                android:layout_marginTop="16dp"
+                android:text="Price"
+                android:textSize="18sp"
+                android:textColor="@android:color/black"/>
+
+            <EditText
+                android:id="@+id/priceEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/priceTextView"
+                android:inputType="number"
+                android:layout_marginTop="16dp"
+                android:hint="Enter price here.."
+                android:background="@android:color/transparent"
+                android:digits="0123456789"
+                android:maxLength="3" />
+
+            <LinearLayout
+                android:id="@+id/priceCheckBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:orientation="horizontal"
+                android:layout_below="@id/priceEditText"
+                android:gravity="end">
+
+                <CheckBox
+                    android:id="@+id/perNightCheckBox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="false"
+                    android:layout_marginEnd="10dp"/>
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Per Night"
+                    android:textSize="16sp"/>
+
+                <CheckBox
+                    android:id="@+id/perGuestCheckBox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="false"
+                    android:layout_marginEnd="10dp"/>
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Per Guest"
+                    android:textSize="16sp"/>
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/overviewTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/priceCheckBox"
+                android:layout_marginTop="16dp"
+                android:text="Overview"
+                android:textSize="18sp"
+                android:textColor="@android:color/black"/>
+
+            <EditText
+                android:id="@+id/overviewEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/overviewTextView"
+                android:layout_marginTop="8dp"
+                android:background="@android:color/transparent"
+                android:padding="8dp"
+                android:hint="Enter description for accommodation here.."
+                android:textColor="@android:color/black"/>
+
+
+            <LinearLayout
+                android:id="@+id/facilitiesContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_below="@id/overviewEditText"
+                android:layout_marginTop="16dp">
+
+                <TextView
+                    android:id="@+id/facilitiesTitleTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Facilities"
+                    android:textSize="18sp"
+                    android:textColor="@android:color/black"/>
+
+                <LinearLayout
+                    android:id="@+id/facilitiesCheckBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <CheckBox
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="false"
+                        android:layout_marginEnd="10dp"/>
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Free Wi-Fi"
+                        android:textSize="16sp"/>
+
+                    <CheckBox
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="false"
+                        android:layout_marginEnd="10dp"/>
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Non Smoking"
+                        android:textSize="16sp"/>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/facilitiesSecondCheckBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <CheckBox
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="false"
+                        android:layout_marginEnd="10dp"/>
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Parking"
+                        android:textSize="16sp"/>
+
+                    <CheckBox
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="false"
+                        android:layout_marginEnd="10dp"/>
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Restaurant"
+                        android:textSize="16sp"/>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/facilitiesThirdCheckBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <CheckBox
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="false"
+                        android:layout_marginEnd="10dp"/>
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Swimming Pool"
+                        android:textSize="16sp"/>
+
+                    <CheckBox
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="false"
+                        android:layout_marginEnd="10dp"/>
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Fitness Centre"
+                        android:textSize="16sp"/>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/accommodationTypeContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_below="@id/facilitiesContainer"
+                android:layout_marginTop="16dp">
+
+                <TextView
+                    android:id="@+id/accommodationTypeTitleTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Accommodation Type"
+                    android:textSize="18sp"
+                    android:textColor="@android:color/black"/>
+
+                <LinearLayout
+                    android:id="@+id/accommodationTypeCheckBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <CheckBox
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="false"
+                        android:layout_marginEnd="10dp"/>
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Hotel"
+                        android:textSize="16sp"/>
+
+                    <CheckBox
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="false"
+                        android:layout_marginEnd="10dp"/>
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Hostel"
+                        android:textSize="16sp"/>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/accommodationTypeSecondCheckBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <CheckBox
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="false"
+                        android:layout_marginEnd="10dp"/>
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Villa"
+                        android:textSize="16sp"/>
+
+                    <CheckBox
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="false"
+                        android:layout_marginEnd="10dp"/>
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Apartment"
+                        android:textSize="16sp"/>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/accommodationTypeThirdCheckBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <CheckBox
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="false"
+                        android:layout_marginEnd="10dp"/>
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Resort"
+                        android:textSize="16sp"/>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/minGuestTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/accommodationTypeContainer"
+                android:layout_marginTop="16dp"
+                android:text="Minimum Guests"
+                android:textSize="18sp"
+                android:textColor="@android:color/black"/>
+
+            <EditText
+                android:id="@+id/minimumGuestsEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/minGuestTextView"
+                android:inputType="number"
+                android:hint="Enter minimum number of guests here.."
+                android:background="@android:color/transparent"
+                android:digits="0123456789"
+                android:maxLength="3" />
+
+            <TextView
+                android:id="@+id/maxGuestTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/minimumGuestsEditText"
+                android:layout_marginTop="16dp"
+                android:text="Maximum Guests"
+                android:textSize="18sp"
+                android:textColor="@android:color/black"/>
+
+            <EditText
+                android:id="@+id/maximumGuestsEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/maxGuestTextView"
+                android:inputType="number"
+                android:hint="Enter maximum number of guests here.."
+                android:background="@android:color/transparent"
+                android:digits="0123456789"
+                android:maxLength="3" />
+
+            <TextView
+                android:id="@+id/cancellationTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/maximumGuestsEditText"
+                android:layout_marginTop="16dp"
+                android:text="Cancellation"
+                android:textSize="18sp"
+                android:textColor="@android:color/black"/>
+
+            <EditText
+                android:id="@+id/cancellationEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/cancellationTextView"
+                android:inputType="number"
+                android:hint="Enter cancellation dead line.."
+                android:background="@android:color/transparent"
+                android:digits="0123456789"
+                android:maxLength="3" />
+
+            <LinearLayout
+                android:id="@+id/automaticallyAccept"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/cancellationEditText"
+                android:orientation="horizontal"
+                android:layout_marginTop="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Automatically Accept Reservations"
+                    android:textSize="18sp"
+                    android:textColor="@android:color/black"
+                    android:layout_gravity="center_vertical"
+                    android:paddingStart="8dp"/>
+
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/toggleSwitch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            </LinearLayout>
+
+            <CalendarView
+                android:id="@+id/calendarView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/automaticallyAccept"
+                android:layout_marginTop="16dp"
+                android:background="@android:color/transparent"
+                android:layout_marginBottom="16dp"
+                android:layout_centerHorizontal="true" />
+
+            <!-- Add buttons for managing availability and price -->
+            <Button
+                android:id="@+id/addAvailabilityBtn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/calendarView"
+                android:layout_marginTop="16dp"
+                android:text="Add Availability" />
+
+            <Button
+                android:id="@+id/removeAvailabilityBtn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/addAvailabilityBtn"
+                android:layout_marginTop="8dp"
+                android:text="Remove Availability" />
+
+            <TextView
+                android:id="@+id/availabilityTextShow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/removeAvailabilityBtn"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="8dp"
+                android:text="Availaiblity"
+                android:textColor="#2b2c28"
+                android:textSize="14sp"
+                />
+
+            <TextView
+                android:id="@+id/availabilityTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/availabilityTextShow"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="8dp"
+                android:text=""
+                android:textColor="#2b2c28"
+                android:textSize="14sp"
+                />
+
+            <Button
+                android:id="@+id/addNewPriceBtn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/availabilityTextView"
+                android:layout_marginTop="8dp"
+                android:text="Add New Price" />
+
+            <TextView
+                android:id="@+id/newPriceShow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/addNewPriceBtn"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="8dp"
+                android:text="If you wish to set a different price for a specific date range, please select the range and enter the desired price below."
+                android:textColor="#2b2c28"
+                android:textSize="14sp"
+                />
+
+
+            <EditText
+                android:id="@+id/newPriceEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/newPriceShow"
+                android:layout_marginTop="8dp"
+                android:inputType="number"
+                android:hint="Enter price here.."
+                android:background="@android:color/transparent"
+                android:digits="0123456789"
+                android:maxLength="3"
+                android:textSize="14sp"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:gravity="center"
+                />
+
+
+            <Button
+                android:id="@+id/addImageBtn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/newPriceEditText"
+                android:layout_marginTop="16dp"
+                android:text="Add New Accommodation" />
+
+        </RelativeLayout>
+
+    </ScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>

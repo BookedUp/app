@@ -27,4 +27,5 @@
     <string name="action_log_out">Log out</string>
     <string name="open_nav">Open Navigation Drawer</string>
     <string name="close_nav">Close Navigation Drawer</string>
+    <string name="availability_label">Availability: </string>
 </resources>

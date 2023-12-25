@@ -1,6 +1,8 @@
 package com.example.bookedup.fragments.accommodations;
 
 import android.app.DatePickerDialog;
+import android.content.ComponentName;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -48,6 +50,8 @@ public class SearchFilterFragment extends Fragment implements DatePickerDialog.O
     private boolean isStartDateButtonClicked;
     private boolean isEndDateButtonClicked;
 
+    private static int targetLayout;
+
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
@@ -85,6 +89,19 @@ public class SearchFilterFragment extends Fragment implements DatePickerDialog.O
         recyclerViewResults = view.findViewById(R.id.view_acc_results);
         recyclerViewCategory = view.findViewById(R.id.view_category);
         filter = view.findViewById(R.id.filter);
+
+        Intent intent = getActivity().getIntent();
+//        Log.d("HomeFragment", "onCreateView called with targetLayout: " + intent);
+        ComponentName componentName = intent.getComponent();
+//        Log.d("HomeFragment", "onCreateView called with targetLayout: " + componentName.getClassName());
+        if (componentName.getClassName().equals("com.example.bookedup.activities.GuestMainScreen")) {
+//            Log.d("HomeFragment", "Trenutna aktivnost je GuestMainScreen");
+            targetLayout = R.id.frame_layout;
+        } else if (componentName.getClassName().equals("com.example.bookedup.activities.AdministratorMainScreen")){
+            targetLayout = R.id.frame_layoutAdmin;
+        } else if (componentName.getClassName().equals("com.example.bookedup.activities.HostMainScreen")){
+            targetLayout = R.id.frame_layoutHost;
+        }
 
         initRecycleView();
         setFilterClickListener();
@@ -133,7 +150,7 @@ public class SearchFilterFragment extends Fragment implements DatePickerDialog.O
         FragmentTransaction transaction = requireActivity().getSupportFragmentManager().beginTransaction();
 
         // Replace the current fragment with the new fragment
-        transaction.replace(R.id.frame_layout, filterFragment);
+        transaction.replace(targetLayout, filterFragment);
 
         // Add the transaction to the back stack so the user can navigate back
         transaction.addToBackStack(null);

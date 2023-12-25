@@ -34,6 +34,7 @@ import com.example.bookedup.model.Photo;
 import com.example.bookedup.model.enums.AccommodationStatus;
 import com.example.bookedup.model.enums.AccommodationType;
 import com.example.bookedup.model.enums.PriceType;
+//import com.example.bookedup.services.AccommodationService;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.text.DateFormat;
@@ -43,10 +44,17 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+
 public class HomeFragment extends Fragment implements DatePickerDialog.OnDateSetListener {
 
     private RecyclerView recyclerViewPopular, recyclerViewDestinations;
     private RecyclerView.Adapter adapterPopular;
+
+//    private AccommodationService accommodationService;
 
     private ImageView filter;
     private boolean isStartDateButtonClicked;
@@ -147,6 +155,15 @@ public class HomeFragment extends Fragment implements DatePickerDialog.OnDateSet
 
     private void initRecycleView() {
 
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("http://adresa_vaseg_backenda.com/api/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+//        accommodationService = retrofit.create(AccommodationService.class);
+
+
+
         ArrayList<Accommodation> items = new ArrayList<>();
         Photo photo = new Photo();
         List<Photo> photos = new ArrayList<Photo>();
@@ -171,7 +188,32 @@ public class HomeFragment extends Fragment implements DatePickerDialog.OnDateSet
         recyclerViewDestinations.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
         ImageAdapter imageAdapter = new ImageAdapter(destinationList);
         recyclerViewDestinations.setAdapter(imageAdapter);
+
     }
+//
+//    Call<List<Accommodation>> findPopularCall = accommodationService.;
+//    findPopularCall.enqueue(new Callback<List<Accommodation>>() {
+//        @Override
+//        public void onResponse(Call<List<Accommodation>> call, Response<List<Accommodation>> response) {
+//            if (response.isSuccessful()) {
+//                // Uspješan odgovor
+//                List<Accommodation> popularAccommodations = response.body();
+//
+//                // Ažuriranje RecyclerView-a s novim podacima
+//                updateRecyclerView(popularAccommodations);
+//            } else {
+//                // Greška u odgovoru
+//                // Obrada greške
+//            }
+//        }
+//
+//        @Override
+//        public void onFailure(Call<List<Accommodation>> call, Throwable t) {
+//            // Greška u izvršavanju zahtjeva
+//            // Obrada greške
+//        }
+//    });
+
 
 
     @Override

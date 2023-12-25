@@ -35,7 +35,7 @@ public class LoginScreen extends AppCompatActivity {
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent homeIntent = new Intent(LoginScreen.this, GuestMainScreen.class);
+                Intent homeIntent = new Intent(LoginScreen.this, AdministratorMainScreen.class);
                 startActivity(homeIntent);
             }
         });

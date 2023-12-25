@@ -13,10 +13,14 @@ import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.example.bookedup.R;
+//import com.example.bookedup.services.AccommodationService;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.util.Timer;
 import java.util.TimerTask;
+
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class SplashScreen extends AppCompatActivity {
 
@@ -40,6 +44,8 @@ public class SplashScreen extends AppCompatActivity {
                     finish();
                 }
             }, SPLASH_TIME_OUT);
+
+
         } else {
             // Ako korisnik nije povezan na internet, prikazi Toast poruku
             showInternetConnectionMessage();
@@ -73,6 +79,8 @@ public class SplashScreen extends AppCompatActivity {
 //                });
 //        snackbar.show();
     }
+
+
     @Override
     protected void onStart() {
         super.onStart();

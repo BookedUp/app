@@ -1,6 +1,7 @@
 package com.example.bookedup.adapters;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,9 +10,13 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.bookedup.R;
+import com.example.bookedup.fragments.accommodations.UpdateAccommodationFragment;
 import com.example.bookedup.model.Accommodation;
 import com.example.bookedup.model.enums.AccommodationStatus;
 
@@ -22,9 +27,12 @@ public class AccommodationAdapter extends RecyclerView.Adapter<AccommodationAdap
     private List<Accommodation> accommodations;
     private Context context;
 
-    public AccommodationAdapter(List<Accommodation> accommodations, Context context) {
+    private FragmentManager fragmentManager;
+
+    public AccommodationAdapter(List<Accommodation> accommodations, Context context, FragmentManager fragmentManager) {
         this.accommodations = accommodations;
         this.context = context;
+        this.fragmentManager = fragmentManager;
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
@@ -91,11 +99,24 @@ public class AccommodationAdapter extends RecyclerView.Adapter<AccommodationAdap
         holder.btnEditDetails.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Implementacija za View Details
+
+                    // Create a Fragment instance for your details fragment
+                UpdateAccommodationFragment updateAccommodationFragment = new UpdateAccommodationFragment();
+
+                // Begin a fragment transaction
+                FragmentTransaction transaction = fragmentManager.beginTransaction();
+
+                // Replace the current fragment with the details fragment
+                transaction.replace(R.id.frame_layoutHost, updateAccommodationFragment);
+
+                // Optionally, you can add the transaction to the back stack
+                transaction.addToBackStack(null);
+
+                // Commit the transaction
+                transaction.commit();
+
             }
         });
-
-
     }
 
 

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -81,7 +82,8 @@ public class AccommodationListFragment extends Fragment implements TypeAdapter.T
                 Context context = getContext();
                 if (context != null) {
                     // Kreirajte RequestAdapter samo ako requestList i context nisu null
-                    accommodationAdapter = new AccommodationAdapter(accommodationList, context);
+
+                    accommodationAdapter = new AccommodationAdapter(accommodationList, context, getParentFragmentManager());
                     accommodationRecyclerView.setAdapter(accommodationAdapter);
                 } else {
                     Log.d("AccommodationRequestFrag", "getContext() returned null");
