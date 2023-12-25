@@ -18,6 +18,9 @@ import android.widget.ListView;
 
 import com.example.bookedup.R;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * A simple {@link Fragment} subclass.
  * Use the {@link FilterFragment#newInstance} factory method to
@@ -38,6 +41,9 @@ public class FilterFragment extends Fragment {
     private String[] popularFilter = {"Free cancellation", "Spa", "Beach front", "Hot tub/jacuzzi", "Book without credit card", "No prepayment"};
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
+    private List<Integer> selectedPopularFilters = new ArrayList<>();
+
+
 
     private String mParam1;
     private String mParam2;
@@ -92,24 +98,27 @@ public class FilterFragment extends Fragment {
                 if (lastClickedView != null) {
                     lastClickedView.setBackgroundColor(getResources().getColor(android.R.color.white));
                 }
-
-                // Change the background color of the clicked item
                 view.setBackgroundColor(getResources().getColor(R.color.neutral));
 
                 // Update the last clicked view
                 lastClickedView = view;
 
-                // Perform other actions if needed
-                // For example, you might want to handle the selection logic or trigger some other event
             }
         });
 
-        // Adding click listener to the popular filter list
         filtersPopular.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                // Change the background color of the clicked item
-                view.setBackgroundColor(getResources().getColor(R.color.neutral));
+                // Check if the item is already selected
+                if (selectedPopularFilters.contains(position)) {
+                    // Item is already selected, unselect it
+                    view.setBackgroundColor(getResources().getColor(android.R.color.white));
+                    selectedPopularFilters.remove(Integer.valueOf(position));
+                } else {
+                    // Item is not selected, select it
+                    view.setBackgroundColor(getResources().getColor(R.color.neutral));
+                    selectedPopularFilters.add(position);
+                }
 
                 // Perform other actions if needed
                 // For example, you might want to handle the selection logic or trigger some other event

@@ -1,6 +1,10 @@
 package com.example.bookedup.adapters;
 
+import static java.security.AccessController.getContext;
+
+import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,7 +22,9 @@ import com.bumptech.glide.load.resource.bitmap.GranularRoundedCorners;
 import com.example.bookedup.R;
 import com.example.bookedup.fragments.accommodations.DetailsFragment;
 import com.example.bookedup.model.Accommodation;
+import com.example.bookedup.model.Photo;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 public class PopularAdapter extends RecyclerView.Adapter<PopularAdapter.ViewHolder>{
@@ -40,32 +46,43 @@ public class PopularAdapter extends RecyclerView.Adapter<PopularAdapter.ViewHold
 
     @Override
     public void onBindViewHolder(@NonNull PopularAdapter.ViewHolder holder, int position) {
-        holder.titleTxt.setText(items.get(position).getTitle());
-        holder.locationTxt.setText(items.get(position).getLocation());
-        holder.scoreTxt.setText(""+items.get(position).getScore());
-        int drawableResourceId = holder.itemView.getResources().getIdentifier(items.get(position).getPic(), "drawable", holder.itemView.getContext().getPackageName());
-
-        Glide.with(holder.itemView.getContext()).load(drawableResourceId).transform(new CenterCrop(), new GranularRoundedCorners(40, 40, 40 ,40)).into(holder.picImg);
-
+        holder.titleTxt.setText(items.get(position).getName());
+        holder.locationTxt.setText(items.get(position).getAddress().getCountry() + " " + items.get(position).getAddress().getCity());
+        holder.scoreTxt.setText(""+items.get(position).getAverageRating());
+        String imageUrl = items.get(position).getPhotos().get(0).getUrl();
+        Glide.with(holder.itemView.getContext()).load(imageUrl).transform(new CenterCrop(), new GranularRoundedCorners(40, 40, 40, 40)).into(holder.picImg);
 
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Create a new instance of DetailsFragment and set the arguments
-                DetailsFragment detailsFragment = new DetailsFragment();
-                Bundle bundle = new Bundle();
-                bundle.putSerializable("object", items.get(position));
-                detailsFragment.setArguments(bundle);
+                // Get the Context associated with the View
+                Context context = v.getContext();
 
-                // Replace the existing fragment (HomeFragment) with the new fragment (DetailsFragment)
-                FragmentTransaction transaction = ((AppCompatActivity) v.getContext())
-                        .getSupportFragmentManager().beginTransaction();
-                transaction.replace(R.id.frame_layout, detailsFragment);
-                transaction.addToBackStack(null);  // Optional: Adds the transaction to the back stack
-                transaction.commit();
+                // Ensure the context is an instance of AppCompatActivity and is not null
+                if (context instanceof AppCompatActivity) {
+                    AppCompatActivity activity = (AppCompatActivity) context;
+
+                    // Create a new instance of DetailsFragment
+                    DetailsFragment detailsFragment = new DetailsFragment();
+
+                    // Pass the selected item to the fragment
+                    detailsFragment.setAccommodation(items.get(position));
+
+                    // Replace the existing fragment (HomeFragment) with the new fragment (DetailsFragment)
+                    FragmentTransaction transaction = activity.getSupportFragmentManager().beginTransaction();
+                    transaction.replace(R.id.frame_layout, detailsFragment);
+                    transaction.addToBackStack(null);  // Optional: Adds the transaction to the back stack
+                    transaction.commit();
+                } else {
+                    Log.e("PopularAdapter", "Context is not an instance of AppCompatActivity");
+                }
             }
         });
+
+
+
+
 
     }
 

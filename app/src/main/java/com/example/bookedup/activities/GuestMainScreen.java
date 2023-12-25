@@ -30,8 +30,8 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.example.bookedup.R;
-import com.example.bookedup.adapters.CategoryAdapter;
-import com.example.bookedup.adapters.PopularAdapter;
+//import com.example.bookedup.adapters.CategoryAdapter;
+//import com.example.bookedup.adapters.PopularAdapter;
 import com.example.bookedup.fragments.about.AboutUsFragment;
 import com.example.bookedup.fragments.account.AccountFragment;
 import com.example.bookedup.fragments.home.HomeFragment;
@@ -62,6 +62,7 @@ public class GuestMainScreen extends AppCompatActivity implements NavigationView
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.d("GuestMainScreen", "USAAAAAAAAAAAAAAAAAAAAO");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_guest_main_screen);
 
@@ -89,34 +90,37 @@ public class GuestMainScreen extends AppCompatActivity implements NavigationView
 
 
         bottomNavigationView.setBackground(null);
-       bottomNavigationView.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
-           @Override
-           public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-               int itemId = item.getItemId();
-               if (itemId == R.id.nav_home){
-                   openFragment(new HomeFragment());
-                   return true;
-               }
-               else if(itemId == R.id.nav_reservations) {
-                   Toast.makeText(GuestMainScreen.this,"Reservations clicked",Toast.LENGTH_SHORT).show();
-                   //openFragment(new AccountFragment());
-                   return true;
-               }
-               else if(itemId == R.id.nav_favorites){
-                   Toast.makeText(GuestMainScreen.this,"Favorites clicked",Toast.LENGTH_SHORT).show();
-                   //openFragment(new AccountFragment());
-                   return true;
-               }
-               else if(itemId == R.id.nav_account){
-                   openFragment(new AccountFragment());
-                   return true;
-               }
-               return false;
-           }
-       });
+        Log.d("GuestMainScreen", "TUUU JEEE 1");
+//       bottomNavigationView.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
+//           @Override
+//           public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+//               Log.d("GuestMainScreen", "TUUU JEEE 2");
+//
+//               int itemId = item.getItemId();
+//               if (itemId == R.id.nav_home){
+//                   Log.d("GuestMainScreen", "ISPREDDD HOME FRAGMEEEENT JEEE");
+//                   openFragment(new HomeFragment());
+//                   return true;
+//               }
+//               else if(itemId == R.id.nav_reservations) {
+//                   Toast.makeText(GuestMainScreen.this,"Reservations clicked",Toast.LENGTH_SHORT).show();
+//                   //openFragment(new AccountFragment());
+//                   return true;
+//               }
+//               else if(itemId == R.id.nav_favorites){
+//                   Toast.makeText(GuestMainScreen.this,"Favorites clicked",Toast.LENGTH_SHORT).show();
+//                   //openFragment(new AccountFragment());
+//                   return true;
+//               }
+//               else if(itemId == R.id.nav_account){
+//                   openFragment(new AccountFragment());
+//                   return true;
+//               }
+//               return false;
+//           }
+//       });
 
-
-
+        Log.d("GuestMainScreen", "TUUU JEEE 3");
        fragmentManager = getSupportFragmentManager();
        openFragment(new HomeFragment());
 

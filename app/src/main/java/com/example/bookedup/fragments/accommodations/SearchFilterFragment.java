@@ -1,7 +1,6 @@
-package com.example.bookedup.fragments.home;
+package com.example.bookedup.fragments.accommodations;
 
 import android.app.DatePickerDialog;
-import android.media.Image;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -19,10 +18,10 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.bookedup.R;
 import com.example.bookedup.adapters.ImageAdapter;
-import com.example.bookedup.adapters.PopularAdapter;
+//import com.example.bookedup.adapters.PopularAdapter;
 import com.example.bookedup.adapters.CategoryAdapter;
+import com.example.bookedup.adapters.SearchAccommodationAdapter;
 import com.example.bookedup.fragments.accommodations.FilterFragment;
-import com.example.bookedup.fragments.accommodations.SearchFilterFragment;
 import com.example.bookedup.fragments.calendar.CalendarFragment;
 import com.example.bookedup.model.Accommodation;
 import com.example.bookedup.model.Address;
@@ -32,7 +31,6 @@ import com.example.bookedup.model.Photo;
 import com.example.bookedup.model.enums.AccommodationStatus;
 import com.example.bookedup.model.enums.AccommodationType;
 import com.example.bookedup.model.enums.PriceType;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -41,10 +39,10 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
-public class HomeFragment extends Fragment implements DatePickerDialog.OnDateSetListener {
+public class SearchFilterFragment extends Fragment implements DatePickerDialog.OnDateSetListener {
 
-    private RecyclerView recyclerViewPopular, recyclerViewDestinations;
-    private RecyclerView.Adapter adapterPopular;
+    private RecyclerView recyclerViewCategory, recyclerViewResults;
+    private RecyclerView.Adapter adapterResults, adapterCategory;
 
     private ImageView filter;
     private boolean isStartDateButtonClicked;
@@ -57,12 +55,12 @@ public class HomeFragment extends Fragment implements DatePickerDialog.OnDateSet
     private String mParam1;
     private String mParam2;
 
-    public HomeFragment() {
+    public SearchFilterFragment() {
         // Required empty public constructor
     }
 
-    public static HomeFragment newInstance(String param1, String param2) {
-        HomeFragment fragment = new HomeFragment();
+    public static SearchFilterFragment newInstance(String param1, String param2) {
+        SearchFilterFragment fragment = new SearchFilterFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
@@ -82,13 +80,14 @@ public class HomeFragment extends Fragment implements DatePickerDialog.OnDateSet
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        Log.d("HomeFragment", "USAAAAAAO U HOMEEE ");
-        View view = inflater.inflate(R.layout.fragment_home, container, false);
+        View view = inflater.inflate(R.layout.fragment_search_filter, container, false);
 
-        recyclerViewPopular = view.findViewById(R.id.view_pop);
-        recyclerViewDestinations = view.findViewById(R.id.view_destinations);
+        recyclerViewResults = view.findViewById(R.id.view_acc_results);
+        recyclerViewCategory = view.findViewById(R.id.view_category);
+        filter = view.findViewById(R.id.filter);
 
         initRecycleView();
+        setFilterClickListener();
 
         ImageView startDateBtn =  view.findViewById(R.id.startDate);
         ImageView endDateBtn =  view.findViewById(R.id.endDate);
@@ -96,7 +95,7 @@ public class HomeFragment extends Fragment implements DatePickerDialog.OnDateSet
             @Override
             public void onClick(View v) {
                 DialogFragment datePicker = new CalendarFragment();
-                datePicker.setTargetFragment(HomeFragment.this, 0);
+                datePicker.setTargetFragment(SearchFilterFragment.this, 0);
                 datePicker.show(requireActivity().getSupportFragmentManager(), "date picker");
                 isStartDateButtonClicked = true;
                 isEndDateButtonClicked = false;
@@ -107,35 +106,36 @@ public class HomeFragment extends Fragment implements DatePickerDialog.OnDateSet
             @Override
             public void onClick(View v) {
                 DialogFragment datePicker = new CalendarFragment();
-                datePicker.setTargetFragment(HomeFragment.this, 0);
+                datePicker.setTargetFragment(SearchFilterFragment.this, 0);
                 datePicker.show(requireActivity().getSupportFragmentManager(), "date picker");
                 isEndDateButtonClicked = true;
                 isStartDateButtonClicked = false;
             }
         });
 
-        FloatingActionButton searchButton = view.findViewById(R.id.searchButtonHome);
-        searchButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                openSearchFilterFragment();
-            }
-        });
-
         return view;
     }
 
-    private void openSearchFilterFragment() {
-        // Create a new instance of SearchFilterFragment
-        SearchFilterFragment searchFilterFragment = new SearchFilterFragment();
+    private void setFilterClickListener() {
+        filter.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openFilterFragment();
+            }
+        });
+    }
+
+    private void openFilterFragment() {
+        // Create a new instance of FilterFragment
+        FilterFragment filterFragment = FilterFragment.newInstance(null, null);
 
         // Begin the transaction
         FragmentTransaction transaction = requireActivity().getSupportFragmentManager().beginTransaction();
 
         // Replace the current fragment with the new fragment
-        transaction.replace(R.id.frame_layout, searchFilterFragment);
+        transaction.replace(R.id.frame_layout, filterFragment);
 
-        // Add the transaction to the back stack so the user can navigate back if needed
+        // Add the transaction to the back stack so the user can navigate back
         transaction.addToBackStack(null);
 
         // Commit the transaction
@@ -143,39 +143,43 @@ public class HomeFragment extends Fragment implements DatePickerDialog.OnDateSet
     }
 
     private void initRecycleView() {
-
-
         ArrayList<Accommodation> items = new ArrayList<>();
+
+        Address address = new Address(1L, "Italy", "Paris", "1523", "John Smith 77", true, 45.125, 82.225);
         Photo photo = new Photo();
         List<Photo> photos = new ArrayList<Photo>();
         photos.add(photo);
-        Address address = new Address(1L, "Italy", "Paris", "1523", "John Smith 77", true, 45.125, 82.225);
 
-        items.add(new Accommodation("Lakeside Motel", photos, address, 5));
-        items.add(new Accommodation("Lakeside Motel", photos, address, 5));
-        items.add(new Accommodation("Lakeside Hotel", photos, address, 5));
 
-        recyclerViewPopular.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
-        Log.d("HomeFragment", "ISPREDDDDDDDDDDDDDDDD ");
-        adapterPopular = new PopularAdapter(items);
-        recyclerViewPopular.setAdapter(adapterPopular);
+        items.add(new Accommodation("Lakeside Motel", photos, address, 5.0, AccommodationType.Apartment, 500, PriceType.PerGuest));
+        items.add(new Accommodation("Lakeside Motel", photos, address, 5.0, AccommodationType.Apartment, 500, PriceType.PerGuest));
+        items.add(new Accommodation("Lakeside Motel", photos, address, 5.0, AccommodationType.Apartment, 500, PriceType.PerGuest));
 
-        ArrayList<Destination> destinationList = new ArrayList<>();
-        destinationList.add(new Destination(R.drawable.australia, "Australia"));
-        destinationList.add(new Destination(R.drawable.japan, "Japan"));
-        destinationList.add(new Destination(R.drawable.new_zeland, "New Zealand"));
-        destinationList.add(new Destination(R.drawable.dubai, "Dubai"));
 
-        recyclerViewDestinations.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
-        ImageAdapter imageAdapter = new ImageAdapter(destinationList);
-        recyclerViewDestinations.setAdapter(imageAdapter);
+
+
+        recyclerViewResults.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false));
+        adapterResults = new SearchAccommodationAdapter(items);
+        recyclerViewResults.setAdapter(adapterResults);
+
+
+        ArrayList<Category> categoryList = new ArrayList<>();
+        categoryList.add(new Category("Hotel", "img_hotel"));
+        categoryList.add(new Category("Hostel", "img_hostel"));
+        categoryList.add(new Category("Apartment", "img_apartment"));
+        categoryList.add(new Category("Resort", "img_resort"));
+        categoryList.add(new Category("Villa", "img_villa"));
+
+        recyclerViewCategory.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
+        adapterCategory = new CategoryAdapter(categoryList);
+        recyclerViewCategory.setAdapter(adapterCategory);
     }
 
 
     @Override
     public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
         try {
-            Log.d("HomeFragment", "onDateSet called");
+
             Calendar c = Calendar.getInstance();
             c.set(Calendar.YEAR, year);
             c.set(Calendar.MONTH, month);

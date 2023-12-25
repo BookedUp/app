@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -36,7 +37,8 @@ public class LoginScreen extends AppCompatActivity {
             public void onClick(View v) {
                 // Ovde dodajte kod za proveru unetih podataka i eventualni prelazak na HomeScreen
                 // Primer: Kada su podaci ispravni, prelazi se na HomeScreen
-                Intent homeIntent = new Intent(LoginScreen.this, HostMainScreen.class);
+                Log.d("LoginScreen", "TREEEEEBA DDA UDJEE U GUESTMAINSCREEEEEEEEEN");
+                Intent homeIntent = new Intent(LoginScreen.this, GuestMainScreen.class);
                 startActivity(homeIntent);
             }
         });
