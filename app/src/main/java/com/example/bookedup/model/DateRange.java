@@ -20,10 +20,10 @@ public class DateRange {
     }
 
     public DateRange( Date startDate, Date endDate) {
+
         this.startDate = startDate;
         this.endDate = endDate;
     }
-
 
     public Long getId() {
         return id;

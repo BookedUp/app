@@ -1,9 +1,20 @@
 package com.example.bookedup.model.enums;
 
 public enum AccommodationType {
-    Hotel,
-    Hostel,
-    Villa,
-    Apartment,
-    Resort,
+
+    HOTEL("Hotel"),
+    HOSTEL("Hostel"),
+    VILLA("Villa"),
+    RESORT("Resort"),
+    APARTMENT("Apartment");
+
+    private final String status;
+
+    AccommodationType(String status) {
+        this.status = status;
+    }
+
+    public String getAccommodationType() {
+        return status;
+    }
 }

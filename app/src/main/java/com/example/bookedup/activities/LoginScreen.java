@@ -9,6 +9,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.bookedup.R;
 
@@ -28,15 +29,35 @@ public class LoginScreen extends AppCompatActivity {
 
         // Inicijalizacija UI elemenata
         loginButton = findViewById(R.id.login_loginButton);
-        registerTextView = findViewById(R.id.login_registerTextView); // Dodali smo TextView za "Don't have an account? Register"
-        forgotPasswordTextView = findViewById(R.id.login_forgotPasswordTextView); // Dodali smo TextView za "Don't have an account? Register"
+        registerTextView = findViewById(R.id.login_registerTextView);
+        forgotPasswordTextView = findViewById(R.id.login_forgotPasswordTextView);
+
+        // Initialize username and password EditText views
+        username = findViewById(R.id.login_username); // replace with the actual ID from your layout
+        password = findViewById(R.id.login_password); // replace with the actual ID from your layout
 
         // Postavljanje klika na dugme za potvrdu unosa
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent homeIntent = new Intent(LoginScreen.this, AdministratorMainScreen.class);
-                startActivity(homeIntent);
+
+                String enteredUsername = username.getText().toString().trim();
+                String enteredPassword = password.getText().toString().trim();
+
+                // Check the credentials and open the appropriate activity
+                if (enteredUsername.equals("jovan.jovanovic@example.com") && enteredPassword.equals("jovanpass")) {
+                    Intent adminIntent = new Intent(LoginScreen.this, AdministratorMainScreen.class);
+                    startActivity(adminIntent);
+                } else if (enteredUsername.equals("ana.anic@example.com") && enteredPassword.equals("anapass")) {
+                    Intent hostIntent = new Intent(LoginScreen.this, HostMainScreen.class);
+                    startActivity(hostIntent);
+                } else if (enteredUsername.equals("jovana.jovanovic@example.com") && enteredPassword.equals("jovanapass")) {
+                    Intent guestIntent = new Intent(LoginScreen.this, GuestMainScreen.class);
+                    startActivity(guestIntent);
+                } else {
+                    // If credentials don't match, show a Toast
+                    Toast.makeText(LoginScreen.this, "Bad credentials", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 

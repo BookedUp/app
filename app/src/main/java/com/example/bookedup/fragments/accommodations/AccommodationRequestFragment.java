@@ -15,28 +15,24 @@ import com.example.bookedup.R;
 import com.example.bookedup.adapters.RequestAdapter;
 import com.example.bookedup.adapters.TypeAdapter;
 import com.example.bookedup.model.Accommodation;
-import com.example.bookedup.model.Address;
-import com.example.bookedup.model.DateRange;
-import com.example.bookedup.model.Host;
-import com.example.bookedup.model.Photo;
 import com.example.bookedup.model.enums.AccommodationStatus;
-import com.example.bookedup.model.enums.AccommodationType;
-import com.example.bookedup.model.enums.PriceType;
+import com.example.bookedup.utils.DataGenerator;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 public class AccommodationRequestFragment extends Fragment implements TypeAdapter.TypeSelectionListener {
-
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
 
     private RecyclerView typeRecyclerView;
     private RecyclerView requestRecyclerView;
 
     private TypeAdapter typeAdapter;
     private RequestAdapter requestAdapter;
+    private static final String ARG_PARAM1 = "param1";
+    private static final String ARG_PARAM2 = "param2";
+
+
+    private List<Accommodation> allAccommodations;  // Dodajte varijablu za čuvanje svih smještaja
 
     public AccommodationRequestFragment() {
         // Required empty public constructor
@@ -54,6 +50,9 @@ public class AccommodationRequestFragment extends Fragment implements TypeAdapte
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Inicijalizujte sve smještaje kada se fragment kreira
+        allAccommodations = DataGenerator.generateAllAccommodationsRequests();
     }
 
     @Override
@@ -78,6 +77,7 @@ public class AccommodationRequestFragment extends Fragment implements TypeAdapte
                 // Obezbedite da getContext() ne vraća null
                 Context context = getContext();
                 if (context != null) {
+                    Log.d("AccommodationRequestFragment", "USAAAAAAAAAAAAAO");
                     // Kreirajte RequestAdapter samo ako requestList i context nisu null
                     requestAdapter = new RequestAdapter(requestList, context);
                     requestRecyclerView.setAdapter(requestAdapter);
@@ -104,29 +104,8 @@ public class AccommodationRequestFragment extends Fragment implements TypeAdapte
     }
 
     private List<Accommodation> getRequestList() {
-        List<Accommodation> accommodations = new ArrayList<>();
-
-
-        Accommodation accommodation = new Accommodation();
-        accommodation.setName("pls");
-        accommodation.setAverageRating(3.5);
-        accommodation.setStatus(AccommodationStatus.ACTIVE);
-
-        Address address = new Address(1L,"Drzva", "city", "21424", "sajdas", true, 23.9,48.0);
-        accommodation.setAddress(address);
-
-        accommodation.setPrice(100.0);
-        accommodation.setPriceType(PriceType.PER_GUEST);
-
-        Photo photo = new Photo(1L,"url", "", true);
-
-        List<Photo>photos = new ArrayList<>();
-        photos.add(photo);
-
-        accommodation.setPhotos(photos);
-        accommodations.add(accommodation);
-
-        return accommodations;
+        Log.d("AccommodationRequestFragment", "usao");
+        return allAccommodations;  // Vraća sve smještaje
     }
 
     @Override
@@ -147,6 +126,28 @@ public class AccommodationRequestFragment extends Fragment implements TypeAdapte
         // Ovdje možete dohvatiti nove podatke prema odabranom tipu
         // Vratite ažuriranu listu smještaja
         // Primjerice, dohvatite nove podatke iz baze podataka ili web servisa
-        return new ArrayList<>(); // Vratite ažuriranu listu
+        List<Accommodation> filteredList = new ArrayList<>();
+
+        switch (selectedType) {
+            case "All Accommodations":
+                filteredList.addAll(allAccommodations);  // Prikazi sve smještaje
+                break;
+            case "New":
+                for (Accommodation accommodation : allAccommodations) {
+                    if (accommodation.getStatus() == AccommodationStatus.CREATED) {
+                        filteredList.add(accommodation);
+                    }
+                }
+                break;
+            case "Changed":
+                for (Accommodation accommodation : allAccommodations) {
+                    if (accommodation.getStatus() == AccommodationStatus.CHANGED) {
+                        filteredList.add(accommodation);
+                    }
+                }
+                break;
+        }
+
+        return filteredList;
     }
 }

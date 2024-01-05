@@ -3,14 +3,13 @@ package com.example.bookedup.fragments.home;
 import android.app.DatePickerDialog;
 import android.content.ComponentName;
 import android.content.Intent;
-import android.media.Image;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.DatePicker;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -20,78 +19,72 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.bookedup.R;
-import com.example.bookedup.adapters.ImageAdapter;
+import com.example.bookedup.adapters.PopularDestinationAdapter;
 import com.example.bookedup.adapters.PopularAdapter;
-import com.example.bookedup.adapters.CategoryAdapter;
-import com.example.bookedup.fragments.accommodations.FilterFragment;
+import com.example.bookedup.clients.ClientUtils;
 import com.example.bookedup.fragments.accommodations.SearchFilterFragment;
 import com.example.bookedup.fragments.calendar.CalendarFragment;
 import com.example.bookedup.model.Accommodation;
-import com.example.bookedup.model.Address;
-import com.example.bookedup.model.Category;
 import com.example.bookedup.model.Destination;
-import com.example.bookedup.model.Photo;
-import com.example.bookedup.model.enums.AccommodationStatus;
-import com.example.bookedup.model.enums.AccommodationType;
-import com.example.bookedup.model.enums.PriceType;
-//import com.example.bookedup.services.AccommodationService;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.gson.Gson;
 
-import java.text.DateFormat;
+import java.io.IOException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
 import retrofit2.Call;
 import retrofit2.Callback;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.Response;
 
 public class HomeFragment extends Fragment implements DatePickerDialog.OnDateSetListener {
 
     private RecyclerView recyclerViewPopular, recyclerViewDestinations;
     private RecyclerView.Adapter adapterPopular;
 
-//    private AccommodationService accommodationService;
+    private ArrayList<Accommodation> mostPopularAccommodations;
 
-    private ImageView filter;
+    private ArrayList<Accommodation> results;
     private boolean isStartDateButtonClicked;
     private boolean isEndDateButtonClicked;
-
-    private static final String ARG_TARGET = "arg_target";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private Integer mParam1;
-    private String mParam2;
-
     private static int targetLayout;
 
-    public HomeFragment() {
-        // Required empty public constructor
-    }
+    private EditText whereToGoTxt, guestsNumberTxt;
+
+    private TextView checkInTxt, checkOutTxt;
+
+    private Integer guestsNumber;
+
+
+    public HomeFragment() {}
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
         Intent intent = getActivity().getIntent();
-//        Log.d("HomeFragment", "onCreateView called with targetLayout: " + intent);
         ComponentName componentName = intent.getComponent();
-//        Log.d("HomeFragment", "onCreateView called with targetLayout: " + componentName.getClassName());
         if (componentName.getClassName().equals("com.example.bookedup.activities.GuestMainScreen")) {
-//            Log.d("HomeFragment", "Trenutna aktivnost je GuestMainScreen");
             targetLayout = R.id.frame_layout;
         } else if (componentName.getClassName().equals("com.example.bookedup.activities.AdministratorMainScreen")){
             targetLayout = R.id.frame_layoutAdmin;
         } else if (componentName.getClassName().equals("com.example.bookedup.activities.HostMainScreen")){
             targetLayout = R.id.frame_layoutHost;
         }
+        FloatingActionButton searchButton = view.findViewById(R.id.searchButtonHome);
 
         recyclerViewPopular = view.findViewById(R.id.view_pop);
         recyclerViewDestinations = view.findViewById(R.id.view_destinations);
+
+        whereToGoTxt = view.findViewById(R.id.location);
+        checkInTxt = view.findViewById(R.id.checkInText);
+        checkOutTxt = view.findViewById(R.id.checkOutText);
+        guestsNumberTxt = view.findViewById(R.id.guestsNumber);
         initRecycleView();
 
         ImageView startDateBtn =  view.findViewById(R.id.startDate);
@@ -117,67 +110,115 @@ public class HomeFragment extends Fragment implements DatePickerDialog.OnDateSet
                 isStartDateButtonClicked = false;
             }
         });
-
-        FloatingActionButton searchButton = view.findViewById(R.id.searchButtonHome);
         searchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d("HomeFragment", "Kliknuo");
-                openSearchFilterFragment();
+                openSearchFilterFragment(whereToGoTxt, guestsNumberTxt, checkInTxt, checkOutTxt);
             }
         });
-
-
-
 
         return view;
     }
 
-    public void setTargetLayout(int target){
-        this.targetLayout = target;
-    }
+    private void openSearchFilterFragment(EditText whereToGoTxt, EditText guestsNumberTxt, TextView checkInTxt, TextView checkOutTxt) {
 
-    private void openSearchFilterFragment() {
-        SearchFilterFragment searchFilterFragment = new SearchFilterFragment();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        Date startDate = new Date();
+        Date endDate = new Date();
 
-        // Begin the transaction
-        FragmentTransaction transaction = requireActivity().getSupportFragmentManager().beginTransaction();
 
-        // Replace the current fragment with the new fragment
-        transaction.replace(targetLayout, searchFilterFragment);
+        try {
+            startDate = dateFormat.parse(checkInTxt.getText().toString());
+            startDate.setHours(13);
 
-        // Add the transaction to the back stack so the user can navigate back if needed
-        transaction.addToBackStack(null);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
 
-        // Commit the transaction
-        transaction.commit();
+        try {
+            endDate = dateFormat.parse(checkOutTxt.getText().toString());
+            endDate.setHours(13);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+
+        List<Object> amenities = new ArrayList<>();
+        if (!guestsNumberTxt.getText().toString().isEmpty()){
+            guestsNumber = Integer.parseInt(guestsNumberTxt.getText().toString());
+        } else {
+            guestsNumber = 0;
+        }
+        Log.d("HomeFragment", "StartDate " + startDate);
+        Log.d("HomeFragment", "EndDate " + endDate);
+        Log.d("HomeFragment", "Location " + whereToGoTxt.getText().toString());
+        Log.d("HomeFragment", "GuestsNumber " + guestsNumber);
+
+        Call<ArrayList<Accommodation>> searchedResults = ClientUtils.accommodationService.searchAccommodations(
+                whereToGoTxt.getText().toString(),
+                guestsNumber,
+                dateFormat.format(startDate),
+                dateFormat.format(endDate),
+                amenities,
+                0.0,
+                0.0,
+                0.0,
+                "null",
+                ""
+        );
+
+        Log.d("HomeFragment", "Prosaoooooo" + searchedResults);
+
+
+        searchedResults.enqueue(new Callback<ArrayList<Accommodation>>() {
+            @Override
+            public void onResponse(Call<ArrayList<Accommodation>> call, Response<ArrayList<Accommodation>> response) {
+                if (response.isSuccessful()) {
+                    if (response.body() != null) {
+                        Log.d("HomeFragment", "Successful response: " + response.body());
+                        results = response.body();
+                        for (Accommodation accommodation : results) {
+                            Log.d("HomeFragment", "Accommodation: " + accommodation);
+                        }
+
+                        SearchFilterFragment searchFilterFragment = new SearchFilterFragment();
+
+                        Bundle bundle = new Bundle();
+                        bundle.putString("whereToGo", whereToGoTxt.getText().toString());
+                        bundle.putInt("guestsNumber", guestsNumber);
+                        bundle.putString("checkIn", checkInTxt.getText().toString());
+                        bundle.putString("checkOut", checkOutTxt.getText().toString());
+                        String resultsJson = new Gson().toJson(results);
+                        bundle.putString("resultsJson", resultsJson);
+
+                        searchFilterFragment.setArguments(bundle);
+
+                        FragmentTransaction transaction = requireActivity().getSupportFragmentManager().beginTransaction();
+                        transaction.replace(targetLayout, searchFilterFragment);
+                        transaction.addToBackStack(null);
+                        transaction.commit();
+                    } else {
+                        Log.d("HomeFragment", "Response body is null");
+                    }
+                }  else {
+                    // Log error details
+                    Log.d("HomeFragment", "Unsuccessful response: " + response.code());
+                    try {
+                        Log.d("HomeFragment", "Error Body: " + response.errorBody().string());
+                    } catch (IOException e) {
+                        Log.d("HomeFragment", "GRESKA response: " + response.body());
+                        e.printStackTrace();
+                    }
+                }
+            }
+            @Override
+            public void onFailure(Call<ArrayList<Accommodation>> call, Throwable t) {
+                Log.d("HomeFragment", t.getMessage() != null?t.getMessage():"error");
+            }
+        });
     }
 
     private void initRecycleView() {
-
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("http://adresa_vaseg_backenda.com/api/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-
-//        accommodationService = retrofit.create(AccommodationService.class);
-
-
-
-        ArrayList<Accommodation> items = new ArrayList<>();
-        Photo photo = new Photo();
-        List<Photo> photos = new ArrayList<Photo>();
-        photos.add(photo);
-        Address address = new Address(1L, "Italy", "Paris", "1523", "John Smith 77", true, 45.125, 82.225);
-
-        items.add(new Accommodation("Lakeside Motel", photos, address, 5));
-        items.add(new Accommodation("Lakeside Motel", photos, address, 5));
-        items.add(new Accommodation("Lakeside Hotel", photos, address, 5));
-
-        recyclerViewPopular.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
-        Log.d("HomeFragment", "ISPREDDDDDDDDDDDDDDDD ");
-        adapterPopular = new PopularAdapter(items, targetLayout);
-        recyclerViewPopular.setAdapter(adapterPopular);
 
         ArrayList<Destination> destinationList = new ArrayList<>();
         destinationList.add(new Destination(R.drawable.australia, "Australia"));
@@ -186,35 +227,43 @@ public class HomeFragment extends Fragment implements DatePickerDialog.OnDateSet
         destinationList.add(new Destination(R.drawable.dubai, "Dubai"));
 
         recyclerViewDestinations.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
-        ImageAdapter imageAdapter = new ImageAdapter(destinationList);
+        PopularDestinationAdapter imageAdapter = new PopularDestinationAdapter(destinationList, targetLayout);
         recyclerViewDestinations.setAdapter(imageAdapter);
 
+        Call<ArrayList<Accommodation>> mostPopular = ClientUtils.accommodationService.getMostPopular();
+        mostPopular.enqueue(new Callback<ArrayList<Accommodation>>() {
+            @Override
+            public void onResponse(Call<ArrayList<Accommodation>> call, Response<ArrayList<Accommodation>> response) {
+                if (response.isSuccessful()) {
+                    if (response.body() != null) {
+                        Log.d("HomeFragment", "Successful response: " + response.body());
+                        mostPopularAccommodations = response.body();
+                        recyclerViewPopular.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
+                        adapterPopular = new PopularAdapter(HomeFragment.this, mostPopularAccommodations, targetLayout);
+                        recyclerViewPopular.setAdapter(adapterPopular);
+                        adapterPopular.notifyDataSetChanged();
+                    } else {
+                        Log.d("HomeFragment", "Response body is null");
+                    }
+                }  else {
+                // Log error details
+                    Log.d("HomeFragment", "Unsuccessful response: " + response.code());
+                    try {
+                        Log.d("HomeFragment", "Error Body: " + response.errorBody().string());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+            }
+
+            @Override
+            public void onFailure(Call<ArrayList<Accommodation>> call, Throwable t) {
+                Log.d("HomeFragment", t.getMessage() != null?t.getMessage():"error");
+            }
+        });
+
     }
-//
-//    Call<List<Accommodation>> findPopularCall = accommodationService.;
-//    findPopularCall.enqueue(new Callback<List<Accommodation>>() {
-//        @Override
-//        public void onResponse(Call<List<Accommodation>> call, Response<List<Accommodation>> response) {
-//            if (response.isSuccessful()) {
-//                // Uspješan odgovor
-//                List<Accommodation> popularAccommodations = response.body();
-//
-//                // Ažuriranje RecyclerView-a s novim podacima
-//                updateRecyclerView(popularAccommodations);
-//            } else {
-//                // Greška u odgovoru
-//                // Obrada greške
-//            }
-//        }
-//
-//        @Override
-//        public void onFailure(Call<List<Accommodation>> call, Throwable t) {
-//            // Greška u izvršavanju zahtjeva
-//            // Obrada greške
-//        }
-//    });
-
-
 
     @Override
     public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
@@ -224,21 +273,12 @@ public class HomeFragment extends Fragment implements DatePickerDialog.OnDateSet
             c.set(Calendar.YEAR, year);
             c.set(Calendar.MONTH, month);
             c.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-
-            // Format the date as "year-month-day"
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
             String formattedDate = dateFormat.format(c.getTime());
-
-            // Determine if it's the start date or end date
-            TextView textView;
             if (isStartDateButtonClicked) {
-                textView = getView().findViewById(R.id.checkInText);
+                checkInTxt.setText(formattedDate);
             } else {
-                textView = getView().findViewById(R.id.checkOutText);
-            }
-
-            if (textView != null) {
-                textView.setText(formattedDate);
+                checkOutTxt.setText(formattedDate);
             }
         } catch (Exception e) {
             Log.e("HomeFragment", "Error in onDateSet", e);

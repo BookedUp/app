@@ -8,7 +8,7 @@ import com.example.bookedup.model.enums.PriceType;
 import java.io.Serializable;
 import java.util.List;
 
-public class Accommodation implements Serializable {
+public class Accommodation {
     private Long id;
     private String name;
     private String description;
@@ -201,6 +201,32 @@ public class Accommodation implements Serializable {
     public Accommodation(){
 
     }
+
+    public Accommodation(String name, String description, Address address, List<Amenity> amenities,
+                         List<Photo> photos, int minGuests, int maxGuests, AccommodationType type,
+                         List<DateRange> availability, PriceType priceType, List<PriceChange> priceChanges,
+                         boolean automaticReservationAcceptance, AccommodationStatus status, Host host,
+                         double price, Double totalPrice, Double averageRating, int cancellationDeadline) {
+        this.name = name;
+        this.description = description;
+        this.address = address;
+        this.amenities = amenities;
+        this.photos = photos;
+        this.minGuests = minGuests;
+        this.maxGuests = maxGuests;
+        this.type = type;
+        this.availability = availability;
+        this.priceType = priceType;
+        this.priceChanges = priceChanges;
+        this.automaticReservationAcceptance = automaticReservationAcceptance;
+        this.status = status;
+        this.host = host;
+        this.price = price;
+        this.totalPrice = totalPrice;
+        this.averageRating = averageRating;
+        this.cancellationDeadline = cancellationDeadline;
+    }
+
 
     public Accommodation(String name, List<Photo> photos, Address address, double averageRating) {
         this.name = name;

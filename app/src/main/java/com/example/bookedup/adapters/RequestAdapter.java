@@ -1,6 +1,7 @@
 package com.example.bookedup.adapters;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -58,28 +59,50 @@ public class RequestAdapter extends RecyclerView.Adapter<RequestAdapter.ViewHold
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        Accommodation currentRequest = accommodationRequests.get(position);
+        Log.d("RequestAdapter", "USAAAAAAAAAAAAAO");
+        if (position >= 0 && position < accommodationRequests.size()) {
+            Accommodation currentRequest = accommodationRequests.get(position);
 
-        holder.title.setText(currentRequest.getName());
-        holder.averageRating.setText(String.valueOf(currentRequest.getAverageRating()));
+            holder.title.setText(currentRequest.getName());
+            holder.averageRating.setText(String.valueOf(currentRequest.getAverageRating()));
+            Log.d("RequestAdapter", "USAAAAAAAAAAAAAO2");
 
-        AccommodationStatus status = currentRequest.getStatus();
-        if (status != null) {
-            holder.status.setText(status.getStatus());
+
+            AccommodationStatus status = currentRequest.getStatus();
+            if (status != null) {
+                holder.status.setText(status.getStatus());
+            } else {
+                // Postavite neku podrazumevanu vrednost ili obradite ovu situaciju kako vam odgovara
+                holder.status.setText("N/A");
+            }
+
+            Log.d("RequestAdapter", "USAAAAAAAAAAAAAO2");
+
+
+            holder.address.setText(currentRequest.getAddress().getStreetAndNumber() + ", " +
+                    currentRequest.getAddress().getCity() + ", " +
+                    currentRequest.getAddress().getCountry());
+            holder.price.setText(String.valueOf(currentRequest.getPrice()) + "$");
+            holder.priceType.setText("/" +currentRequest.getPriceType().getPriceType());
+
+            Log.d("RequestAdapter", "USAAAAAAAAAAAAAO3");
+
+
+            // Postavljanje slike
+            int drawableResourceId = context.getResources().getIdentifier("", "drawable", context.getPackageName());
+            holder.accommodationImage.setImageResource(drawableResourceId);
+
+            Log.d("RequestAdapter", "USAAAAAAAAAAAAAO3");
+
+            // Your code handling the 'currentRequest'
         } else {
-            // Postavite neku podrazumevanu vrednost ili obradite ovu situaciju kako vam odgovara
-            holder.status.setText("N/A");
+            // Handle the case where 'position' is out of bounds
+            Log.d("RequestAdapter", "USAAAAAAAAAAAAAO1"+ position);
         }
+        Log.d("RequestAdapter", "USAAAAAAAAAAAAAO1");
 
-        holder.address.setText(currentRequest.getAddress().getStreetAndNumber() + ", " +
-                currentRequest.getAddress().getCity() + ", " +
-                currentRequest.getAddress().getCountry());
-        holder.price.setText(String.valueOf(currentRequest.getPrice()) + "$");
-        holder.priceType.setText("/" +currentRequest.getPriceType().getPriceType());
 
-        // Postavljanje slike
-        int drawableResourceId = context.getResources().getIdentifier(currentRequest.getPhotos().get(0).getUrl(), "drawable", context.getPackageName());
-        holder.accommodationImage.setImageResource(drawableResourceId);
+
 
         // Postavljanje listener-a za dugmad
         holder.btnViewDetails.setOnClickListener(new View.OnClickListener() {

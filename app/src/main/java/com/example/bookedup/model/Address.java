@@ -27,6 +27,16 @@ public class Address {
         this.longitude = longitude;
     }
 
+    public Address(String country, String city, String postalCode, String streetAndNumber, boolean active, double latitude, double longitude) {
+        this.country = country;
+        this.city = city;
+        this.postalCode = postalCode;
+        this.streetAndNumber = streetAndNumber;
+        this.active = active;
+        this.latitude = latitude;
+        this.longitude = longitude;
+    }
+
     public Long getId() {
         return id;
     }

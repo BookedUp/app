@@ -19,6 +19,11 @@ public class PriceChange {
         this.newPrice = newPrice;
     }
 
+    public PriceChange( Date changeDate, double newPrice) {
+        this.changeDate = changeDate;
+        this.newPrice = newPrice;
+    }
+
     public Long getId() {
         return id;
     }

@@ -2,6 +2,7 @@ package com.example.bookedup.adapters;
 
 import static java.security.AccessController.getContext;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
@@ -13,6 +14,9 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -29,15 +33,18 @@ import java.util.ArrayList;
 
 public class PopularAdapter extends RecyclerView.Adapter<PopularAdapter.ViewHolder>{
     ArrayList<Accommodation> items;
+    private Fragment fragment;
 
     int layout;
 
-    //DecimalFormat formatter;
-
-    public PopularAdapter(ArrayList<Accommodation> items, int beforeLayout) {
+    public PopularAdapter(Fragment fragment, ArrayList<Accommodation> items, int beforeLayout) {
+        this.fragment = fragment;
         this.items = items;
         this.layout = beforeLayout;
-        //formatter = new DecimalFormat("###,###,###,###");
+
+        for (Accommodation accommodation : items) {
+            Log.d("PopularAdapter", "Accommodation: " + accommodation.toString());
+        }
     }
 
     @NonNull
@@ -48,31 +55,31 @@ public class PopularAdapter extends RecyclerView.Adapter<PopularAdapter.ViewHold
     }
 
     @Override
-    public void onBindViewHolder(@NonNull PopularAdapter.ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull PopularAdapter.ViewHolder holder, @SuppressLint("RecyclerView") int position) {
         holder.titleTxt.setText(items.get(position).getName());
         holder.locationTxt.setText(items.get(position).getAddress().getCountry() + " " + items.get(position).getAddress().getCity());
         holder.scoreTxt.setText(""+items.get(position).getAverageRating());
-        String imageUrl = items.get(position).getPhotos().get(0).getUrl();
-        Glide.with(holder.itemView.getContext()).load(imageUrl).transform(new CenterCrop(), new GranularRoundedCorners(40, 40, 40, 40)).into(holder.picImg);
+        if (!items.get(position).getPhotos().isEmpty()) {
+            String imageUrl = items.get(position).getPhotos().get(0).getUrl();
+            // Load the image using Glide
+            Glide.with(holder.itemView.getContext())
+                    .load(imageUrl)
+                    .transform(new CenterCrop(), new GranularRoundedCorners(40, 40, 40, 40))
+                    .into(holder.picImg);
+        } else {
+            // Provide a default image or handle the case where there are no photos
+            holder.picImg.setImageResource(R.drawable.default_hotel_img);
+        }
 
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Get the Context associated with the View
                 Context context = v.getContext();
-
-                // Ensure the context is an instance of AppCompatActivity and is not null
                 if (context instanceof AppCompatActivity) {
                     AppCompatActivity activity = (AppCompatActivity) context;
-
-                    // Create a new instance of DetailsFragment
                     DetailsFragment detailsFragment = new DetailsFragment();
-
-                    // Pass the selected item to the fragment
                     detailsFragment.setAccommodation(items.get(position));
-
-                    // Replace the existing fragment (HomeFragment) with the new fragment (DetailsFragment)
                     FragmentTransaction transaction = activity.getSupportFragmentManager().beginTransaction();
                     transaction.replace(layout, detailsFragment);
                     transaction.addToBackStack(null);  // Optional: Adds the transaction to the back stack
@@ -82,10 +89,6 @@ public class PopularAdapter extends RecyclerView.Adapter<PopularAdapter.ViewHold
                 }
             }
         });
-
-
-
-
 
     }
 

@@ -19,6 +19,12 @@ public class Photo {
         this.active = active;
     }
 
+    public Photo(String url, String caption, boolean active) {
+        this.url = url;
+        this.caption = caption;
+        this.active = active;
+    }
+
     public Long getId() {
         return id;
     }

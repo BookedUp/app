@@ -1,15 +1,20 @@
 package com.example.bookedup.adapters;
 
+import android.annotation.SuppressLint;
+import android.content.ComponentName;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -18,6 +23,7 @@ import com.bumptech.glide.load.resource.bitmap.CenterCrop;
 import com.bumptech.glide.load.resource.bitmap.GranularRoundedCorners;
 import com.example.bookedup.R;
 import com.example.bookedup.fragments.accommodations.DetailsFragment;
+import com.example.bookedup.fragments.accommodations.UpdateAccommodationFragment;
 import com.example.bookedup.model.Accommodation;
 import com.example.bookedup.model.Photo;
 
@@ -28,11 +34,13 @@ import java.util.List;
 public class SearchAccommodationAdapter extends RecyclerView.Adapter<SearchAccommodationAdapter.ViewHolder>{
     ArrayList<Accommodation> items;
 
+    int targetLayout;
+
     //DecimalFormat formatter;
 
-    public SearchAccommodationAdapter(ArrayList<Accommodation> items) {
+    public SearchAccommodationAdapter(ArrayList<Accommodation> items, int targetLayout) {
         this.items = items;
-        //formatter = new DecimalFormat("###,###,###,###");
+        this.targetLayout = targetLayout;
     }
 
     @NonNull
@@ -45,14 +53,13 @@ public class SearchAccommodationAdapter extends RecyclerView.Adapter<SearchAccom
 
 
     @Override
-    public void onBindViewHolder(@NonNull SearchAccommodationAdapter.ViewHolder holder, int position) {
-        // Check if the items list is not empty and if the position is within bounds
+    public void onBindViewHolder(@NonNull SearchAccommodationAdapter.ViewHolder holder, @SuppressLint("RecyclerView") int position) {
         if (items != null && !items.isEmpty() && position < items.size()) {
             holder.titleTxt.setText(items.get(position).getName());
             holder.locationTxt.setText(items.get(position).getAddress().getCountry() + " " + items.get(position).getAddress().getCity());
             holder.averageRatingTxt.setText(String.valueOf(items.get(position).getAverageRating()));
             holder.typeTxt.setText(items.get(position).getType().name());
-
+            holder.totalPriceTxt.setText("Total: " + String.valueOf(items.get(position).getTotalPrice()));
             // Check if the price is available before setting it
             if (String.valueOf(items.get(position).getPrice()) != null) {
                 holder.priceTxt.setText(String.valueOf(items.get(position).getPrice()));
@@ -60,26 +67,22 @@ public class SearchAccommodationAdapter extends RecyclerView.Adapter<SearchAccom
                 holder.priceTxt.setText(""); // or set a default value
             }
 
-            holder.priceTypeTxt.setText(String.valueOf(items.get(position).getPriceType()));
+            holder.priceTypeTxt.setText(String.valueOf(items.get(position).getPriceType().getPriceType()));
 
             List<Photo> photos = items.get(position).getPhotos();
 
             String imageUrl = items.get(position).getPhotos().get(0).getUrl();
             Glide.with(holder.itemView.getContext()).load(imageUrl).transform(new CenterCrop(), new GranularRoundedCorners(40, 40, 40, 40)).into(holder.picImg);
+
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    // Create a new instance of DetailsFragment and set the arguments
                     DetailsFragment detailsFragment = new DetailsFragment();
-                    Bundle bundle = new Bundle();
-                    bundle.putSerializable("object", (Serializable) items.get(position));
-                    detailsFragment.setArguments(bundle);
-
-                    // Replace the existing fragment (HomeFragment) with the new fragment (DetailsFragment)
+                    detailsFragment.setAccommodation(items.get(position));
                     FragmentTransaction transaction = ((AppCompatActivity) v.getContext())
                             .getSupportFragmentManager().beginTransaction();
-                    transaction.replace(R.id.frame_layout, detailsFragment);
-                    transaction.addToBackStack(null);  // Optional: Adds the transaction to the back stack
+                    transaction.replace(targetLayout, detailsFragment);
+                    transaction.addToBackStack(null);
                     transaction.commit();
                 }
             });
@@ -94,7 +97,7 @@ public class SearchAccommodationAdapter extends RecyclerView.Adapter<SearchAccom
 
     public class ViewHolder extends RecyclerView.ViewHolder{
 
-        TextView titleTxt, locationTxt, averageRatingTxt, typeTxt, priceTxt, priceTypeTxt;
+        TextView titleTxt, locationTxt, averageRatingTxt, typeTxt, priceTxt, priceTypeTxt, totalPriceTxt;
 
         ImageView picImg;
 
@@ -107,7 +110,7 @@ public class SearchAccommodationAdapter extends RecyclerView.Adapter<SearchAccom
             typeTxt = itemView.findViewById(R.id.accType);
             priceTxt = itemView.findViewById(R.id.accPrice);
             priceTypeTxt = itemView.findViewById(R.id.accPriceType);
-
+            totalPriceTxt = itemView.findViewById(R.id.totalPriceTxt);
         }
     }
 }

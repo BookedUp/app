@@ -8,10 +8,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.DatePicker;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
@@ -19,66 +20,65 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.bookedup.R;
-import com.example.bookedup.adapters.ImageAdapter;
-//import com.example.bookedup.adapters.PopularAdapter;
-import com.example.bookedup.adapters.CategoryAdapter;
+import com.example.bookedup.activities.LoginScreen;
 import com.example.bookedup.adapters.SearchAccommodationAdapter;
-import com.example.bookedup.fragments.accommodations.FilterFragment;
+import com.example.bookedup.clients.ClientUtils;
 import com.example.bookedup.fragments.calendar.CalendarFragment;
 import com.example.bookedup.model.Accommodation;
-import com.example.bookedup.model.Address;
-import com.example.bookedup.model.Category;
-import com.example.bookedup.model.Destination;
-import com.example.bookedup.model.Photo;
-import com.example.bookedup.model.enums.AccommodationStatus;
-import com.example.bookedup.model.enums.AccommodationType;
-import com.example.bookedup.model.enums.PriceType;
+import com.example.bookedup.model.Category;;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
-import java.text.DateFormat;
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class SearchFilterFragment extends Fragment implements DatePickerDialog.OnDateSetListener {
 
-    private RecyclerView recyclerViewCategory, recyclerViewResults;
-    private RecyclerView.Adapter adapterResults, adapterCategory;
+    private RecyclerView recyclerViewResults;
+    private RecyclerView.Adapter adapterResults;
 
     private ImageView filter;
     private boolean isStartDateButtonClicked;
     private boolean isEndDateButtonClicked;
 
+    private FloatingActionButton search;
+
+    private ArrayList<Accommodation> results = new ArrayList<Accommodation>();
+
     private static int targetLayout;
 
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private String whereToGo, checkIn, checkOut;
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    private Integer guestsNumber;
+
+    private EditText whereToGoTxt, guestsNumberTxt;
+
+    private TextView checkInTxt, checkOutTxt;
+
+    private ArrayList<Accommodation> searchResults = new ArrayList<Accommodation>();
+
+    private ArrayList<Category> categoryList = new ArrayList<>();
 
     public SearchFilterFragment() {
         // Required empty public constructor
     }
 
-    public static SearchFilterFragment newInstance(String param1, String param2) {
-        SearchFilterFragment fragment = new SearchFilterFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
     }
 
     @Override
@@ -87,15 +87,19 @@ public class SearchFilterFragment extends Fragment implements DatePickerDialog.O
         View view = inflater.inflate(R.layout.fragment_search_filter, container, false);
 
         recyclerViewResults = view.findViewById(R.id.view_acc_results);
-        recyclerViewCategory = view.findViewById(R.id.view_category);
+
         filter = view.findViewById(R.id.filter);
+        search = view.findViewById(R.id.searchButton);
+
+        whereToGoTxt = view.findViewById(R.id.locationTxt);
+        guestsNumberTxt = view.findViewById(R.id.guestsNumber);
+        checkInTxt = view.findViewById(R.id.checkInText);
+        checkOutTxt = view.findViewById(R.id.checkOutText);
+
 
         Intent intent = getActivity().getIntent();
-//        Log.d("HomeFragment", "onCreateView called with targetLayout: " + intent);
         ComponentName componentName = intent.getComponent();
-//        Log.d("HomeFragment", "onCreateView called with targetLayout: " + componentName.getClassName());
         if (componentName.getClassName().equals("com.example.bookedup.activities.GuestMainScreen")) {
-//            Log.d("HomeFragment", "Trenutna aktivnost je GuestMainScreen");
             targetLayout = R.id.frame_layout;
         } else if (componentName.getClassName().equals("com.example.bookedup.activities.AdministratorMainScreen")){
             targetLayout = R.id.frame_layoutAdmin;
@@ -103,11 +107,45 @@ public class SearchFilterFragment extends Fragment implements DatePickerDialog.O
             targetLayout = R.id.frame_layoutHost;
         }
 
+        Bundle arguments = getArguments();
+        if (arguments != null) {
+            whereToGo = arguments.getString("whereToGo");
+            guestsNumber = arguments.getInt("guestsNumber");
+            checkIn = arguments.getString("checkIn");
+            checkOut = arguments.getString("checkOut");
+            String resultsJson = arguments.getString("resultsJson");
+            Type type = new TypeToken<ArrayList<Accommodation>>(){}.getType();
+            searchResults = new Gson().fromJson(resultsJson, type);
+
+            if (searchResults.isEmpty()){
+                Toast.makeText(getContext(), "No results!", Toast.LENGTH_SHORT).show();
+            }
+
+            Log.d("SearchFilterFragment", "Location: " + whereToGo);
+            Log.d("SearchFilterFragment", "GuestsNumber: " + guestsNumber);
+            Log.d("SearchFilterFragment", "CheckIn: " + checkIn);
+            Log.d("SearchFilterFragment", "CheckOut: " + checkOut);
+            Log.d("SearchFilterFragment", "SearchResults size: " + searchResults.size());
+
+            whereToGoTxt.setText(whereToGo);
+            guestsNumberTxt.setText(String.valueOf(guestsNumber));
+            if (!checkIn.isEmpty()){
+                checkInTxt.setHint(checkIn);
+            } else {
+                checkInTxt.setHint("Check-In");
+            }
+            if (!checkOut.isEmpty()){
+                checkOutTxt.setHint(checkOut);
+            } else {
+                checkOutTxt.setHint("Check-Out");
+            }
+        }
         initRecycleView();
         setFilterClickListener();
 
         ImageView startDateBtn =  view.findViewById(R.id.startDate);
         ImageView endDateBtn =  view.findViewById(R.id.endDate);
+
         startDateBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -130,66 +168,146 @@ public class SearchFilterFragment extends Fragment implements DatePickerDialog.O
             }
         });
 
+        search.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openSearchFilterFragment(whereToGoTxt, guestsNumberTxt, checkInTxt, checkOutTxt);
+            }
+        });
+
+
+
         return view;
+    }
+
+    private void openSearchFilterFragment(EditText whereToGo, EditText guestsNumberTxt, TextView checkIn, TextView checkOut) {
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        Date startDate = new Date();
+        Date endDate = new Date();
+
+
+        try {
+            startDate = dateFormat.parse(checkIn.getText().toString());
+            startDate.setHours(13);
+
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            endDate = dateFormat.parse(checkOut.getText().toString());
+            endDate.setHours(13);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+
+        List<Object> amenities = new ArrayList<>();
+        if (!guestsNumberTxt.getText().toString().isEmpty()){
+            guestsNumber = Integer.parseInt(guestsNumberTxt.getText().toString());
+        } else {
+            guestsNumber = 0;
+        }
+        Log.d("HomeFragment", "StartDate " + startDate);
+        Log.d("HomeFragment", "EndDate " + endDate);
+        Log.d("HomeFragment", "Location " + whereToGo.getText().toString());
+        Log.d("HomeFragment", "GuestsNumber " + guestsNumber);
+
+        Call<ArrayList<Accommodation>> searchedResults = ClientUtils.accommodationService.searchAccommodations(
+                whereToGo.getText().toString(),
+                guestsNumber,
+                dateFormat.format(startDate),
+                dateFormat.format(endDate),
+                amenities,
+                0.0,
+                0.0,
+                0.0,
+                "null",
+                ""
+        );
+
+        Log.d("HomeFragment", "Prosaoooooo" + searchedResults);
+
+
+        searchedResults.enqueue(new Callback<ArrayList<Accommodation>>() {
+            @Override
+            public void onResponse(Call<ArrayList<Accommodation>> call, Response<ArrayList<Accommodation>> response) {
+                if (response.isSuccessful()) {
+                    if (response.body() != null) {
+                        Log.d("HomeFragment", "Successful response: " + response.body());
+                        results = response.body();
+                        for (Accommodation accommodation : results) {
+                            Log.d("PopularAdapter", "Accommodation: " + accommodation);
+                        }
+
+                        SearchFilterFragment searchFilterFragment = new SearchFilterFragment();
+
+                        Bundle bundle = new Bundle();
+                        bundle.putString("whereToGo", whereToGo.getText().toString());
+                        bundle.putInt("guestsNumber", guestsNumber);
+                        bundle.putString("checkIn", checkIn.getText().toString());
+                        bundle.putString("checkOut", checkOut.getText().toString());
+                        String resultsJson = new Gson().toJson(results);
+                        bundle.putString("resultsJson", resultsJson);
+
+                        searchFilterFragment.setArguments(bundle);
+
+                        FragmentTransaction transaction = requireActivity().getSupportFragmentManager().beginTransaction();
+                        transaction.replace(targetLayout, searchFilterFragment);
+                        transaction.addToBackStack(null);
+                        transaction.commit();
+                    } else {
+                        Toast.makeText(getContext(), "No accommodations found", Toast.LENGTH_SHORT).show();
+                    }
+                }  else {
+                    // Log error details
+                    Log.d("HomeFragment", "Unsuccessful response: " + response.code());
+                    try {
+                        Log.d("HomeFragment", "Error Body: " + response.errorBody().string());
+                    } catch (IOException e) {
+                        Log.d("HomeFragment", "GRESKA response: " + response.body());
+                        e.printStackTrace();
+                    }
+                }
+            }
+            @Override
+            public void onFailure(Call<ArrayList<Accommodation>> call, Throwable t) {
+                Log.d("HomeFragment", t.getMessage() != null?t.getMessage():"error");
+            }
+        });
     }
 
     private void setFilterClickListener() {
         filter.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                openFilterFragment();
+                openFilterFragment(whereToGoTxt, guestsNumberTxt, checkInTxt, checkOutTxt);
             }
         });
     }
 
-    private void openFilterFragment() {
-        // Create a new instance of FilterFragment
-        FilterFragment filterFragment = FilterFragment.newInstance(null, null);
+    private void openFilterFragment(EditText whereToGo, EditText guestsNumber, TextView checkIn, TextView checkOut) {
+        FilterFragment filterFragment = new FilterFragment();
 
-        // Begin the transaction
+        Bundle bundle = new Bundle();
+        bundle.putString("whereToGo", whereToGo.getText().toString());
+        bundle.putInt("guestsNumber", Integer.valueOf(guestsNumber.getText().toString()));
+        bundle.putString("checkIn", checkIn.getText().toString());
+        bundle.putString("checkOut", checkOut.getText().toString());
+        filterFragment.setArguments(bundle);
+
         FragmentTransaction transaction = requireActivity().getSupportFragmentManager().beginTransaction();
-
-        // Replace the current fragment with the new fragment
         transaction.replace(targetLayout, filterFragment);
-
-        // Add the transaction to the back stack so the user can navigate back
         transaction.addToBackStack(null);
-
-        // Commit the transaction
         transaction.commit();
     }
 
     private void initRecycleView() {
-        ArrayList<Accommodation> items = new ArrayList<>();
-
-        Address address = new Address(1L, "Italy", "Paris", "1523", "John Smith 77", true, 45.125, 82.225);
-        Photo photo = new Photo();
-        List<Photo> photos = new ArrayList<Photo>();
-        photos.add(photo);
-
-
-        items.add(new Accommodation("Lakeside Motel", photos, address, 5.0, AccommodationType.Apartment, 500, PriceType.PER_GUEST));
-        items.add(new Accommodation("Lakeside Motel", photos, address, 5.0, AccommodationType.Apartment, 500, PriceType.PER_GUEST));
-        items.add(new Accommodation("Lakeside Motel", photos, address, 5.0, AccommodationType.Apartment, 500, PriceType.PER_GUEST));
-
-
-
 
         recyclerViewResults.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false));
-        adapterResults = new SearchAccommodationAdapter(items);
+        adapterResults = new SearchAccommodationAdapter(searchResults, targetLayout);
         recyclerViewResults.setAdapter(adapterResults);
-
-
-        ArrayList<Category> categoryList = new ArrayList<>();
-        categoryList.add(new Category("Hotel", "img_hotel"));
-        categoryList.add(new Category("Hostel", "img_hostel"));
-        categoryList.add(new Category("Apartment", "img_apartment"));
-        categoryList.add(new Category("Resort", "img_resort"));
-        categoryList.add(new Category("Villa", "img_villa"));
-
-        recyclerViewCategory.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
-        adapterCategory = new CategoryAdapter(categoryList);
-        recyclerViewCategory.setAdapter(adapterCategory);
     }
 
 
@@ -201,12 +319,8 @@ public class SearchFilterFragment extends Fragment implements DatePickerDialog.O
             c.set(Calendar.YEAR, year);
             c.set(Calendar.MONTH, month);
             c.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-
-            // Format the date as "year-month-day"
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
             String formattedDate = dateFormat.format(c.getTime());
-
-            // Determine if it's the start date or end date
             TextView textView;
             if (isStartDateButtonClicked) {
                 textView = getView().findViewById(R.id.checkInText);

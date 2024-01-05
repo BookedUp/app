@@ -37,6 +37,23 @@ public class User {
         this.role = role;
     }
 
+    public User( String firstName, String lastName, Address address, long phone,
+                 String email, String password, boolean isBlocked, boolean verified,
+                 boolean active, Photo profilePicture, Role role) {
+
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.address = address;
+        this.phone = phone;
+        this.email = email;
+        this.password = password;
+        this.isBlocked = isBlocked;
+        this.verified = verified;
+        this.active = active;
+        this.profilePicture = profilePicture;
+        this.role = role;
+    }
+
     // Getteri i setteri
     public int getId() {
         return id;
