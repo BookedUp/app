@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.Lifecycle;
@@ -61,7 +62,7 @@ public class FilterFragment extends Fragment {
     private View lastClickedBudgetView;
 
     private View lastClickedTypeView;
-    private String[] budgetFilter = {"0 - 500", "500 - 1000", "1000 - 1,500", "1,500 - 2,000", "2,000 and more"};
+    private String[] budgetFilter = {"0 - 500", "500 - 1000", "1000 - 1500", "1500 - 2000", "2000 and more"};
 
     private List<String> popularFilter = new ArrayList<String>();
 
@@ -97,6 +98,18 @@ public class FilterFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_filter, container, false);
 
+        return view;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        getCallerData();
+        findTargetLayout();
+        initView(view);
+    }
+
+    private void getCallerData(){
         Bundle arguments = getArguments();
         if (arguments != null) {
             whereToGo = arguments.getString("whereToGo");
@@ -110,7 +123,9 @@ public class FilterFragment extends Fragment {
             Log.d("SearchFilterFragment", "CheckOut: " + checkOut);
 
         }
+    }
 
+    private void findTargetLayout(){
         Intent intent = getActivity().getIntent();
         ComponentName componentName = intent.getComponent();
         if (componentName.getClassName().equals("com.example.bookedup.activities.GuestMainScreen")) {
@@ -120,10 +135,6 @@ public class FilterFragment extends Fragment {
         } else if (componentName.getClassName().equals("com.example.bookedup.activities.HostMainScreen")){
             targetLayout = R.id.frame_layoutHost;
         }
-
-        initView(view);
-
-        return view;
     }
 
     private void initView(View view) {
@@ -229,12 +240,12 @@ public class FilterFragment extends Fragment {
         filter.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                openSearchFilterFragment(whereToGo, guestsNumber, checkIn, checkOut);
+                searchFilter(whereToGo, guestsNumber, checkIn, checkOut);
             }
         });
     }
 
-    private void openSearchFilterFragment(String whereToGo, Integer guestsNumber, String checkIn, String checkOut) {
+    private void searchFilter(String whereToGo, Integer guestsNumber, String checkIn, String checkOut) {
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
         Date startDate = new Date();
@@ -243,26 +254,18 @@ public class FilterFragment extends Fragment {
 
         try {
             startDate = dateFormat.parse(checkIn);
-            startDate.setHours(13);
-
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-
-        try {
             endDate = dateFormat.parse(checkOut);
-            endDate.setHours(13);
         } catch (ParseException e) {
             e.printStackTrace();
         }
 
-
-        List<Object> amenities = new ArrayList<>();
-        Log.d("FilterFragment", "StartDate " + startDate);
-        Log.d("FilterFragment", "EndDate " + endDate);
-        Log.d("FilterFragment", "Location " + whereToGo);
-        Log.d("FilterFragment", "GuestsNumber " + guestsNumber);
-        Log.d("FilterFragment", "Type " + type);
+        startDate.setHours(13);
+        endDate.setHours(13);
+//        Log.d("FilterFragment", "StartDate " + checkIn);
+//        Log.d("FilterFragment", "EndDate " + checkOut);
+//        Log.d("FilterFragment", "Location " + whereToGo);
+//        Log.d("FilterFragment", "GuestsNumber " + guestsNumber);
+//        Log.d("FilterFragment", "Type " + type);
 
         Call<ArrayList<Accommodation>> searchedResults = ClientUtils.accommodationService.searchAccommodations(
                 whereToGo,
@@ -277,9 +280,6 @@ public class FilterFragment extends Fragment {
                 ""
         );
 
-        Log.d("FilterFragment", "Prosaoooooo" + searchedResults);
-
-
         searchedResults.enqueue(new Callback<ArrayList<Accommodation>>() {
             @Override
             public void onResponse(Call<ArrayList<Accommodation>> call, Response<ArrayList<Accommodation>> response) {
@@ -287,32 +287,12 @@ public class FilterFragment extends Fragment {
                     if (response.body() != null) {
                         Log.d("FilterFragment", "Successful response: " + response.body());
                         results = response.body();
-                        for (Accommodation accommodation : results) {
-                            Log.d("FilterFragment", "Accommodation: " + accommodation);
-                        }
+//                        for (Accommodation accommodation : results) {
+//                            Log.d("FilterFragment", "Accommodation: " + accommodation);
+//                        }
+                        Log.d("FilterFragment", "Results size " + results.size());
+                        openSearchFilterFragment(whereToGo, results, guestsNumber, checkIn, checkOut);
 
-                        SearchFilterFragment searchFilterFragment = new SearchFilterFragment();
-
-                        Bundle bundle = new Bundle();
-                        bundle.putString("whereToGo", whereToGo);
-                        bundle.putInt("guestsNumber", guestsNumber);
-                        bundle.putString("checkIn", checkIn);
-                        bundle.putString("checkOut", checkOut);
-
-//                        bundle.putDouble("minPrice", minPrice);
-//                        bundle.putDouble("maxPrice", maxPrice);
-//                        String amenitiesJson = new Gson().toJson(selectedAmenities);
-//                        bundle.putString("amenitiesJson", amenitiesJson);
-
-                        String resultsJson = new Gson().toJson(results);
-                        bundle.putString("resultsJson", resultsJson);
-
-                        searchFilterFragment.setArguments(bundle);
-
-                        FragmentTransaction transaction = requireActivity().getSupportFragmentManager().beginTransaction();
-                        transaction.replace(targetLayout, searchFilterFragment);
-                        transaction.addToBackStack(null);
-                        transaction.commit();
                     } else {
                         Log.d("FilterFragment", "Response body is null");
                     }
@@ -333,6 +313,29 @@ public class FilterFragment extends Fragment {
             }
         });
     }
+
+    private void openSearchFilterFragment(String whereToGo, List<Accommodation> results, Integer guestsNumber, String finalCheckIn, String finalCheckOut){
+        Log.d("FilterFragment", "Results size " + results.size());
+        SearchFilterFragment searchFilterFragment = new SearchFilterFragment();
+
+        Bundle bundle = new Bundle();
+        bundle.putString("whereToGo", whereToGo);
+        bundle.putInt("guestsNumber", guestsNumber);
+        bundle.putString("checkIn", finalCheckIn);
+        bundle.putString("checkOut", finalCheckOut);
+
+        String resultsJson = new Gson().toJson(results);
+        bundle.putString("resultsJson", resultsJson);
+
+        searchFilterFragment.setArguments(bundle);
+
+        FragmentTransaction transaction = requireActivity().getSupportFragmentManager().beginTransaction();
+        transaction.replace(targetLayout, searchFilterFragment);
+        transaction.addToBackStack(null);
+        transaction.commit();
+    }
+
+
 
 
 

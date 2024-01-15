@@ -16,6 +16,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -50,42 +51,22 @@ public class DetailsFragment extends Fragment {
 
     private Button book;
 
+
+    private String checkIn, checkOut;
+
     private FragmentManager fragmentManager;
 
     private int targetLayout;
 
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    private String drawableResId;
-
     private Accommodation accommodation;
 
 
-    public DetailsFragment() {
-        // Required empty public constructor
-    }
+    public DetailsFragment() {}
 
-    public static DetailsFragment newInstance(String param1, String param2) {
-        DetailsFragment fragment = new DetailsFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
     }
 
     @Override
@@ -93,6 +74,19 @@ public class DetailsFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_details, container, false);
 
+        return view;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        findTargetLayout();
+        getCallerData();
+        initView(view);
+        setupFavoriteIcon();
+    }
+
+    private void findTargetLayout(){
         Intent intent = getActivity().getIntent();
         ComponentName componentName = intent.getComponent();
         if (componentName.getClassName().equals("com.example.bookedup.activities.GuestMainScreen")) {
@@ -102,11 +96,15 @@ public class DetailsFragment extends Fragment {
         } else if (componentName.getClassName().equals("com.example.bookedup.activities.HostMainScreen")){
             targetLayout = R.id.frame_layoutHost;
         }
+    }
 
-        initView(view);
-        setupFavoriteIcon();
-
-        return view;
+    private void getCallerData(){
+        Bundle arguments = getArguments();
+        if (arguments != null) {
+            guestNum = arguments.getInt("guestsNumber");
+            checkIn = arguments.getString("checkIn");
+            checkOut = arguments.getString("checkOut");
+        }
     }
 
     private void setupFavoriteIcon() {
@@ -135,8 +133,6 @@ public class DetailsFragment extends Fragment {
         this.accommodation = accommodation;
         }
 
-
-
     private void initView(View view) {
 
         titleTxt = view.findViewById(R.id.titleTxt);
@@ -157,24 +153,30 @@ public class DetailsFragment extends Fragment {
         descriptionTxt.setText(accommodation.getDescription());
 
         if (accommodation.getTotalPrice() == 0) {
-            // Sakrij priceTxt ako je cena 0
             priceTxt.setVisibility(View.GONE);
         } else {
-            // Postavite tekst ako cena nije 0
             priceTxt.setText(String.valueOf(accommodation.getTotalPrice()) + "$");
         }
         pricePerTxt.setText(String.valueOf(accommodation.getPrice()) + " " + accommodation.getPriceType().getPriceType());
 
         if (guestNum == 0 || daysNum == 0) {
-            // Sakrij priceTxt ako je cena 0
             staysTimeTxt.setVisibility(View.GONE);
         } else {
-            // Postavite tekst ako cena nije 0
             staysTimeTxt.setText(guestNum + " adults "  + daysNum + " days");
         }
         displayAmenities(accommodation.getAmenities(), view);
 
-        String imageUrl = accommodation.getPhotos().get(0).getUrl();
+
+        //MENJACE SE
+
+        String imageUrl = "";
+
+        if (!accommodation.getPhotos().isEmpty()) {
+            imageUrl = accommodation.getPhotos().get(0).getUrl();
+        } else {
+            imageUrl = "android.resource://" + requireContext().getPackageName() + "/" + R.drawable.default_hotel_img;
+        }
+
         Glide.with(requireContext()).load(imageUrl)
                 .transform(new CenterCrop(), new GranularRoundedCorners(40, 40, 40, 40))
                 .into(picImg);
@@ -189,7 +191,7 @@ public class DetailsFragment extends Fragment {
         book.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                openFragment(new CreateReservationFragment());
+                openFragment(new CreateReservationFragment(accommodation, checkIn, checkOut, guestNum));
             }
         });
     }
@@ -214,14 +216,11 @@ public class DetailsFragment extends Fragment {
         LinearLayout amenitiesContainer = view.findViewById(R.id.amenitiesContainer);
 
         for (Amenity amenity : amenities) {
-            // Inflate the amenity layout dynamically
             View amenityView = LayoutInflater.from(requireContext()).inflate(R.layout.amenity_item, amenitiesContainer, false);
 
-            // Find views in the inflated layout
             ImageView amenityImage = amenityView.findViewById(R.id.amenityImage);
             TextView amenityText = amenityView.findViewById(R.id.amenityText);
 
-            // Set values based on the Amenity enum
             if (amenity == Amenity.FREE_WIFI) {
                 amenityImage.setImageResource(R.drawable.ic_wifi);
             } else if (amenity == Amenity.PARKING) {
@@ -235,9 +234,7 @@ public class DetailsFragment extends Fragment {
             } else if (amenity == Amenity.RESTAURANT){
                 amenityImage.setImageResource(R.drawable.ic_restaurant);
             }
-            amenityText.setText(amenity.getAmenity()); // You can customize this based on your enum structure
-
-            // Add the inflated layout to the container
+            amenityText.setText(amenity.getAmenity());
             amenitiesContainer.addView(amenityView);
         }
     }

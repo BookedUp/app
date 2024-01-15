@@ -7,19 +7,33 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.bookedup.R;
+import com.example.bookedup.adapters.PopularAdapter;
 import com.example.bookedup.adapters.RequestAdapter;
 import com.example.bookedup.adapters.TypeAdapter;
+import com.example.bookedup.clients.ClientUtils;
+import com.example.bookedup.fragments.home.HomeFragment;
 import com.example.bookedup.model.Accommodation;
+import com.example.bookedup.model.Reservation;
 import com.example.bookedup.model.enums.AccommodationStatus;
-import com.example.bookedup.utils.DataGenerator;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+//import com.example.bookedup.utils.DataGenerator;
 
+import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class AccommodationRequestFragment extends Fragment implements TypeAdapter.TypeSelectionListener {
 
@@ -28,15 +42,16 @@ public class AccommodationRequestFragment extends Fragment implements TypeAdapte
 
     private TypeAdapter typeAdapter;
     private RequestAdapter requestAdapter;
+
+    private List<Accommodation> allAccommodations = new ArrayList<>();
+
+    private List<Accommodation> copyAccommodations = new ArrayList<>();
+
+    private List<Accommodation> filteredList = new ArrayList<>();
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
-
-    private List<Accommodation> allAccommodations;  // Dodajte varijablu za čuvanje svih smještaja
-
-    public AccommodationRequestFragment() {
-        // Required empty public constructor
-    }
+    public AccommodationRequestFragment() {}
 
     public static AccommodationRequestFragment newInstance(String param1, String param2) {
         AccommodationRequestFragment fragment = new AccommodationRequestFragment();
@@ -50,52 +65,46 @@ public class AccommodationRequestFragment extends Fragment implements TypeAdapte
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // Inicijalizujte sve smještaje kada se fragment kreira
-        allAccommodations = DataGenerator.generateAllAccommodationsRequests();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_accommodation_request, container, false);
+        return view;
+    }
 
-        // Inicijalizacija i postavljanje TypeAdapter-a
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        getCallerData();
+        initUI(view);
+    }
+
+    private void getCallerData(){
+        Bundle arguments = getArguments();
+        if (arguments != null) {
+            String resultsJson = arguments.getString("resultsJson");
+            Type type = new TypeToken<ArrayList<Accommodation>>() {}.getType();
+            allAccommodations = new Gson().fromJson(resultsJson, type);
+            Log.d("AccommodationRequestFragment", "ACC SIZE " + allAccommodations.size());
+        }
+    }
+
+    private void initUI(View view){
+        requestRecyclerView = view.findViewById(R.id.cards_accommodationRequests);
+        requestRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        requestAdapter = new RequestAdapter(new ArrayList<>(allAccommodations), getContext(), this);
+        requestRecyclerView.setAdapter(requestAdapter);
+
+
         typeRecyclerView = view.findViewById(R.id.far_recyclerType);
         typeAdapter = new TypeAdapter(getTypeList(), this);
         typeRecyclerView.setAdapter(typeAdapter);
         typeRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL, false));
-
-        // Inicijalizacija i postavljanje RequestAdapter-a
-        requestRecyclerView = view.findViewById(R.id.cards_accommodationRequests);
-        if (requestRecyclerView != null) {
-            // Postavljanje layout manager-a (npr. LinearLayoutManager)
-            requestRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-
-            // Obezbedite da getRequestList() ne vraća null
-            List<Accommodation> requestList = getRequestList();
-            if (requestList != null) {
-                // Obezbedite da getContext() ne vraća null
-                Context context = getContext();
-                if (context != null) {
-                    Log.d("AccommodationRequestFragment", "USAAAAAAAAAAAAAO");
-                    // Kreirajte RequestAdapter samo ako requestList i context nisu null
-                    requestAdapter = new RequestAdapter(requestList, context);
-                    requestRecyclerView.setAdapter(requestAdapter);
-                } else {
-                    Log.d("AccommodationRequestFrag", "getContext() returned null");
-                }
-            } else {
-                Log.d("AccommodationRequestFrag", "getRequestList() returned null");
-            }
-        } else {
-            Log.d("AccommodationRequestFrag", "RecyclerView is null");
-        }
-
-        return view;
     }
 
+
     private List<String> getTypeList() {
-        // Vraća listu tipova koje želite prikazati
         List<String> types = new ArrayList<>();
         types.add("All Accommodations");
         types.add("New");
@@ -103,36 +112,27 @@ public class AccommodationRequestFragment extends Fragment implements TypeAdapte
         return types;
     }
 
-    private List<Accommodation> getRequestList() {
-        Log.d("AccommodationRequestFragment", "usao");
-        return allAccommodations;  // Vraća sve smještaje
-    }
-
     @Override
     public void onTypeSelected(String selectedType) {
-        // Ovdje možete promijeniti prikaz na temelju odabranog tipa
-        // Primjerice, ažurirajte RequestAdapter prema odabranom tipu
         updateRequestAdapter(selectedType);
     }
 
     private void updateRequestAdapter(String selectedType) {
-        // Ovdje možete ažurirati RequestAdapter prema odabranom tipu
-        // Na primjer, dohvatite nove podatke prema odabranom tipu i postavite ih na RequestAdapter
         List<Accommodation> updatedList = getUpdatedRequestList(selectedType);
         requestAdapter.updateData(updatedList);
     }
 
     private List<Accommodation> getUpdatedRequestList(String selectedType) {
-        // Ovdje možete dohvatiti nove podatke prema odabranom tipu
-        // Vratite ažuriranu listu smještaja
-        // Primjerice, dohvatite nove podatke iz baze podataka ili web servisa
-        List<Accommodation> filteredList = new ArrayList<>();
 
         switch (selectedType) {
             case "All Accommodations":
-                filteredList.addAll(allAccommodations);  // Prikazi sve smještaje
+                Log.d("AccommodationRequestFragment", "size " + allAccommodations.size());
+                filteredList.clear();
+                filteredList.addAll(allAccommodations);
                 break;
             case "New":
+                Log.d("AccommodationRequestFragment", "size " + allAccommodations.size());
+                filteredList.clear();
                 for (Accommodation accommodation : allAccommodations) {
                     if (accommodation.getStatus() == AccommodationStatus.CREATED) {
                         filteredList.add(accommodation);
@@ -140,6 +140,8 @@ public class AccommodationRequestFragment extends Fragment implements TypeAdapte
                 }
                 break;
             case "Changed":
+                Log.d("AccommodationRequestFragment", "size " + allAccommodations.size());
+                filteredList.clear();
                 for (Accommodation accommodation : allAccommodations) {
                     if (accommodation.getStatus() == AccommodationStatus.CHANGED) {
                         filteredList.add(accommodation);
@@ -150,4 +152,13 @@ public class AccommodationRequestFragment extends Fragment implements TypeAdapte
 
         return filteredList;
     }
+
+    public void updateAccommodationList(List<Accommodation> updatedList) {
+        if (requestRecyclerView != null) {
+            allAccommodations.clear();
+            allAccommodations.addAll(updatedList);
+            requestAdapter.updateData(updatedList);
+        }
+    }
+
 }

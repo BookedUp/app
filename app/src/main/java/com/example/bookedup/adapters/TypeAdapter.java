@@ -1,5 +1,6 @@
 package com.example.bookedup.adapters;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -51,6 +52,8 @@ public class TypeAdapter extends RecyclerView.Adapter<TypeAdapter.ViewHolder> {
     }
 
     public interface TypeSelectionListener {
+        void onAttach(@NonNull Context context);
+
         void onTypeSelected(String selectedType);
     }
 

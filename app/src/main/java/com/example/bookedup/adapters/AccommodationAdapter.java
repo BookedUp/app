@@ -16,6 +16,7 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.bookedup.R;
+import com.example.bookedup.fragments.accommodations.DetailsFragment;
 import com.example.bookedup.fragments.accommodations.UpdateAccommodationFragment;
 import com.example.bookedup.model.Accommodation;
 import com.example.bookedup.model.enums.AccommodationStatus;
@@ -27,18 +28,15 @@ public class AccommodationAdapter extends RecyclerView.Adapter<AccommodationAdap
     private List<Accommodation> accommodations;
     private Context context;
 
-    private FragmentManager fragmentManager;
-
-    public AccommodationAdapter(List<Accommodation> accommodations, Context context, FragmentManager fragmentManager) {
+    public AccommodationAdapter(List<Accommodation> accommodations, Context context) {
         this.accommodations = accommodations;
         this.context = context;
-        this.fragmentManager = fragmentManager;
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView accommodationImage;
         TextView title, averageRating, status, address, price, priceType;
-        Button btnViewDetails, btnEditDetails;
+        Button btnViewDetails, btnEditDetails, btnGetStatistic;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -53,6 +51,8 @@ public class AccommodationAdapter extends RecyclerView.Adapter<AccommodationAdap
 
             btnViewDetails = itemView.findViewById(R.id.myAcc_btnViewDetails);
             btnEditDetails = itemView.findViewById(R.id.myAcc_btnEditDetails);
+            btnGetStatistic = itemView.findViewById(R.id.getStatistic);
+
         }
     }
 
@@ -74,7 +74,6 @@ public class AccommodationAdapter extends RecyclerView.Adapter<AccommodationAdap
         if (status != null) {
             holder.status.setText(status.getStatus());
         } else {
-            // Postavite neku podrazumevanu vrednost ili obradite ovu situaciju kako vam odgovara
             holder.status.setText("N/A");
         }
 
@@ -82,38 +81,48 @@ public class AccommodationAdapter extends RecyclerView.Adapter<AccommodationAdap
                 currentRequest.getAddress().getCity() + ", " +
                 currentRequest.getAddress().getCountry());
         holder.price.setText(String.valueOf(currentRequest.getPrice()) + "$");
-        holder.priceType.setText("/"+currentRequest.getPriceType().getPriceType());
+        holder.priceType.setText("/" + currentRequest.getPriceType().getPriceType());
 
         // Postavljanje slike
-        int drawableResourceId = context.getResources().getIdentifier(currentRequest.getPhotos().get(0).getUrl(), "drawable", context.getPackageName());
-        holder.accommodationImage.setImageResource(drawableResourceId);
+        //MENJACE SE
+        if (!currentRequest.getPhotos().isEmpty()){
+            int drawableResourceId = context.getResources().getIdentifier(currentRequest.getPhotos().get(0).getUrl(), "drawable", context.getPackageName());
+            holder.accommodationImage.setImageResource(drawableResourceId);
+        } else {
+            holder.accommodationImage.setImageResource(R.drawable.default_hotel_img);
+        }
 
-        // Postavljanje listener-a za dugmad
         holder.btnViewDetails.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Implementacija za View Details
+                DetailsFragment detailsFragment = new DetailsFragment();
+                detailsFragment.setAccommodation(currentRequest);
+                AppCompatActivity activity = (AppCompatActivity) context;
+                FragmentManager fragmentManager = activity.getSupportFragmentManager();
+                FragmentTransaction transaction = fragmentManager.beginTransaction();
+                transaction.replace(R.id.frame_layoutHost, detailsFragment);
+                transaction.addToBackStack(null);
+                transaction.commit();
             }
         });
 
         holder.btnEditDetails.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                    // Create a Fragment instance for your details fragment
-                UpdateAccommodationFragment updateAccommodationFragment = new UpdateAccommodationFragment();
-
-                // Begin a fragment transaction
+                UpdateAccommodationFragment updateAccommodationFragment = new UpdateAccommodationFragment(currentRequest);
+                AppCompatActivity activity = (AppCompatActivity) context;
+                FragmentManager fragmentManager = activity.getSupportFragmentManager();
                 FragmentTransaction transaction = fragmentManager.beginTransaction();
-
-                // Replace the current fragment with the details fragment
                 transaction.replace(R.id.frame_layoutHost, updateAccommodationFragment);
-
-                // Optionally, you can add the transaction to the back stack
                 transaction.addToBackStack(null);
-
-                // Commit the transaction
                 transaction.commit();
+
+            }
+        });
+
+        holder.btnGetStatistic.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
 
             }
         });

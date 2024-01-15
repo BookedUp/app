@@ -70,6 +70,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Status smestaja"
+                android:textStyle="bold"
                 android:layout_marginLeft="12dp"
                 android:layout_marginTop="6dp"
 
@@ -144,14 +145,34 @@
         </LinearLayout>
     </LinearLayout>
 
-    <Button
-        android:id="@+id/myAcc_btnEditDetails"
-        android:layout_marginTop="12dp"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:text="Edit Details"
-        />
+        android:orientation="horizontal"
+        android:layout_marginTop="8dp">
+
+        <Button
+            android:id="@+id/getStatistic"
+            android:layout_marginTop="12dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Statistic"
+            />
+
+        <Button
+            android:id="@+id/myAcc_btnEditDetails"
+            android:layout_marginTop="12dp"
+            android:layout_marginStart="12dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Edit Details"
+            />
+
+
+    </LinearLayout>
+
 
     <!-- Buttons Layout -->
 

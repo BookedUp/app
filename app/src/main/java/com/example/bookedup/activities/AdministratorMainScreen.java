@@ -10,6 +10,7 @@ import androidx.fragment.app.FragmentManager;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
 
@@ -17,6 +18,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.example.bookedup.R;
+import com.example.bookedup.clients.ClientUtils;
 import com.example.bookedup.fragments.about.AboutUsFragment;
 import com.example.bookedup.fragments.accommodations.AccommodationRequestFragment;
 import com.example.bookedup.fragments.account.AccountFragment;
@@ -25,9 +27,19 @@ import com.example.bookedup.fragments.home.HomeFragment;
 import com.example.bookedup.fragments.language.LanguageFragment;
 import com.example.bookedup.fragments.notifications.NotificationsFragment;
 import com.example.bookedup.fragments.settings.SettingsFragment;
+import com.example.bookedup.model.Accommodation;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
 import com.google.android.material.navigation.NavigationView;
+import com.google.gson.Gson;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class AdministratorMainScreen extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
 
@@ -38,6 +50,8 @@ public class AdministratorMainScreen extends AppCompatActivity implements Naviga
     private FragmentManager fragmentManager;
 
     private Toolbar toolbar;
+
+    private List<Accommodation> allAccommodations = new ArrayList<Accommodation>();
 
 
     @Override
@@ -59,6 +73,8 @@ public class AdministratorMainScreen extends AppCompatActivity implements Naviga
         toggle.syncState();
 
         bottomNavigationView.setBackground(null);
+
+        setAllAccommodations();
         bottomNavigationView.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener(){
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item){
@@ -68,8 +84,13 @@ public class AdministratorMainScreen extends AppCompatActivity implements Naviga
                     return true;
                 }
                 else if(itemId==R.id.nav_accommodation){
-                    Toast.makeText(AdministratorMainScreen.this,"Accommodation request clicked",Toast.LENGTH_SHORT).show();
-                    openFragment(new AccommodationRequestFragment());
+                    AccommodationRequestFragment accommodationRequestFragment = new AccommodationRequestFragment();
+                    Bundle bundle = new Bundle();
+                    String resultsJson = new Gson().toJson(allAccommodations);
+                    bundle.putString("resultsJson", resultsJson);
+
+                    accommodationRequestFragment.setArguments(bundle);
+                    openFragment(accommodationRequestFragment);
                     return true;
                 }
                 else if(itemId==R.id.nav_users){
@@ -89,8 +110,63 @@ public class AdministratorMainScreen extends AppCompatActivity implements Naviga
 
         fragmentManager=getSupportFragmentManager();
         openFragment(new HomeFragment());
+    }
 
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        int itemId = item.getItemId();
+        if (itemId == R.id.nav_account){
+            openFragment(new AccountFragment());
+        } else if(itemId == R.id.nav_notifications){
+            //Toast.makeText(GuestMainScreen.this,"NOTIFICATIONS clicked",Toast.LENGTH_SHORT).show();
+            openFragment(new NotificationsFragment());
+        } else if(itemId == R.id.nav_language){
+            //Toast.makeText(GuestMainScreen.this,"LANGUAGE clicked",Toast.LENGTH_SHORT).show();
+            openFragment(new LanguageFragment());
+        }
+        else if(itemId == R.id.nav_settings) {
+            //Toast.makeText(GuestMainScreen.this,"SETTINGS clicked",Toast.LENGTH_SHORT).show();
+            openFragment(new SettingsFragment());
+        }
+        else if(itemId == R.id.nav_aboutus){
+            //Toast.makeText(GuestMainScreen.this,"ABOUTUS clicked",Toast.LENGTH_SHORT).show();
+            openFragment(new AboutUsFragment());
+        }
+        else if(itemId == R.id.nav_logout){
+            Toast.makeText(AdministratorMainScreen.this,"Log out",Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(this,SplashScreen.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+        }
+        drawerLayout.closeDrawer(GravityCompat.START);
 
+        return true;
+    }
+
+    private void setAllAccommodations() {
+        Call<ArrayList<Accommodation>> all = ClientUtils.accommodationService.getAccommodations();
+        all.enqueue(new Callback<ArrayList<Accommodation>>() {
+            @Override
+            public void onResponse(Call<ArrayList<Accommodation>> call, Response<ArrayList<Accommodation>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    Log.d("AccommodationRequestFragment", "Successful response: " + response.body());
+                    allAccommodations = response.body();
+                } else {
+                    // Log error details
+                    Log.d("AccommodationRequestFragment", "Unsuccessful response: " + response.code());
+                    try {
+                        Log.d("AccommodationRequestFragment", "Error Body: " + response.errorBody().string());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ArrayList<Accommodation>> call, Throwable t) {
+                Log.d("AccommodationRequestFragment", t.getMessage() != null ? t.getMessage() : "error");
+            }
+        });
     }
 
     private  void replaceFragment(Fragment fragment){
@@ -98,13 +174,6 @@ public class AdministratorMainScreen extends AppCompatActivity implements Naviga
         FragmentTransaction fragmentTransaction=fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.frame_layoutAdmin,fragment);
         fragmentTransaction.commit();
-    }
-
-
-    @Override
-    public boolean onNavigationItemSelected(@NonNull MenuItem item){
-
-        return true;
     }
 
     @Override

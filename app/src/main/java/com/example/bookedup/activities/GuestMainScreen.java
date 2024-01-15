@@ -32,7 +32,9 @@ import android.widget.Toast;
 import com.example.bookedup.R;
 //import com.example.bookedup.adapters.CategoryAdapter;
 //import com.example.bookedup.adapters.PopularAdapter;
+import com.example.bookedup.clients.ClientUtils;
 import com.example.bookedup.fragments.about.AboutUsFragment;
+import com.example.bookedup.fragments.accommodations.AccommodationRequestFragment;
 import com.example.bookedup.fragments.account.AccountFragment;
 import com.example.bookedup.fragments.home.HomeFragment;
 import com.example.bookedup.fragments.language.LanguageFragment;
@@ -41,18 +43,26 @@ import com.example.bookedup.fragments.reservations.ReservationListFragment;
 import com.example.bookedup.fragments.settings.SettingsFragment;
 import com.example.bookedup.model.Accommodation;
 import com.example.bookedup.model.Category;
+import com.example.bookedup.model.Reservation;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationBarView;
 import com.google.android.material.navigation.NavigationView;
+import com.google.gson.Gson;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 
 public class GuestMainScreen extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private DrawerLayout drawerLayout;
-    private FloatingActionButton fab;
+//    private FloatingActionButton fab;
 
     private BottomNavigationView bottomNavigationView;
 
@@ -60,19 +70,20 @@ public class GuestMainScreen extends AppCompatActivity implements NavigationView
 
     private Toolbar toolbar;
 
+    private List<Reservation> myReservations = new ArrayList<Reservation>();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.d("GuestMainScreen", "USAAAAAAAAAAAAAAAAAAAAO");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_guest_main_screen);
 
         bottomNavigationView = findViewById(R.id.bottomNavigationView);
-        fab = findViewById(R.id.fab);
+//        fab = findViewById(R.id.fab);
         drawerLayout = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-        toolbar = findViewById(R.id.toolbar); //Ignore red line errors
+        toolbar = findViewById(R.id.toolbar);
 
 
         setSupportActionBar(toolbar);
@@ -81,17 +92,7 @@ public class GuestMainScreen extends AppCompatActivity implements NavigationView
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
 
-//        if (savedInstanceState == null) {
-//            getSupportFragmentManager().beginTransaction().replace(R.id.frame_layout, new LanguageFragment()).commit();
-//            navigationView.setCheckedItem(R.id.nav_language);
-//        }
-
-//        replaceFragment(new SettingsFragment());
-
-
-
         bottomNavigationView.setBackground(null);
-        Log.d("GuestMainScreen", "TUUU JEEE 1");
        bottomNavigationView.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
            @Override
            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -102,8 +103,7 @@ public class GuestMainScreen extends AppCompatActivity implements NavigationView
                    return true;
                }
                else if(itemId == R.id.nav_reservations) {
-                   Toast.makeText(GuestMainScreen.this,"Reservations clicked",Toast.LENGTH_SHORT).show();
-                   openFragment(new ReservationListFragment());
+                   setMyReservations();
                    return true;
                }
                else if(itemId == R.id.nav_favorites){
@@ -118,19 +118,50 @@ public class GuestMainScreen extends AppCompatActivity implements NavigationView
                return false;
            }
        });
-
-        Log.d("GuestMainScreen", "TUUU JEEE 3");
        fragmentManager = getSupportFragmentManager();
        openFragment(new HomeFragment());
 
-        fab.setOnClickListener(new View.OnClickListener() {
+//        fab.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                showBottomDialog();
+//            }
+//        });
+    }
+
+
+    private void setMyReservations() {
+        Call<ArrayList<Reservation>> reservations = ClientUtils.reservationService.getReservationsByGuestId(LoginScreen.loggedGuest.getId());
+        reservations.enqueue(new Callback<ArrayList<Reservation>>() {
             @Override
-            public void onClick(View view) {
-                showBottomDialog();
+            public void onResponse(Call<ArrayList<Reservation>> call, Response<ArrayList<Reservation>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    Log.d("GuestMainScreen", "Successful response: " + response.body());
+                    myReservations = response.body();
+                    ReservationListFragment reservationListFragment = new ReservationListFragment();
+                    Bundle bundle = new Bundle();
+                    bundle.putInt("layout_caller", R.id.frame_layout);
+                    String resultsJson = new Gson().toJson(myReservations);
+                    bundle.putString("resultsJson", resultsJson);
+
+                    reservationListFragment.setArguments(bundle);
+                    openFragment(reservationListFragment);
+                } else {
+                    // Log error details
+                    Log.d("GuestMainScreen", "Unsuccessful response: " + response.code());
+                    try {
+                        Log.d("GuestMainScreen", "Error Body: " + response.errorBody().string());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ArrayList<Reservation>> call, Throwable t) {
+                Log.d("GuestMainScreen", t.getMessage() != null ? t.getMessage() : "error");
             }
         });
-
-
     }
 
     private  void replaceFragment(Fragment fragment) {
@@ -177,20 +208,18 @@ public class GuestMainScreen extends AppCompatActivity implements NavigationView
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int itemId = item.getItemId();
-        if (itemId == R.id.nav_language){
-            //Toast.makeText(GuestMainScreen.this,"LANGUAGE clicked",Toast.LENGTH_SHORT).show();
+        if (itemId == R.id.nav_account){
+            openFragment(new AccountFragment());
+        } else if (itemId == R.id.nav_language){
             openFragment(new LanguageFragment());
         }
         else if(itemId == R.id.nav_settings) {
-            //Toast.makeText(GuestMainScreen.this,"SETTINGS clicked",Toast.LENGTH_SHORT).show();
             openFragment(new SettingsFragment());
         }
         else if(itemId == R.id.nav_aboutus){
-            //Toast.makeText(GuestMainScreen.this,"ABOUTUS clicked",Toast.LENGTH_SHORT).show();
             openFragment(new AboutUsFragment());
         }
         else if(itemId == R.id.nav_notifications){
-            //Toast.makeText(GuestMainScreen.this,"NOTIFICATIONS clicked",Toast.LENGTH_SHORT).show();
             openFragment(new NotificationsFragment());
         }
         else if(itemId == R.id.nav_logout){

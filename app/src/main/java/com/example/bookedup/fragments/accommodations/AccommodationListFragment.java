@@ -3,6 +3,8 @@ package com.example.bookedup.fragments.accommodations;
 import android.content.Context;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -12,28 +14,27 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.example.bookedup.R;
 import com.example.bookedup.adapters.AccommodationAdapter;
+import com.example.bookedup.adapters.ReservationAdapter;
 import com.example.bookedup.adapters.TypeAdapter;
 import com.example.bookedup.model.Accommodation;
 import com.example.bookedup.model.Address;
 import com.example.bookedup.model.Photo;
+import com.example.bookedup.model.Reservation;
 import com.example.bookedup.model.enums.AccommodationStatus;
 import com.example.bookedup.model.enums.PriceType;
+import com.example.bookedup.model.enums.ReservationStatus;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link AccommodationListFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class AccommodationListFragment extends Fragment implements TypeAdapter.TypeSelectionListener {
-
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
 
     private RecyclerView typeRecyclerView;
     private RecyclerView accommodationRecyclerView;
@@ -41,15 +42,15 @@ public class AccommodationListFragment extends Fragment implements TypeAdapter.T
     private TypeAdapter typeAdapter;
     private AccommodationAdapter accommodationAdapter;
 
-    public AccommodationListFragment() {
-        // Required empty public constructor
-    }
+    private int layout_caller;
+
+    private List<Accommodation> accommodations = new ArrayList<>();
+
+    public AccommodationListFragment() {}
 
     public static AccommodationListFragment newInstance(String param1, String param2) {
         AccommodationListFragment fragment = new AccommodationListFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
         fragment.setArguments(args);
         return fragment;
     }
@@ -63,94 +64,93 @@ public class AccommodationListFragment extends Fragment implements TypeAdapter.T
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_accommodation_list, container, false);
 
-        // Inicijalizacija i postavljanje TypeAdapter-a
+        return view;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        getCallerData();
+        initUI(view);
+    }
+
+    private void getCallerData(){
+        Bundle arguments = getArguments();
+        if (arguments != null) {
+            String resultsJson = arguments.getString("resultsJson");
+            layout_caller = arguments.getInt("layout_caller");
+            Type type = new TypeToken<ArrayList<Accommodation>>() {}.getType();
+            accommodations = new Gson().fromJson(resultsJson, type);
+            Log.d("AccommodationListFragment", "ACC SIZE " + accommodations.size());
+        }
+    }
+
+    private void initUI(View view){
         typeRecyclerView = view.findViewById(R.id.fal_recyclerType);
         typeAdapter = new TypeAdapter(getTypeList(), this);
         typeRecyclerView.setAdapter(typeAdapter);
         typeRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL, false));
 
-        // Inicijalizacija i postavljanje RequestAdapter-a
         accommodationRecyclerView = view.findViewById(R.id.cards_myAccommodations);
-        if (accommodationRecyclerView != null) {
-//        // Postavljanje layout manager-a (npr. LinearLayoutManager)
-            accommodationRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-//
-//        // Obezbedite da getRequestList() ne vraća null
-            List<Accommodation> accommodationList = getRequestList();
-            if (accommodationList != null) {
-                // Obezbedite da getContext() ne vraća null
-                Context context = getContext();
-                if (context != null) {
-                    // Kreirajte RequestAdapter samo ako requestList i context nisu null
-
-                    accommodationAdapter = new AccommodationAdapter(accommodationList, context, getParentFragmentManager());
-                    accommodationRecyclerView.setAdapter(accommodationAdapter);
-                } else {
-                    Log.d("AccommodationRequestFrag", "getContext() returned null");
-                }
-            } else {
-                Log.d("AccommodationRequestFrag", "getRequestList() returned null");
-            }
-        } else {
-            Log.d("AccommodationRequestFrag", "RecyclerView is null");
-        }
-
-        return view;
+        accommodationRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        Context context = getContext();
+        accommodationAdapter = new AccommodationAdapter(accommodations, context);
+        accommodationRecyclerView.setAdapter(accommodationAdapter);
     }
 
     private List<String> getTypeList() {
-        // Vraća listu tipova koje želite prikazati
         List<String> types = new ArrayList<>();
-        types.add("My Accommodations");
+        types.add("All Accommodations");
         types.add("Waiting For Approval");
+        types.add("Accepted");
         types.add("Rejected");
         return types;
     }
 
-    private List<Accommodation> getRequestList() {
-        List<Accommodation> accommodations = new ArrayList<>();
-
-
-        Accommodation accommodation = new Accommodation();
-        accommodation.setName("pls");
-        accommodation.setAverageRating(3.5);
-        accommodation.setStatus(AccommodationStatus.ACTIVE);
-
-        Address address = new Address(1L,"Drzva", "city", "21424", "sajdas", true, 23.9,48.0);
-        accommodation.setAddress(address);
-
-        accommodation.setPrice(100.0);
-        accommodation.setPriceType(PriceType.PER_GUEST);
-
-        Photo photo = new Photo(1L,"url", "", true);
-
-        List<Photo>photos = new ArrayList<>();
-        photos.add(photo);
-
-        accommodation.setPhotos(photos);
-        accommodations.add(accommodation);
-
-        return accommodations;
-    }
-
     @Override
     public void onTypeSelected(String selectedType) {
-        // Ovdje možete promijeniti prikaz na temelju odabranog tipa
-        // Primjerice, ažurirajte RequestAdapter prema odabranom tipu
         updateAccommodationAdapter(selectedType);
     }
 
     private void updateAccommodationAdapter(String selectedType) {
-        // Ovdje možete ažurirati RequestAdapter prema odabranom tipu
-        // Na primjer, dohvatite nove podatke prema odabranom tipu i postavite ih na RequestAdapter
         List<Accommodation> updatedList = getUpdatedAccommodationList(selectedType);
-        accommodationAdapter.updateData(updatedList);
+        accommodationAdapter = new AccommodationAdapter(updatedList, getContext());
+        accommodationRecyclerView.setAdapter(accommodationAdapter);
     }
 
     private List<Accommodation> getUpdatedAccommodationList(String selectedType) {
-        // Ovdje možete dohvatiti nove podatke prema odabranom tipu
-        // Vratite ažuriranu listu smještaja
-        // Primjerice, dohvatite nove podatke iz baze podataka ili web servisa
-        return new ArrayList<>(); // Vratite ažuriranu listu
+        List<Accommodation> filteredList = new ArrayList<Accommodation>();
+
+        switch (selectedType) {
+            case "All Accommodations":
+                filteredList.addAll(accommodations);
+                break;
+            case "Waiting For Approval":
+                for (Accommodation accommodation : accommodations) {
+                    if (accommodation.getStatus() == AccommodationStatus.CREATED || accommodation.getStatus() == AccommodationStatus.CHANGED) {
+                        filteredList.add(accommodation);
+                    }
+                }
+                break;
+            case "Accepted":
+                for (Accommodation accommodation : accommodations) {
+                    if (accommodation.getStatus() == AccommodationStatus.ACTIVE) {
+                        filteredList.add(accommodation);
+                    }
+                }
+                break;
+            case "Rejected":
+                for (Accommodation accommodation : accommodations) {
+                    if (accommodation.getStatus() == AccommodationStatus.REJECTED) {
+                        filteredList.add(accommodation);
+                    }
+                }
+                break;
+        }
+        if(filteredList.isEmpty()){
+            Toast.makeText(getActivity(),"No results!",Toast.LENGTH_SHORT).show();
+        }
+
+        return filteredList;
     }
 }

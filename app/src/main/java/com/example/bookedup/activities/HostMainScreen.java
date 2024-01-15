@@ -9,11 +9,14 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.ViewModelProvider;
 
 import android.app.Dialog;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
@@ -24,16 +27,31 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.example.bookedup.R;
+import com.example.bookedup.clients.ClientUtils;
+import com.example.bookedup.fragments.about.AboutUsFragment;
 import com.example.bookedup.fragments.accommodations.AccommodationListFragment;
 import com.example.bookedup.fragments.accommodations.CreateAccommodationFragment;
 import com.example.bookedup.fragments.account.AccountFragment;
 import com.example.bookedup.fragments.home.HomeFragment;
-import com.example.bookedup.fragments.reservations.ReservationListFragment;
+import com.example.bookedup.fragments.language.LanguageFragment;
+import com.example.bookedup.fragments.notifications.NotificationsFragment;
 import com.example.bookedup.fragments.reservations.ReservationRequestFragment;
+import com.example.bookedup.fragments.settings.SettingsFragment;
+import com.example.bookedup.model.Accommodation;
+import com.example.bookedup.model.Reservation;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationBarView;
 import com.google.android.material.navigation.NavigationView;
+import com.google.gson.Gson;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class HostMainScreen extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
 
@@ -46,7 +64,6 @@ public class HostMainScreen extends AppCompatActivity implements NavigationView.
     private FloatingActionButton fab;
 
     private Toolbar toolbar;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -77,18 +94,15 @@ public class HostMainScreen extends AppCompatActivity implements NavigationView.
                     return true;
                 }
                 else if(itemId==R.id.nav_accommodationHost){
-                    Toast.makeText(HostMainScreen.this,"Accommodation list clicked",Toast.LENGTH_SHORT).show();
-                    openFragment(new AccommodationListFragment());
+                    setMyAccommodations();
                     return true;
                 }
                 else if(itemId==R.id.nav_reservationsHost){
-                    Toast.makeText(HostMainScreen.this,"Reservations request clicked",Toast.LENGTH_SHORT).show();
-                    openFragment(new ReservationRequestFragment());
+                    setMyReservations();
                     return true;
                 }
                 else if(itemId==R.id.nav_reportHost){
                     Toast.makeText(HostMainScreen.this,"Favorites clicked",Toast.LENGTH_SHORT).show();
-                    //openFragment(new AccountFragment());
                     return true;
                 }
 //                else if(itemId==R.id.nav_commentsHost){
@@ -110,9 +124,72 @@ public class HostMainScreen extends AppCompatActivity implements NavigationView.
                 showBottomDialog();
             }
         });
+    }
 
+    private void setMyReservations() {
+        Call<ArrayList<Reservation>> reservations = ClientUtils.reservationService.getReservationsByHostId(LoginScreen.loggedHost.getId());
+        reservations.enqueue(new Callback<ArrayList<Reservation>>() {
+            @Override
+            public void onResponse(Call<ArrayList<Reservation>> call, Response<ArrayList<Reservation>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    Log.d("HostMainScreen", "Successful response: " + response.body());
+                    List<Reservation> myReservations = response.body();
+                    ReservationRequestFragment reservationRequestFragment = new ReservationRequestFragment();
+                    Bundle bundle = new Bundle();
+                    bundle.putSerializable("reservations", new ArrayList<>(myReservations));
+                    bundle.putInt("layout_caller", R.id.frame_layoutHost);
 
+                    reservationRequestFragment.setArguments(bundle);
+                    openFragment(reservationRequestFragment);
+                } else {
+                    // Log error details
+                    Log.d("HostMainScreen", "Unsuccessful response: " + response.code());
+                    try {
+                        Log.d("HostMainScreen", "Error Body: " + response.errorBody().string());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
 
+            @Override
+            public void onFailure(Call<ArrayList<Reservation>> call, Throwable t) {
+                Log.d("GuestMainScreen", t.getMessage() != null ? t.getMessage() : "error");
+            }
+        });
+    }
+
+    private void setMyAccommodations() {
+        Call<ArrayList<Accommodation>> accommodations = ClientUtils.accommodationService.getAllByHostId(LoginScreen.loggedHost.getId());
+        accommodations.enqueue(new Callback<ArrayList<Accommodation>>() {
+            @Override
+            public void onResponse(Call<ArrayList<Accommodation>> call, Response<ArrayList<Accommodation>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    Log.d("HostMainScreen", "Successful response: " + response.body());
+                    List<Accommodation> myAccommodations = response.body();
+                    AccommodationListFragment accommodationListFragment = new AccommodationListFragment();
+                    Bundle bundle = new Bundle();
+                    bundle.putInt("layout_caller", R.id.frame_layoutHost);
+                    String resultsJson = new Gson().toJson(myAccommodations);
+                    bundle.putString("resultsJson", resultsJson);
+
+                    accommodationListFragment.setArguments(bundle);
+                    openFragment(accommodationListFragment);
+                } else {
+                    Log.d("HostMainScreen", "Unsuccessful response: " + response.code());
+                    try {
+                        Log.d("HostMainScreen", "Error Body: " + response.errorBody().string());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ArrayList<Accommodation>> call, Throwable t) {
+                Log.d("GuestMainScreen", t.getMessage() != null ? t.getMessage() : "error");
+            }
+        });
     }
 
     private void showBottomDialog() {
@@ -159,6 +236,28 @@ public class HostMainScreen extends AppCompatActivity implements NavigationView.
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item){
+        int itemId = item.getItemId();
+        if (itemId == R.id.nav_account){
+            openFragment(new AccountFragment());
+        } else if (itemId == R.id.nav_language){
+            openFragment(new LanguageFragment());
+        }
+        else if(itemId == R.id.nav_settings) {
+            openFragment(new SettingsFragment());
+        }
+        else if(itemId == R.id.nav_aboutus){
+            openFragment(new AboutUsFragment());
+        }
+        else if(itemId == R.id.nav_notifications){
+            openFragment(new NotificationsFragment());
+        }
+        else if(itemId == R.id.nav_logout){
+            Toast.makeText(HostMainScreen.this,"Log out",Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(this,SplashScreen.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+        }
+        drawerLayout.closeDrawer(GravityCompat.START);
 
         return true;
     }

@@ -6,11 +6,8 @@ public class Photo {
     private String caption;
     private boolean active;
 
-    // Konstruktori, getteri i setteri
 
-    public Photo() {
-        // Prazan konstruktor
-    }
+    public Photo() {}
 
     public Photo(Long id, String url, String caption, boolean active) {
         this.id = id;

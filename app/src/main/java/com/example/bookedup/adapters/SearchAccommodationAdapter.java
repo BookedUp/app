@@ -32,15 +32,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SearchAccommodationAdapter extends RecyclerView.Adapter<SearchAccommodationAdapter.ViewHolder>{
-    ArrayList<Accommodation> items;
+    private ArrayList<Accommodation> items;
+
+    private String checkIn;
+
+    private String checkOut;
+
+    private Integer guestsNumber;
 
     int targetLayout;
 
     //DecimalFormat formatter;
 
-    public SearchAccommodationAdapter(ArrayList<Accommodation> items, int targetLayout) {
+    public SearchAccommodationAdapter(ArrayList<Accommodation> items, int targetLayout, String checkIn, String checkOut, Integer guestsNumber) {
         this.items = items;
         this.targetLayout = targetLayout;
+        this.checkIn = checkIn;
+        this.checkOut = checkOut;
+        this.guestsNumber = guestsNumber;
     }
 
     @NonNull
@@ -60,14 +69,13 @@ public class SearchAccommodationAdapter extends RecyclerView.Adapter<SearchAccom
             holder.averageRatingTxt.setText(String.valueOf(items.get(position).getAverageRating()));
             holder.typeTxt.setText(items.get(position).getType().name());
             holder.totalPriceTxt.setText("Total: " + String.valueOf(items.get(position).getTotalPrice()));
-            // Check if the price is available before setting it
             if (String.valueOf(items.get(position).getPrice()) != null) {
-                holder.priceTxt.setText(String.valueOf(items.get(position).getPrice()));
+                holder.priceTxt.setText(String.valueOf(items.get(position).getPrice()) + "$");
             } else {
-                holder.priceTxt.setText(""); // or set a default value
+                holder.priceTxt.setText("");
             }
 
-            holder.priceTypeTxt.setText(String.valueOf(items.get(position).getPriceType().getPriceType()));
+            holder.priceTypeTxt.setText("/" + String.valueOf(items.get(position).getPriceType().getPriceType()));
 
             List<Photo> photos = items.get(position).getPhotos();
 
@@ -79,6 +87,11 @@ public class SearchAccommodationAdapter extends RecyclerView.Adapter<SearchAccom
                 public void onClick(View v) {
                     DetailsFragment detailsFragment = new DetailsFragment();
                     detailsFragment.setAccommodation(items.get(position));
+                    Bundle bundle = new Bundle();
+                    bundle.putString("checkIn", checkIn);
+                    bundle.putString("checkOut", checkOut);
+                    bundle.putInt("guestsNumber", guestsNumber);
+                    detailsFragment.setArguments(bundle);
                     FragmentTransaction transaction = ((AppCompatActivity) v.getContext())
                             .getSupportFragmentManager().beginTransaction();
                     transaction.replace(targetLayout, detailsFragment);

@@ -1,12 +1,17 @@
 package com.example.bookedup.model;
 
 import com.example.bookedup.model.enums.ReservationStatus;
+import com.google.gson.annotations.SerializedName;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class Reservation {
+public class Reservation implements Serializable {
     private Long id;
+
+    @SerializedName("startDate")
     private Date startDate;
+    @SerializedName("endDate")
     private Date endDate;
     private double totalPrice;
     private int guestsNumber;
@@ -103,5 +108,19 @@ public class Reservation {
 
     public void setStatus(ReservationStatus status) {
         this.status = status;
+    }
+
+    @Override
+    public String toString() {
+        return "Reservation{" +
+                "id=" + id +
+                ", startDate=" + startDate +
+                ", endDate=" + endDate +
+                ", totalPrice=" + totalPrice +
+                ", guestsNumber=" + guestsNumber +
+                ", accommodation=" + accommodation +
+                ", guest=" + guest +
+                ", status=" + status +
+                '}';
     }
 }

@@ -3,11 +3,11 @@ package com.example.bookedup.model;
 import com.example.bookedup.model.enums.Role;
 
 public class User {
-    private int id;
+    private Long id;
     private String firstName;
     private String lastName;
     private Address address;
-    private long phone;
+    private Integer phone;
     private String email;
     private String password;
     private boolean isBlocked;
@@ -20,7 +20,7 @@ public class User {
     public User() {
     }
 
-    public User(int id, String firstName, String lastName, Address address, long phone,
+    public User(Long id, String firstName, String lastName, Address address, Integer phone,
                 String email, String password, boolean isBlocked, boolean verified,
                 boolean active, Photo profilePicture, Role role) {
         this.id = id;
@@ -37,10 +37,7 @@ public class User {
         this.role = role;
     }
 
-    public User( String firstName, String lastName, Address address, long phone,
-                 String email, String password, boolean isBlocked, boolean verified,
-                 boolean active, Photo profilePicture, Role role) {
-
+    public User(String firstName, String lastName, Address address, Integer phone, String email, String password, boolean isBlocked, boolean verified, boolean active, Photo profilePicture, Role role) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.address = address;
@@ -55,11 +52,11 @@ public class User {
     }
 
     // Getteri i setteri
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -87,11 +84,11 @@ public class User {
         this.address = address;
     }
 
-    public long getPhone() {
+    public Integer getPhone() {
         return phone;
     }
 
-    public void setPhone(long phone) {
+    public void setPhone(Integer phone) {
         this.phone = phone;
     }
 
@@ -149,5 +146,23 @@ public class User {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", address=" + address +
+                ", phone=" + phone +
+                ", email='" + email + '\'' +
+                ", password='" + password + '\'' +
+                ", isBlocked=" + isBlocked +
+                ", verified=" + verified +
+                ", active=" + active +
+                ", profilePicture=" + profilePicture +
+                ", role=" + role +
+                '}';
     }
 }

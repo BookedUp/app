@@ -13,6 +13,8 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
@@ -60,6 +62,9 @@ public class HomeFragment extends Fragment implements DatePickerDialog.OnDateSet
 
     private Integer guestsNumber;
 
+    private FloatingActionButton searchButton;
+    private ImageView startDateBtn, endDateBtn;
+
 
     public HomeFragment() {}
     @Override
@@ -67,28 +72,66 @@ public class HomeFragment extends Fragment implements DatePickerDialog.OnDateSet
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
-        Intent intent = getActivity().getIntent();
-        ComponentName componentName = intent.getComponent();
-        if (componentName.getClassName().equals("com.example.bookedup.activities.GuestMainScreen")) {
-            targetLayout = R.id.frame_layout;
-        } else if (componentName.getClassName().equals("com.example.bookedup.activities.AdministratorMainScreen")){
-            targetLayout = R.id.frame_layoutAdmin;
-        } else if (componentName.getClassName().equals("com.example.bookedup.activities.HostMainScreen")){
-            targetLayout = R.id.frame_layoutHost;
-        }
-        FloatingActionButton searchButton = view.findViewById(R.id.searchButtonHome);
+//        Intent intent = getActivity().getIntent();
+//        ComponentName componentName = intent.getComponent();
+//        if (componentName.getClassName().equals("com.example.bookedup.activities.GuestMainScreen")) {
+//            targetLayout = R.id.frame_layout;
+//        } else if (componentName.getClassName().equals("com.example.bookedup.activities.AdministratorMainScreen")){
+//            targetLayout = R.id.frame_layoutAdmin;
+//        } else if (componentName.getClassName().equals("com.example.bookedup.activities.HostMainScreen")){
+//            targetLayout = R.id.frame_layoutHost;
+//        }
+//        FloatingActionButton searchButton = view.findViewById(R.id.searchButtonHome);
+//
+//        recyclerViewPopular = view.findViewById(R.id.view_pop);
+//        recyclerViewDestinations = view.findViewById(R.id.view_destinations);
+//
+//        whereToGoTxt = view.findViewById(R.id.location);
+//        checkInTxt = view.findViewById(R.id.checkInText);
+//        checkOutTxt = view.findViewById(R.id.checkOutText);
+//        guestsNumberTxt = view.findViewById(R.id.guestsNumber);
+//        initRecycleView();
+//
+//        ImageView startDateBtn =  view.findViewById(R.id.startDate);
+//        ImageView endDateBtn =  view.findViewById(R.id.endDate);
+//        startDateBtn.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                DialogFragment datePicker = new CalendarFragment();
+//                datePicker.setTargetFragment(HomeFragment.this, 0);
+//                datePicker.show(requireActivity().getSupportFragmentManager(), "date picker");
+//                isStartDateButtonClicked = true;
+//                isEndDateButtonClicked = false;
+//            }
+//        });
+//
+//        endDateBtn.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                DialogFragment datePicker = new CalendarFragment();
+//                datePicker.setTargetFragment(HomeFragment.this, 0);
+//                datePicker.show(requireActivity().getSupportFragmentManager(), "date picker");
+//                isEndDateButtonClicked = true;
+//                isStartDateButtonClicked = false;
+//            }
+//        });
+//        searchButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                openSearchFilterFragment(whereToGoTxt, guestsNumberTxt, checkInTxt, checkOutTxt);
+//            }
+//        });
 
-        recyclerViewPopular = view.findViewById(R.id.view_pop);
-        recyclerViewDestinations = view.findViewById(R.id.view_destinations);
+        return view;
+    }
 
-        whereToGoTxt = view.findViewById(R.id.location);
-        checkInTxt = view.findViewById(R.id.checkInText);
-        checkOutTxt = view.findViewById(R.id.checkOutText);
-        guestsNumberTxt = view.findViewById(R.id.guestsNumber);
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        findTargetLayout();
+        initView(view);
         initRecycleView();
 
-        ImageView startDateBtn =  view.findViewById(R.id.startDate);
-        ImageView endDateBtn =  view.findViewById(R.id.endDate);
         startDateBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -113,14 +156,43 @@ public class HomeFragment extends Fragment implements DatePickerDialog.OnDateSet
         searchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                openSearchFilterFragment(whereToGoTxt, guestsNumberTxt, checkInTxt, checkOutTxt);
+                if (!guestsNumberTxt.getText().toString().isEmpty()){
+                    guestsNumber = Integer.parseInt(guestsNumberTxt.getText().toString());
+                } else {
+                    guestsNumber = 0;
+                }
+                searchFilter(whereToGoTxt.getText().toString(), guestsNumber, checkInTxt.getText().toString(), checkOutTxt.getText().toString());
             }
         });
-
-        return view;
     }
 
-    private void openSearchFilterFragment(EditText whereToGoTxt, EditText guestsNumberTxt, TextView checkInTxt, TextView checkOutTxt) {
+    private void findTargetLayout(){
+        Intent intent = getActivity().getIntent();
+        ComponentName componentName = intent.getComponent();
+        if (componentName.getClassName().equals("com.example.bookedup.activities.GuestMainScreen")) {
+            targetLayout = R.id.frame_layout;
+        } else if (componentName.getClassName().equals("com.example.bookedup.activities.AdministratorMainScreen")){
+            targetLayout = R.id.frame_layoutAdmin;
+        } else if (componentName.getClassName().equals("com.example.bookedup.activities.HostMainScreen")){
+            targetLayout = R.id.frame_layoutHost;
+        }
+    }
+
+    private void initView(View view){
+        searchButton = view.findViewById(R.id.searchButtonHome);
+
+        recyclerViewPopular = view.findViewById(R.id.view_pop);
+        recyclerViewDestinations = view.findViewById(R.id.view_destinations);
+
+        whereToGoTxt = view.findViewById(R.id.location);
+        checkInTxt = view.findViewById(R.id.checkInText);
+        checkOutTxt = view.findViewById(R.id.checkOutText);
+        guestsNumberTxt = view.findViewById(R.id.guestsNumber);
+        startDateBtn =  view.findViewById(R.id.startDate);
+        endDateBtn =  view.findViewById(R.id.endDate);
+    }
+
+    private void searchFilter(String whereToGo, Integer guestsNumber, String checkIn, String checkOut) {
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
         Date startDate = new Date();
@@ -128,34 +200,23 @@ public class HomeFragment extends Fragment implements DatePickerDialog.OnDateSet
 
 
         try {
-            startDate = dateFormat.parse(checkInTxt.getText().toString());
-            startDate.setHours(13);
-
+            startDate = dateFormat.parse(checkIn);
+            endDate = dateFormat.parse(checkOut);
         } catch (ParseException e) {
             e.printStackTrace();
         }
 
-        try {
-            endDate = dateFormat.parse(checkOutTxt.getText().toString());
-            endDate.setHours(13);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-
-
+        startDate.setHours(13);
+        endDate.setHours(13);
         List<Object> amenities = new ArrayList<>();
-        if (!guestsNumberTxt.getText().toString().isEmpty()){
-            guestsNumber = Integer.parseInt(guestsNumberTxt.getText().toString());
-        } else {
-            guestsNumber = 0;
-        }
-        Log.d("HomeFragment", "StartDate " + startDate);
-        Log.d("HomeFragment", "EndDate " + endDate);
-        Log.d("HomeFragment", "Location " + whereToGoTxt.getText().toString());
-        Log.d("HomeFragment", "GuestsNumber " + guestsNumber);
+
+//        Log.d("HomeFragment", "StartDate " + checkIn);
+//        Log.d("HomeFragment", "EndDate " + checkOut);
+//        Log.d("HomeFragment", "Location " + whereToGo);
+//        Log.d("HomeFragment", "GuestsNumber " + guestsNumber);
 
         Call<ArrayList<Accommodation>> searchedResults = ClientUtils.accommodationService.searchAccommodations(
-                whereToGoTxt.getText().toString(),
+                whereToGo,
                 guestsNumber,
                 dateFormat.format(startDate),
                 dateFormat.format(endDate),
@@ -167,9 +228,7 @@ public class HomeFragment extends Fragment implements DatePickerDialog.OnDateSet
                 ""
         );
 
-        Log.d("HomeFragment", "Prosaoooooo" + searchedResults);
-
-
+//        Log.d("HomeFragment", "Prosaoooooo" + searchedResults);
         searchedResults.enqueue(new Callback<ArrayList<Accommodation>>() {
             @Override
             public void onResponse(Call<ArrayList<Accommodation>> call, Response<ArrayList<Accommodation>> response) {
@@ -180,23 +239,8 @@ public class HomeFragment extends Fragment implements DatePickerDialog.OnDateSet
                         for (Accommodation accommodation : results) {
                             Log.d("HomeFragment", "Accommodation: " + accommodation);
                         }
+                        openSearchFilterFragment(whereToGo, results, guestsNumber, checkIn, checkOut);
 
-                        SearchFilterFragment searchFilterFragment = new SearchFilterFragment();
-
-                        Bundle bundle = new Bundle();
-                        bundle.putString("whereToGo", whereToGoTxt.getText().toString());
-                        bundle.putInt("guestsNumber", guestsNumber);
-                        bundle.putString("checkIn", checkInTxt.getText().toString());
-                        bundle.putString("checkOut", checkOutTxt.getText().toString());
-                        String resultsJson = new Gson().toJson(results);
-                        bundle.putString("resultsJson", resultsJson);
-
-                        searchFilterFragment.setArguments(bundle);
-
-                        FragmentTransaction transaction = requireActivity().getSupportFragmentManager().beginTransaction();
-                        transaction.replace(targetLayout, searchFilterFragment);
-                        transaction.addToBackStack(null);
-                        transaction.commit();
                     } else {
                         Log.d("HomeFragment", "Response body is null");
                     }
@@ -216,6 +260,27 @@ public class HomeFragment extends Fragment implements DatePickerDialog.OnDateSet
                 Log.d("HomeFragment", t.getMessage() != null?t.getMessage():"error");
             }
         });
+    }
+
+    private void openSearchFilterFragment(String whereToGo, List<Accommodation> results, Integer guestsNumber, String checkIn, String checkOut){
+        Log.d("HomeFragment", "CHEEEEEEECK-IN: " + checkIn);
+        Log.d("HomeFragment", "CHEEEEEEECK-OUT: " + checkOut);
+        SearchFilterFragment searchFilterFragment = new SearchFilterFragment();
+
+        Bundle bundle = new Bundle();
+        bundle.putString("whereToGo", whereToGo);
+        bundle.putInt("guestsNumber", guestsNumber);
+        bundle.putString("checkIn", checkIn);
+        bundle.putString("checkOut", checkOut);
+        String resultsJson = new Gson().toJson(results);
+        bundle.putString("resultsJson", resultsJson);
+
+        searchFilterFragment.setArguments(bundle);
+
+        FragmentTransaction transaction = requireActivity().getSupportFragmentManager().beginTransaction();
+        transaction.replace(targetLayout, searchFilterFragment);
+        transaction.addToBackStack(null);
+        transaction.commit();
     }
 
     private void initRecycleView() {
@@ -254,7 +319,6 @@ public class HomeFragment extends Fragment implements DatePickerDialog.OnDateSet
                         e.printStackTrace();
                     }
                 }
-
             }
 
             @Override
