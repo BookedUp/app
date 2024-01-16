@@ -4,6 +4,7 @@ import android.app.Dialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -27,23 +28,33 @@ import com.bumptech.glide.load.resource.bitmap.CenterCrop;
 import com.bumptech.glide.load.resource.bitmap.GranularRoundedCorners;
 import com.example.bookedup.R;
 import com.example.bookedup.activities.GuestMainScreen;
+import com.example.bookedup.activities.LoginScreen;
+import com.example.bookedup.activities.SplashScreen;
+import com.example.bookedup.clients.ClientUtils;
 import com.example.bookedup.fragments.reservations.CreateReservationFragment;
 import com.example.bookedup.model.Accommodation;
+import com.example.bookedup.model.Guest;
+import com.example.bookedup.model.User;
 import com.example.bookedup.model.enums.Amenity;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.io.IOException;
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class DetailsFragment extends Fragment {
 
     private TextView titleTxt, locationTxt, descriptionTxt, scoreTxt, priceTxt, pricePerTxt, staysTimeTxt;
-    private ImageView picImg, fav;
+    private ImageView picImg;
 
     private int daysNum = 0;
 
     private int guestNum = 0;
 
-    private boolean isFavorite = false;
+    private boolean isFavourite = false;
 
     private FloatingActionButton commentPopup;
 
@@ -60,8 +71,11 @@ public class DetailsFragment extends Fragment {
 
     private Accommodation accommodation;
 
+    private FloatingActionButton favouriteButton;
 
-    public DetailsFragment() {}
+
+    public DetailsFragment() {
+    }
 
 
     @Override
@@ -82,9 +96,154 @@ public class DetailsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         findTargetLayout();
         getCallerData();
+        isAccommodationFavourite();
         initView(view);
-        setupFavoriteIcon();
+
+        commentPopup.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showCommentDialog();
+            }
+        });
+
+        book.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openFragment(new CreateReservationFragment(accommodation, checkIn, checkOut, guestNum));
+            }
+        });
+
+        favouriteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                toggleFavouriteState();
+            }
+        });
     }
+
+
+    private void isAccommodationFavourite() {
+        Call<Boolean> checked = ClientUtils.guestService.isFavouriteAccommodation(LoginScreen.loggedUser.getId(), accommodation.getId());
+        checked.enqueue(new Callback<Boolean>() {
+            @Override
+            public void onResponse(Call<Boolean> call, Response<Boolean> response) {
+                if (response.isSuccessful()) {
+                    isFavourite = response.body();
+                    if (isFavourite){
+                        setHeartColor(R.color.red);
+                    } else {
+                        setHeartColor(R.color.grey);
+                    }
+                } else {
+                    Log.d("DetailsFragment", "Unsuccessful response: " + response.code());
+                    try {
+                        Log.d("DetailsFragment", "Error Body: " + response.errorBody().string());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Boolean> call, Throwable t) {
+                Log.d("DetailsFragment", t.getMessage() != null ? t.getMessage() : "error");
+            }
+        });
+    }
+
+    private void setHeartColor(Integer color){
+        favouriteButton.setColorFilter(getResources().getColor(color));
+    }
+
+
+    private void toggleFavouriteState() {
+        isFavourite = !isFavourite;
+
+        if (isFavourite) {
+            setHeartColor(R.color.red);
+            addToFavourite();
+        } else {
+            setHeartColor(R.color.grey);
+            removeFromFavourite();
+        }
+    }
+
+    private void addToFavourite(){
+        Call<Void> addedFavourite = ClientUtils.guestService.addFavouriteAccommodation(LoginScreen.loggedUser.getId(), accommodation.getId());
+        addedFavourite.enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                if (response.isSuccessful()) {
+                    Toast.makeText(getActivity(), "Added to favorites", Toast.LENGTH_SHORT).show();
+                    updateLoggedGuest();
+                    for(Accommodation acc : LoginScreen.loggedGuest.getFavourites()){
+                        Log.d("DetailsFragment", "Acc " + acc.toString());
+                    }
+                } else {
+                    Log.d("DetailsFragment", "Unsuccessful response: " + response.code());
+                    try {
+                        Log.d("DetailsFragment", "Error Body: " + response.errorBody().string());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                Log.d("DetailsFragment", t.getMessage() != null ? t.getMessage() : "error");
+            }
+        });
+    }
+
+    private void removeFromFavourite(){
+        Call<Void> removedFavourite = ClientUtils.guestService.removeFavouriteAccommodation(LoginScreen.loggedUser.getId(), accommodation.getId());
+        removedFavourite.enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                if (response.isSuccessful()) {
+                    Toast.makeText(getActivity(), "Removed from favorites", Toast.LENGTH_SHORT).show();
+                    updateLoggedGuest();
+                } else {
+                    Log.d("DetailsFragment", "Unsuccessful response: " + response.code());
+                    try {
+                        Log.d("DetailsFragment", "Error Body: " + response.errorBody().string());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                Log.d("DetailsFragment", t.getMessage() != null ? t.getMessage() : "error");
+            }
+        });
+    }
+
+    private void updateLoggedGuest() {
+        // Fetch the latest guest data from the server based on the user ID
+        Call<Guest> getGuestCall = ClientUtils.guestService.getGuest(LoginScreen.loggedUser.getId());
+        getGuestCall.enqueue(new Callback<Guest>() {
+            @Override
+            public void onResponse(Call<Guest> call, Response<Guest> response) {
+                if (response.isSuccessful()) {
+                    // Update the loggedGuest object with the latest data
+                    LoginScreen.loggedGuest = response.body();
+                } else {
+                    // Handle unsuccessful response
+                    Log.d("DetailsFragment", "Failed to fetch updated guest data");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Guest> call, Throwable t) {
+                // Handle failure
+                Log.d("DetailsFragment", "Failed to fetch updated guest data: " + t.getMessage());
+            }
+        });
+    }
+
 
     private void findTargetLayout(){
         Intent intent = getActivity().getIntent();
@@ -107,34 +266,15 @@ public class DetailsFragment extends Fragment {
         }
     }
 
-    private void setupFavoriteIcon() {
-        fav.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                toggleFavoriteIcon();
-            }
-        });
-    }
 
-    private void toggleFavoriteIcon() {
-        isFavorite = !isFavorite;
-
-        // Change the icon based on the favorite state
-        if (isFavorite) {
-            fav.setImageResource(R.drawable.ic_favorites);
-        } else {
-            fav.setImageResource(R.drawable.ic_red_heart);
-
-        }
-    }
 
     public void setAccommodation(Accommodation accommodation) {
-        Log.e("DetailsFragment", "TUUU JEEEEE");
         this.accommodation = accommodation;
-        }
+    }
 
     private void initView(View view) {
-
+        fragmentManager = getParentFragmentManager();
+        favouriteButton = view.findViewById(R.id.favouriteButton);
         titleTxt = view.findViewById(R.id.titleTxt);
         locationTxt = view.findViewById(R.id.locationTxt);;
         descriptionTxt = view.findViewById(R.id.descriptionTxt);
@@ -142,7 +282,6 @@ public class DetailsFragment extends Fragment {
         picImg = view.findViewById(R.id.picImg);
         priceTxt = view.findViewById(R.id.priceTxt);
         pricePerTxt = view.findViewById(R.id.pricePerTxt);
-        fav = view.findViewById(R.id.fav);
         commentPopup = view.findViewById(R.id.addCommentBtn);
         book = view.findViewById(R.id.bookNow);
         staysTimeTxt = view.findViewById(R.id.staysTimeTxt);
@@ -180,20 +319,6 @@ public class DetailsFragment extends Fragment {
         Glide.with(requireContext()).load(imageUrl)
                 .transform(new CenterCrop(), new GranularRoundedCorners(40, 40, 40, 40))
                 .into(picImg);
-
-        commentPopup.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showCommentDialog();
-            }
-        });
-
-        book.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                openFragment(new CreateReservationFragment(accommodation, checkIn, checkOut, guestNum));
-            }
-        });
     }
 
 
@@ -205,7 +330,6 @@ public class DetailsFragment extends Fragment {
     }
 
     private void openFragment(Fragment fragment){
-        fragmentManager = getParentFragmentManager();
         FragmentTransaction transaction = fragmentManager.beginTransaction();
         transaction.replace(targetLayout, fragment);
         transaction.addToBackStack(null);

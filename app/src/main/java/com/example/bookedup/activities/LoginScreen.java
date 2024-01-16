@@ -79,6 +79,9 @@ public class LoginScreen extends AppCompatActivity {
 
                 String enteredUsername = username.getText().toString().trim();
                 String enteredPassword = password.getText().toString().trim();
+                Log.d("LoginScreen", "Entered Username: " + enteredUsername);
+                Log.d("LoginScreen", "Entered Password: " + enteredPassword);
+
                 LoginRequest loginRequest = new LoginRequest(enteredUsername, enteredPassword);
                 Log.d("LoginScreen", "Token prvi: ");
 

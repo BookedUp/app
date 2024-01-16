@@ -35,6 +35,7 @@ import com.example.bookedup.R;
 import com.example.bookedup.clients.ClientUtils;
 import com.example.bookedup.fragments.about.AboutUsFragment;
 import com.example.bookedup.fragments.accommodations.AccommodationRequestFragment;
+import com.example.bookedup.fragments.accommodations.FavouriteAccommodationFragment;
 import com.example.bookedup.fragments.account.AccountFragment;
 import com.example.bookedup.fragments.home.HomeFragment;
 import com.example.bookedup.fragments.language.LanguageFragment;
@@ -107,8 +108,7 @@ public class GuestMainScreen extends AppCompatActivity implements NavigationView
                    return true;
                }
                else if(itemId == R.id.nav_favorites){
-                   Toast.makeText(GuestMainScreen.this,"Favorites clicked",Toast.LENGTH_SHORT).show();
-                   //openFragment(new AccountFragment());
+                   openFragment(new FavouriteAccommodationFragment());
                    return true;
                }
                else if(itemId == R.id.nav_account){

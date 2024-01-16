@@ -1,5 +1,6 @@
 package com.example.bookedup.fragments.reservations;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.os.Bundle;
 
@@ -13,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -29,7 +31,9 @@ import com.example.bookedup.model.Accommodation;
 import com.example.bookedup.model.Guest;
 import com.example.bookedup.model.Reservation;
 import com.example.bookedup.model.User;
+import com.example.bookedup.model.UserReport;
 import com.example.bookedup.model.enums.ReservationStatus;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -51,11 +55,17 @@ public class CreateReservationFragment extends Fragment {
 
     private Integer guestsNumber;
 
-    private ImageView picImg, reportUserBtn;
+    private ImageView picImg;
 
-    private Button btnCreate;
+    private Dialog reportDialog;
 
-    private TextView title, location, score, pricePer, startDateTxt, endDateTxt, totalPrice, staysTime, status, guest;
+    private FloatingActionButton reportUserBtn;
+
+    private Button btnCreate, reportBtn;
+
+    private TextView title, location, score, pricePer, startDateTxt, endDateTxt, totalPrice, staysTime, status, user;
+
+    private EditText reportReasonsTxt;
 
     private Date startDate = new Date();
     private Date endDate = new Date();
@@ -117,6 +127,67 @@ public class CreateReservationFragment extends Fragment {
                     reservation.setStatus(ReservationStatus.CREATED);
                 }
                 createReservation(reservation);
+            }
+        });
+
+        reportUserBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showReportDialog();
+            }
+        });
+
+    }
+
+    private void showReportDialog() {
+        reportDialog = new Dialog(requireContext());
+        reportDialog.setContentView(R.layout.user_report_popup);
+        reportBtn = reportDialog.findViewById(R.id.reportButton);
+        reportReasonsTxt = reportDialog.findViewById(R.id.reasonsInput);
+        reportDialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        reportDialog.show();
+
+        reportBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                reportUser();
+            }
+        });
+    }
+
+    private void reportUser(){
+        String reasons = reportReasonsTxt.getText().toString();
+        User reportedUser = null;
+        if (LoginScreen.loggedGuest != null){
+            reportedUser = existingReservation.getAccommodation().getHost();
+        } else if (LoginScreen.loggedHost != null){
+            reportedUser = existingReservation.getGuest();
+        }
+
+        UserReport userReport = new UserReport(reasons, reportedUser, true);
+
+        Call<UserReport> report = ClientUtils.userReportService.createUserReport(userReport);
+        report.enqueue(new Callback<UserReport>() {
+            @Override
+            public void onResponse(Call<UserReport> call, Response<UserReport> response) {
+                if (response.isSuccessful()) {
+                    UserReport newReport = response.body();
+                    Log.d("CreateReservationFragment", "User report " + newReport.toString());
+                    reportDialog.dismiss();
+                    Toast.makeText(requireContext(), "User report created!", Toast.LENGTH_SHORT).show();
+                } else {
+                    Log.d("CreateReservationFragment", "Unsuccessful response: " + response.code());
+                    try {
+                        Log.d("CreateReservationFragment", "Error Body: " + response.errorBody().string());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<UserReport> call, Throwable t) {
+                Log.d("CreateReservationFragment", t.getMessage() != null ? t.getMessage() : "error");
             }
         });
     }
@@ -196,8 +267,12 @@ public class CreateReservationFragment extends Fragment {
         status  = view.findViewById(R.id.status);
         status.setText("Status: " + existingReservation.getStatus().toString());
 
-        guest = view.findViewById(R.id.guest);
-        guest.setText(existingReservation.getGuest().getFirstName() + " " + existingReservation.getGuest().getLastName());
+        user = view.findViewById(R.id.user);
+        if (LoginScreen.loggedGuest != null){
+            user.setText("Host: " + existingReservation.getAccommodation().getHost().getFirstName() + " " + existingReservation.getAccommodation().getHost().getLastName());
+        } else if (LoginScreen.loggedHost != null){
+            user.setText("Guest: " + existingReservation.getGuest().getFirstName() + " " + existingReservation.getGuest().getLastName());
+        }
 
         reportUserBtn = view.findViewById(R.id.reportUserBtn);
         if (!existingReservation.getStatus().equals(ReservationStatus.COMPLETED)){

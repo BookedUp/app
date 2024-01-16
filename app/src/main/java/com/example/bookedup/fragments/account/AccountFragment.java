@@ -139,13 +139,10 @@ public class AccountFragment extends Fragment {
 
 
         deleteProfileBtn.setOnClickListener(v -> {
-            // Create and show the dialog
             new AlertDialog.Builder(requireContext())
                     .setTitle("Delete Profile")
                     .setMessage("Are you sure you want to delete your profile?")
                     .setPositiveButton(android.R.string.yes, (dialog, which) -> {
-                        // User clicked "Yes"
-                        // Perform the deletion operation here
 
                         Call<User> deletedUser = ClientUtils.userService.deleteUser(LoginScreen.loggedUser.getId());
                         deletedUser.enqueue(new Callback<User>() {
@@ -173,8 +170,6 @@ public class AccountFragment extends Fragment {
                         });
                     })
                     .setNegativeButton(android.R.string.no, (dialog, which) -> {
-                        // User clicked "No"
-                        // Do nothing or handle accordingly
                     })
                     .show();
         });

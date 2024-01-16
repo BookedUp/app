@@ -115,6 +115,7 @@ public class ReservationRequestAdapter extends RecyclerView.Adapter<ReservationR
         int drawableResourceId = context.getResources().getIdentifier(currentReservation.getAccommodation().getPhotos().get(0).getUrl(), "drawable", context.getPackageName());
         holder.accommodationImage.setImageResource(drawableResourceId);
 
+
         if (!currentReservation.getStatus().equals(ReservationStatus.CREATED)){
             holder.btnAccept.setVisibility(View.INVISIBLE);
             holder.btnReject.setVisibility(View.INVISIBLE);

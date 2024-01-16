@@ -6,6 +6,7 @@ import com.example.bookedup.services.AccommodationService;
 import com.example.bookedup.services.AdminService;
 import com.example.bookedup.services.HostService;
 import com.example.bookedup.services.ReservationService;
+import com.example.bookedup.services.UserReportService;
 import com.example.bookedup.services.UserService;
 import com.example.bookedup.services.GuestService;
 import com.google.gson.Gson;
@@ -79,7 +80,6 @@ public class ClientUtils {
     public static AdminService adminService = retrofit.create(AdminService.class);
     public static AccommodationService accommodationService = retrofit.create(AccommodationService.class);
     public static ReservationService reservationService = retrofit.create(ReservationService.class);
-
-
+    public static UserReportService userReportService = retrofit.create(UserReportService.class);
 
 }
