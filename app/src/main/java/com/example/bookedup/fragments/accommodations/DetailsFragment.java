@@ -4,42 +4,51 @@ import android.app.Dialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.CenterCrop;
 import com.bumptech.glide.load.resource.bitmap.GranularRoundedCorners;
 import com.example.bookedup.R;
-import com.example.bookedup.activities.GuestMainScreen;
 import com.example.bookedup.activities.LoginScreen;
-import com.example.bookedup.activities.SplashScreen;
+import com.example.bookedup.adapters.CommentAdapter;
+import com.example.bookedup.adapters.PopularDestinationAdapter;
 import com.example.bookedup.clients.ClientUtils;
 import com.example.bookedup.fragments.reservations.CreateReservationFragment;
 import com.example.bookedup.model.Accommodation;
 import com.example.bookedup.model.Guest;
-import com.example.bookedup.model.User;
+import com.example.bookedup.model.Review;
 import com.example.bookedup.model.enums.Amenity;
+import com.example.bookedup.model.enums.ReviewType;
+import com.example.bookedup.reviews.ReviewsListFragment;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -47,18 +56,24 @@ import retrofit2.Response;
 
 public class DetailsFragment extends Fragment {
 
-    private TextView titleTxt, locationTxt, descriptionTxt, scoreTxt, priceTxt, pricePerTxt, staysTimeTxt;
+    private TextView titleTxt, locationTxt, descriptionTxt, scoreTxt, priceTxt, pricePerTxt, staysTimeTxt, seeMoreAccTxt, seeMoreHostTxt;
     private ImageView picImg;
     private int daysNum = 0, guestNum = 0, targetLayout;
     private boolean isFavourite = false;
     private FloatingActionButton commentPopup, favouriteButton;
     private Dialog commentDialog;
-    private Button book;
+    private Button book, postComment;
     private String checkIn, checkOut;
     private FragmentManager fragmentManager;
     private Accommodation accommodation;
-    public DetailsFragment() {
-    }
+    private RecyclerView.Adapter commmentAdapter;
+    private RecyclerView recyclerViewAccommodation, recyclerViewHost;
+    private ArrayList<Review> accommodationReviews = new ArrayList<>();
+    private ArrayList<Review> hostReviews = new ArrayList<>();
+    private RatingBar accommodationRating, hostRating;
+    private EditText accommodationCommentTxt, hostCommentTxt;
+    private CommentAdapter commentAdapter;
+    public DetailsFragment() {}
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -80,13 +95,8 @@ public class DetailsFragment extends Fragment {
         getCallerData();
         isAccommodationFavourite();
         initView(view);
-
-        commentPopup.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showCommentDialog();
-            }
-        });
+        initAccommodationCommentsRecyclerView(accommodationReviews);
+        initHostCommentsRecyclerView(hostReviews);
 
         book.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -99,6 +109,29 @@ public class DetailsFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 toggleFavouriteState();
+            }
+        });
+
+        seeMoreAccTxt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d("DetailsFragment", "Accommodation reviews " + accommodationReviews.size());
+                if (accommodationReviews.size() <= 3){
+                    Toast.makeText(getContext(), "No more comments", Toast.LENGTH_SHORT).show();
+                } else {
+                    openFragment(new ReviewsListFragment(accommodationReviews, targetLayout));
+                }
+            }
+        });
+
+        seeMoreHostTxt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (hostReviews.size() <= 3){
+                    Toast.makeText(getContext(), "No more comments", Toast.LENGTH_SHORT).show();
+                } else {
+                    openFragment(new ReviewsListFragment(hostReviews, targetLayout));
+                }
             }
         });
     }
@@ -204,28 +237,23 @@ public class DetailsFragment extends Fragment {
     }
 
     private void updateLoggedGuest() {
-        // Fetch the latest guest data from the server based on the user ID
         Call<Guest> getGuestCall = ClientUtils.guestService.getGuest(LoginScreen.loggedUser.getId());
         getGuestCall.enqueue(new Callback<Guest>() {
             @Override
             public void onResponse(Call<Guest> call, Response<Guest> response) {
                 if (response.isSuccessful()) {
-                    // Update the loggedGuest object with the latest data
                     LoginScreen.loggedGuest = response.body();
                 } else {
-                    // Handle unsuccessful response
                     Log.d("DetailsFragment", "Failed to fetch updated guest data");
                 }
             }
 
             @Override
             public void onFailure(Call<Guest> call, Throwable t) {
-                // Handle failure
                 Log.d("DetailsFragment", "Failed to fetch updated guest data: " + t.getMessage());
             }
         });
     }
-
 
     private void findTargetLayout(){
         Intent intent = getActivity().getIntent();
@@ -248,10 +276,16 @@ public class DetailsFragment extends Fragment {
         }
     }
 
-
-
     public void setAccommodation(Accommodation accommodation) {
         this.accommodation = accommodation;
+    }
+
+    public void setAccommodationReviews(ArrayList<Review> reviews) {
+        this.accommodationReviews = reviews;
+    }
+
+    public void setHostReviews(ArrayList<Review> reviews) {
+        this.hostReviews = reviews;
     }
 
     private void initView(View view) {
@@ -264,7 +298,7 @@ public class DetailsFragment extends Fragment {
         picImg = view.findViewById(R.id.picImg);
         priceTxt = view.findViewById(R.id.priceTxt);
         pricePerTxt = view.findViewById(R.id.pricePerTxt);
-        commentPopup = view.findViewById(R.id.addCommentBtn);
+
         book = view.findViewById(R.id.bookNow);
         staysTimeTxt = view.findViewById(R.id.staysTimeTxt);
 
@@ -301,21 +335,34 @@ public class DetailsFragment extends Fragment {
         Glide.with(requireContext()).load(imageUrl)
                 .transform(new CenterCrop(), new GranularRoundedCorners(40, 40, 40, 40))
                 .into(picImg);
-    }
 
 
-    private void showCommentDialog() {
-        commentDialog = new Dialog(requireContext());
-        commentDialog.setContentView(R.layout.comment_popup);
-        commentDialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
-        commentDialog.show();
+        recyclerViewAccommodation = view.findViewById(R.id.commentRecyclerView);
+        recyclerViewHost = view.findViewById(R.id.hostRecyclerView);
+        seeMoreAccTxt = view.findViewById(R.id.seeMoreAccTxt);
+        seeMoreHostTxt = view.findViewById(R.id.seeMoreHostTxt);
     }
+
 
     private void openFragment(Fragment fragment){
         FragmentTransaction transaction = fragmentManager.beginTransaction();
         transaction.replace(targetLayout, fragment);
         transaction.addToBackStack(null);
         transaction.commit();
+    }
+
+    private void initAccommodationCommentsRecyclerView(ArrayList<Review> reviews){
+        List<Review> limitedList = reviews.subList(0, Math.min(reviews.size(), 3));
+        recyclerViewAccommodation.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false));
+        commentAdapter = new CommentAdapter(this, limitedList, targetLayout);
+        recyclerViewAccommodation.setAdapter(commentAdapter);
+    }
+
+    private void initHostCommentsRecyclerView(ArrayList<Review> reviews){
+        List<Review> limitedList = reviews.subList(0, Math.min(reviews.size(), 3));
+        recyclerViewHost.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false));
+        commentAdapter = new CommentAdapter(this, limitedList, targetLayout);
+        recyclerViewHost.setAdapter(commentAdapter);
     }
 
     private void displayAmenities(List<Amenity> amenities, View view) {

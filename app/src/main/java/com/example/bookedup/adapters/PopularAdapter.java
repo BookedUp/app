@@ -24,27 +24,29 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.CenterCrop;
 import com.bumptech.glide.load.resource.bitmap.GranularRoundedCorners;
 import com.example.bookedup.R;
+import com.example.bookedup.clients.ClientUtils;
 import com.example.bookedup.fragments.accommodations.DetailsFragment;
 import com.example.bookedup.model.Accommodation;
 import com.example.bookedup.model.Photo;
+import com.example.bookedup.model.Review;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 
-public class PopularAdapter extends RecyclerView.Adapter<PopularAdapter.ViewHolder>{
-    ArrayList<Accommodation> items;
-    private Fragment fragment;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
+public class PopularAdapter extends RecyclerView.Adapter<PopularAdapter.ViewHolder>{
+    private ArrayList<Accommodation> items;
+    private Fragment fragment;
     int layout;
+    private ArrayList<Review> reviews = new ArrayList<>();
 
     public PopularAdapter(Fragment fragment, ArrayList<Accommodation> items, int beforeLayout) {
         this.fragment = fragment;
         this.items = items;
         this.layout = beforeLayout;
-
-        for (Accommodation accommodation : items) {
-            Log.d("PopularAdapter", "Accommodation: " + accommodation.toString());
-        }
     }
 
     @NonNull
@@ -75,26 +77,77 @@ public class PopularAdapter extends RecyclerView.Adapter<PopularAdapter.ViewHold
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Context context = v.getContext();
-                if (context instanceof AppCompatActivity) {
-                    AppCompatActivity activity = (AppCompatActivity) context;
-                    DetailsFragment detailsFragment = new DetailsFragment();
-                    detailsFragment.setAccommodation(items.get(position));
-                    FragmentTransaction transaction = activity.getSupportFragmentManager().beginTransaction();
-                    transaction.replace(layout, detailsFragment);
-                    transaction.addToBackStack(null);  // Optional: Adds the transaction to the back stack
-                    transaction.commit();
-                } else {
-                    Log.e("PopularAdapter", "Context is not an instance of AppCompatActivity");
-                }
+                getAccommodationComments(items.get(position), v);
             }
         });
 
+
+
+    }
+
+    private void getAccommodationComments(Accommodation accommodation, View v){
+        Call<ArrayList<Review>> accommodationReviews = ClientUtils.reviewService.getAccommodationReviews(accommodation.getId());
+        accommodationReviews.enqueue(new Callback<ArrayList<Review>>() {
+            @Override
+            public void onResponse(Call<ArrayList<Review>> call, Response<ArrayList<Review>> response) {
+                if (response.isSuccessful()) {
+                    reviews = response.body();
+
+                    DetailsFragment detailsFragment = new DetailsFragment();
+                    detailsFragment.setAccommodation(accommodation);
+
+                    detailsFragment.setAccommodationReviews(reviews);
+                    getHostComments(accommodation, v);
+                } else {
+                    Log.d("PopularFragment", "Failed to fetch updated guest data. Code: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ArrayList<Review>> call, Throwable t) {
+                Log.d("PopularFragment","Failed to fetch updated guest data: "  + t.getMessage());
+            }
+        });
+    }
+
+    private void getHostComments(Accommodation accommodation, View v){
+        Call<ArrayList<Review>> hostReviews = ClientUtils.reviewService.getHostReviewsByHostId(accommodation.getHost().getId());
+        hostReviews.enqueue(new Callback<ArrayList<Review>>() {
+            @Override
+            public void onResponse(Call<ArrayList<Review>> call, Response<ArrayList<Review>> response) {
+                if (response.isSuccessful()) {
+                    ArrayList<Review> hostReviews = response.body();
+
+                    Context context = v.getContext();
+                    DetailsFragment detailsFragment = new DetailsFragment();
+                    detailsFragment.setAccommodation(accommodation);
+
+                    detailsFragment.setHostReviews(hostReviews);
+                    openDetailsFragment(detailsFragment,context);
+                } else {
+                    Log.d("PopularFragment", "Failed to fetch updated guest data. Code: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ArrayList<Review>> call, Throwable t) {
+                Log.d("PopularFragment","Failed to fetch updated guest data: "  + t.getMessage());
+            }
+        });
     }
 
     @Override
     public int getItemCount() {
         return items.size();
+    }
+
+    private void openDetailsFragment(DetailsFragment detailsFragment, Context context){
+        AppCompatActivity activity = (AppCompatActivity) context;
+        detailsFragment.setAccommodationReviews(reviews);
+        FragmentTransaction transaction = activity.getSupportFragmentManager().beginTransaction();
+        transaction.replace(layout, detailsFragment);
+        transaction.addToBackStack(null);
+        transaction.commit();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder{
@@ -111,4 +164,6 @@ public class PopularAdapter extends RecyclerView.Adapter<PopularAdapter.ViewHold
             scoreTxt = itemView.findViewById(R.id.scoreTxt);
         }
     }
+
+
 }

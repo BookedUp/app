@@ -41,14 +41,10 @@ public class ReservationListFragment extends Fragment implements TypeAdapter.Typ
 
     private RecyclerView typeRecyclerView;
     private RecyclerView reservationRecyclerView;
-
     private TypeAdapter typeAdapter;
     private ReservationAdapter reservationAdapter;
-
     private int layout_caller;
-
     private List<Reservation> reservations = new ArrayList<Reservation>();
-
     public ReservationListFragment() {}
 
     public static ReservationListFragment newInstance(String param1, String param2) {

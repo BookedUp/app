@@ -28,6 +28,7 @@ import com.example.bookedup.fragments.accommodations.SearchFilterFragment;
 import com.example.bookedup.fragments.calendar.CalendarFragment;
 import com.example.bookedup.model.Accommodation;
 import com.example.bookedup.model.Destination;
+import com.example.bookedup.model.Review;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.gson.Gson;
 
@@ -291,4 +292,5 @@ public class HomeFragment extends Fragment implements DatePickerDialog.OnDateSet
             Log.e("HomeFragment", "Error in onDateSet", e);
         }
     }
+
 }

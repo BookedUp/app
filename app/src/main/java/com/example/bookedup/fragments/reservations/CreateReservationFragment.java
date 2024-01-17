@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -30,9 +31,11 @@ import com.example.bookedup.clients.ClientUtils;
 import com.example.bookedup.model.Accommodation;
 import com.example.bookedup.model.Guest;
 import com.example.bookedup.model.Reservation;
+import com.example.bookedup.model.Review;
 import com.example.bookedup.model.User;
 import com.example.bookedup.model.UserReport;
 import com.example.bookedup.model.enums.ReservationStatus;
+import com.example.bookedup.model.enums.ReviewType;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.IOException;
@@ -50,27 +53,17 @@ import retrofit2.Response;
 public class CreateReservationFragment extends Fragment {
 
     private Accommodation accommodation;
-
     private String checkIn, checkOut;
-
     private Integer guestsNumber;
-
     private ImageView picImg;
-
-    private Dialog reportDialog;
-
+    private Dialog reportDialog, commentDialog;
     private FloatingActionButton reportUserBtn;
-
-    private Button btnCreate, reportBtn;
-
+    private Button btnCreate, reportBtn, postComment;
     private TextView title, location, score, pricePer, startDateTxt, endDateTxt, totalPrice, staysTime, status, user;
-
-    private EditText reportReasonsTxt;
-
-    private Date startDate = new Date();
-    private Date endDate = new Date();
-
+    private EditText reportReasonsTxt, accommodationCommentTxt, hostCommentTxt;
+    private Date startDate = new Date(), endDate = new Date();
     private Reservation existingReservation = null;
+    private RatingBar accommodationRating, hostRating;
 
     public CreateReservationFragment(Reservation existingReservation) {
         this.existingReservation = existingReservation;
@@ -101,34 +94,52 @@ public class CreateReservationFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         initView(view);
         if (existingReservation!=null){
-            btnCreate.setVisibility(View.INVISIBLE);
+            Log.d("CreateReservationFragment", "end date " + existingReservation.getEndDate());
+            if (getDaysPastOfCompletedReservation(existingReservation) >= 7){
+                btnCreate.setText("Add review");
+                btnCreate.setVisibility(View.VISIBLE);
+            } else {
+                btnCreate.setVisibility(View.INVISIBLE);
+            }
             initExistingReservationView(view);
         } else {
             initCreateReservationView(view);
         }
 
-        btnCreate.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Reservation reservation = new Reservation();
-                Log.d("CreateReservationFragment", "id " + LoginScreen.loggedUser.getRole());
-                Log.d("CreateReservationFragment", "Guest " + LoginScreen.loggedGuest);
+        if(btnCreate.getText().toString().equals("Add review")){
 
-                reservation.setGuest(LoginScreen.loggedGuest);
-
-                reservation.setAccommodation(accommodation);
-                reservation.setStartDate(startDate);
-                reservation.setEndDate(endDate);
-                reservation.setGuestsNumber(guestsNumber);
-                reservation.setTotalPrice(accommodation.getTotalPrice());
-                if (reservation.getAccommodation().isAutomaticReservationAcceptance()){
-                    reservation.setStatus(ReservationStatus.ACCEPTED);
-                } else {
-                    reservation.setStatus(ReservationStatus.CREATED);
+            btnCreate.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    showCommentDialog();
                 }
-                createReservation(reservation);
-            }
-        });
+            });
+
+        } else {
+
+            btnCreate.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Reservation reservation = new Reservation();
+                    Log.d("CreateReservationFragment", "id " + LoginScreen.loggedUser.getRole());
+                    Log.d("CreateReservationFragment", "Guest " + LoginScreen.loggedGuest);
+
+                    reservation.setGuest(LoginScreen.loggedGuest);
+
+                    reservation.setAccommodation(accommodation);
+                    reservation.setStartDate(startDate);
+                    reservation.setEndDate(endDate);
+                    reservation.setGuestsNumber(guestsNumber);
+                    reservation.setTotalPrice(accommodation.getTotalPrice());
+                    if (reservation.getAccommodation().isAutomaticReservationAcceptance()) {
+                        reservation.setStatus(ReservationStatus.ACCEPTED);
+                    } else {
+                        reservation.setStatus(ReservationStatus.CREATED);
+                    }
+                    createReservation(reservation);
+                }
+            });
+        }
 
         reportUserBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -138,6 +149,18 @@ public class CreateReservationFragment extends Fragment {
         });
 
     }
+
+    private int getDaysPastOfCompletedReservation(Reservation existingReservation) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        Date currentDate = new Date();
+        long timeDifference = currentDate.getTime() - existingReservation.getEndDate().getTime();
+        int daysPassed = (int)TimeUnit.DAYS.convert(timeDifference, TimeUnit.MILLISECONDS);
+
+        Log.d("CreateReservationFragment", "Days passed since the end date: " + daysPassed);
+
+        return daysPassed;
+    }
+
 
     private void showReportDialog() {
         reportDialog = new Dialog(requireContext());
@@ -334,6 +357,71 @@ public class CreateReservationFragment extends Fragment {
         long diffInMilliseconds = endTime - startTime;
         int days = (int) TimeUnit.MILLISECONDS.toDays(diffInMilliseconds);
         return days;
+    }
+
+        private void showCommentDialog() {
+            commentDialog = new Dialog(requireContext());
+            commentDialog.setContentView(R.layout.comment_popup);
+            commentDialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+
+            postComment = commentDialog.findViewById(R.id.postButton);
+            accommodationRating = commentDialog.findViewById(R.id.ratingBarAccommodation);
+            hostRating = commentDialog.findViewById(R.id.hostRatingBar);
+            accommodationCommentTxt = commentDialog.findViewById(R.id.commentAccommodationInput);
+            hostCommentTxt = commentDialog.findViewById(R.id.commentHostInput);
+
+            postComment.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    rateAndComment();
+                    commentDialog.dismiss();
+                }
+            });
+
+            commentDialog.show();
+
+
+        }
+
+        private void rateAndComment() {
+            Integer accommodationReview = (int) accommodationRating.getRating();
+            Integer hostReview = (int) hostRating.getRating();
+            String accommodationComment = accommodationCommentTxt.getText().toString();
+            String hostComment = hostCommentTxt.getText().toString();
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
+            sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+            if (accommodationReview != 0 || !accommodationComment.isEmpty()){
+                Review review = new Review(LoginScreen.loggedGuest, accommodationReview, accommodationComment, sdf.format(new Date()), existingReservation.getAccommodation().getHost(), existingReservation.getAccommodation(), ReviewType.ACCOMMODATION, false);
+                createReview(review);
+            }
+
+            if (hostReview != 0 || !hostComment.isEmpty()){
+                Review review = new Review(LoginScreen.loggedGuest, hostReview, hostComment, sdf.format(new Date()), existingReservation.getAccommodation().getHost(), existingReservation.getAccommodation(), ReviewType.HOST, false);
+                createReview(review);
+            }
+
+        }
+
+        private void createReview(Review review){
+            Call<Review> createdReview = ClientUtils.reviewService.createReview(review);
+            createdReview.enqueue(new Callback<Review>() {
+                @Override
+                public void onResponse(Call<Review> call, Response<Review> response) {
+                    if (response.isSuccessful()) {
+                        Review newReview = response.body();
+                        Toast.makeText(getContext(), "Comment successfully created!", Toast.LENGTH_SHORT).show();
+                        Log.d("CreateReservationFragment", "New Review " + newReview.toString());
+                    } else {
+                        Log.d("CreateReservationFragment", "Error " + response.code());
+                    }
+                }
+                @Override
+                public void onFailure(Call<Review> call, Throwable t) {
+                    Log.d("CreateReservationFragment","Error  "  + t.getMessage());
+                }
+            });
     }
 
 

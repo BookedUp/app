@@ -63,14 +63,9 @@ import retrofit2.Response;
 public class GuestMainScreen extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private DrawerLayout drawerLayout;
-//    private FloatingActionButton fab;
-
     private BottomNavigationView bottomNavigationView;
-
     private FragmentManager fragmentManager;
-
     private Toolbar toolbar;
-
     private List<Reservation> myReservations = new ArrayList<Reservation>();
 
 

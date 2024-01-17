@@ -66,14 +66,6 @@ public class StatisticService {
             String month = "";
             for (Reservation reservation : reservations) {
                 Log.d("StatisticService", "MESEC  " + targetMonth);
-//                Log.d("StatisticService", "START DATE MESEC" + reservation.getStartDate().getMonth() + " START DATE " + reservation.getStartDate());
-//                Log.d("StatisticService", "END DATE MESEC" + reservation.getEndDate().getMonth() + " END DATE " + reservation.getEndDate());
-//                if (reservation.getStartDate().getMonth() == targetMonth){
-//                    Log.d("StatisticService", "Start date je jednak");
-//                }
-//                if (reservation.getEndDate().getMonth() == targetMonth){
-//                    Log.d("StatisticService", "End date je jednak");
-//                }
                 if (reservation.getStartDate().getMonth() + 1 == targetMonth && reservation.getEndDate().getMonth() + 1 == targetMonth) {
                     Log.d("StatisticService", "USAAAAAAAAAAAAO2");
                     if (accommodation.getId().equals(reservation.getAccommodation().getId())) {
