@@ -48,20 +48,13 @@ public class HomeFragment extends Fragment implements DatePickerDialog.OnDateSet
 
     private RecyclerView recyclerViewPopular, recyclerViewDestinations;
     private RecyclerView.Adapter adapterPopular;
-
     private ArrayList<Accommodation> mostPopularAccommodations;
-
     private ArrayList<Accommodation> results;
-    private boolean isStartDateButtonClicked;
-    private boolean isEndDateButtonClicked;
+    private boolean isStartDateButtonClicked, isEndDateButtonClicked;
     private static int targetLayout;
-
     private EditText whereToGoTxt, guestsNumberTxt;
-
     private TextView checkInTxt, checkOutTxt;
-
     private Integer guestsNumber;
-
     private FloatingActionButton searchButton;
     private ImageView startDateBtn, endDateBtn;
 
@@ -71,56 +64,6 @@ public class HomeFragment extends Fragment implements DatePickerDialog.OnDateSet
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
-
-//        Intent intent = getActivity().getIntent();
-//        ComponentName componentName = intent.getComponent();
-//        if (componentName.getClassName().equals("com.example.bookedup.activities.GuestMainScreen")) {
-//            targetLayout = R.id.frame_layout;
-//        } else if (componentName.getClassName().equals("com.example.bookedup.activities.AdministratorMainScreen")){
-//            targetLayout = R.id.frame_layoutAdmin;
-//        } else if (componentName.getClassName().equals("com.example.bookedup.activities.HostMainScreen")){
-//            targetLayout = R.id.frame_layoutHost;
-//        }
-//        FloatingActionButton searchButton = view.findViewById(R.id.searchButtonHome);
-//
-//        recyclerViewPopular = view.findViewById(R.id.view_pop);
-//        recyclerViewDestinations = view.findViewById(R.id.view_destinations);
-//
-//        whereToGoTxt = view.findViewById(R.id.location);
-//        checkInTxt = view.findViewById(R.id.checkInText);
-//        checkOutTxt = view.findViewById(R.id.checkOutText);
-//        guestsNumberTxt = view.findViewById(R.id.guestsNumber);
-//        initRecycleView();
-//
-//        ImageView startDateBtn =  view.findViewById(R.id.startDate);
-//        ImageView endDateBtn =  view.findViewById(R.id.endDate);
-//        startDateBtn.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                DialogFragment datePicker = new CalendarFragment();
-//                datePicker.setTargetFragment(HomeFragment.this, 0);
-//                datePicker.show(requireActivity().getSupportFragmentManager(), "date picker");
-//                isStartDateButtonClicked = true;
-//                isEndDateButtonClicked = false;
-//            }
-//        });
-//
-//        endDateBtn.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                DialogFragment datePicker = new CalendarFragment();
-//                datePicker.setTargetFragment(HomeFragment.this, 0);
-//                datePicker.show(requireActivity().getSupportFragmentManager(), "date picker");
-//                isEndDateButtonClicked = true;
-//                isStartDateButtonClicked = false;
-//            }
-//        });
-//        searchButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                openSearchFilterFragment(whereToGoTxt, guestsNumberTxt, checkInTxt, checkOutTxt);
-//            }
-//        });
 
         return view;
     }

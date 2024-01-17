@@ -3,6 +3,7 @@ package com.example.bookedup.services;
 import com.example.bookedup.model.Accommodation;
 import com.example.bookedup.model.Reservation;
 import com.example.bookedup.model.User;
+import com.example.bookedup.model.enums.ReservationStatus;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -39,6 +40,9 @@ public interface ReservationService {
 
     @GET("reservations/host/{hostId}")
     Call<ArrayList<Reservation>> getReservationsByHostId(@Path("hostId") Long id);
+
+    @GET("reservations/host/{hostId}/filter")
+    Call<ArrayList<Reservation>> getReservationsByStatusAndHostId(@Path("hostId") Long id, @Query("reservationStatus") ReservationStatus reservationStatus);
 
     @PUT("reservations/{id}/confirmation")
     Call<Reservation> approveReservation(@Path("id") Long id);

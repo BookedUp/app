@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -27,6 +28,7 @@ import com.example.bookedup.model.Reservation;
 import com.example.bookedup.model.enums.AccommodationStatus;
 import com.example.bookedup.model.enums.PriceType;
 import com.example.bookedup.model.enums.ReservationStatus;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -36,14 +38,10 @@ import java.util.List;
 
 public class AccommodationListFragment extends Fragment implements TypeAdapter.TypeSelectionListener {
 
-    private RecyclerView typeRecyclerView;
-    private RecyclerView accommodationRecyclerView;
-
+    private RecyclerView typeRecyclerView, accommodationRecyclerView;
     private TypeAdapter typeAdapter;
     private AccommodationAdapter accommodationAdapter;
-
     private int layout_caller;
-
     private List<Accommodation> accommodations = new ArrayList<>();
 
     public AccommodationListFragment() {}
@@ -72,6 +70,7 @@ public class AccommodationListFragment extends Fragment implements TypeAdapter.T
         super.onViewCreated(view, savedInstanceState);
         getCallerData();
         initUI(view);
+
     }
 
     private void getCallerData(){
@@ -152,5 +151,13 @@ public class AccommodationListFragment extends Fragment implements TypeAdapter.T
         }
 
         return filteredList;
+    }
+
+    private void openFragment(Fragment fragment){
+        FragmentManager fragmentManager = getParentFragmentManager();
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        transaction.replace(layout_caller, fragment);
+        transaction.addToBackStack(null);
+        transaction.commit();
     }
 }

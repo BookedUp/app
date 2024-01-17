@@ -49,34 +49,16 @@ public class DetailsFragment extends Fragment {
 
     private TextView titleTxt, locationTxt, descriptionTxt, scoreTxt, priceTxt, pricePerTxt, staysTimeTxt;
     private ImageView picImg;
-
-    private int daysNum = 0;
-
-    private int guestNum = 0;
-
+    private int daysNum = 0, guestNum = 0, targetLayout;
     private boolean isFavourite = false;
-
-    private FloatingActionButton commentPopup;
-
+    private FloatingActionButton commentPopup, favouriteButton;
     private Dialog commentDialog;
-
     private Button book;
-
-
     private String checkIn, checkOut;
-
     private FragmentManager fragmentManager;
-
-    private int targetLayout;
-
     private Accommodation accommodation;
-
-    private FloatingActionButton favouriteButton;
-
-
     public DetailsFragment() {
     }
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

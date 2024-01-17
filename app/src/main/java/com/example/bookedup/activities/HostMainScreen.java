@@ -31,6 +31,7 @@ import com.example.bookedup.clients.ClientUtils;
 import com.example.bookedup.fragments.about.AboutUsFragment;
 import com.example.bookedup.fragments.accommodations.AccommodationListFragment;
 import com.example.bookedup.fragments.accommodations.CreateAccommodationFragment;
+import com.example.bookedup.fragments.accommodations.StatisticFragment;
 import com.example.bookedup.fragments.account.AccountFragment;
 import com.example.bookedup.fragments.home.HomeFragment;
 import com.example.bookedup.fragments.language.LanguageFragment;
@@ -39,6 +40,7 @@ import com.example.bookedup.fragments.reservations.ReservationRequestFragment;
 import com.example.bookedup.fragments.settings.SettingsFragment;
 import com.example.bookedup.model.Accommodation;
 import com.example.bookedup.model.Reservation;
+import com.example.bookedup.model.enums.ReservationStatus;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationBarView;
@@ -56,13 +58,9 @@ import retrofit2.Response;
 public class HostMainScreen extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
 
     private DrawerLayout drawerLayout;
-
     private BottomNavigationView bottomNavigationView;
-
     private FragmentManager fragmentManager;
-
     private FloatingActionButton fab;
-
     private Toolbar toolbar;
 
     @Override
@@ -102,7 +100,7 @@ public class HostMainScreen extends AppCompatActivity implements NavigationView.
                     return true;
                 }
                 else if(itemId==R.id.nav_reportHost){
-                    Toast.makeText(HostMainScreen.this,"Favorites clicked",Toast.LENGTH_SHORT).show();
+                   openFragment(new StatisticFragment());
                     return true;
                 }
 //                else if(itemId==R.id.nav_commentsHost){
