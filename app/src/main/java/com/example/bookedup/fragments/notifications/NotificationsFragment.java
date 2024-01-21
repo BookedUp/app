@@ -104,11 +104,9 @@ public class NotificationsFragment extends Fragment {
         dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
 
         SwitchMaterial  switchBtn = dialog.findViewById(R.id.toggleSwitchResAnswer);
-        if (LoginScreen.loggedGuest.isNotificationEnable()){
-            switchBtn.setChecked(true);
-        } else {
-            switchBtn.setChecked(false);
-        }
+
+        switchBtn.setChecked(LoginScreen.loggedGuest.isNotificationEnable());
+
         Button btnSave = dialog.findViewById(R.id.saveBtn);
 
         btnSave.setOnClickListener(new View.OnClickListener() {
@@ -119,12 +117,16 @@ public class NotificationsFragment extends Fragment {
 
 
                 if (switchBtn.isChecked()){
+
                     resAnswerNotification = true;
                 } else {
                     resAnswerNotification = false;
                 }
 
                 Guest newGuest = new Guest(LoginScreen.loggedGuest.getFirstName(), LoginScreen.loggedGuest.getLastName(), LoginScreen.loggedGuest.getAddress(), LoginScreen.loggedGuest.getPhone(), LoginScreen.loggedGuest.getEmail(), LoginScreen.loggedGuest.getPassword(), LoginScreen.loggedGuest.blocked(), LoginScreen.loggedGuest.isVerified(), LoginScreen.loggedGuest.isActive(), LoginScreen.loggedGuest.getProfilePicture(), LoginScreen.loggedGuest.getRole(), LoginScreen.loggedGuest.getFavourites(), resAnswerNotification);
+                Long id = LoginScreen.loggedGuest.getId();
+                LoginScreen.loggedGuest = newGuest;
+                LoginScreen.loggedGuest.setId(id);
                 updateGuest(newGuest);
             }
         });
@@ -138,32 +140,19 @@ public class NotificationsFragment extends Fragment {
         dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
 
         SwitchMaterial createResBtn = dialog.findViewById(R.id.toggleSwitchCreateRes);
-        if (LoginScreen.loggedHost.getReservationCreatedNotificationEnabled()){
-            createResBtn.setChecked(true);
-        } else {
-            createResBtn.setChecked(false);
-        }
+        createResBtn.setChecked(LoginScreen.loggedHost.getReservationCreatedNotificationEnabled());
+
 
         SwitchMaterial  cancelResBtn = dialog.findViewById(R.id.toggleSwitchCancelRes);
-        if (LoginScreen.loggedHost.getCancellationNotificationEnabled()){
-            cancelResBtn.setChecked(true);
-        } else {
-            cancelResBtn.setChecked(false);
-        }
+        cancelResBtn.setChecked(LoginScreen.loggedHost.getCancellationNotificationEnabled());
 
         SwitchMaterial  hostRateBtn = dialog.findViewById(R.id.toggleSwitchHostRate);
-        if (LoginScreen.loggedHost.getHostRatingNotificationEnabled()){
-            hostRateBtn.setChecked(true);
-        } else {
-            hostRateBtn.setChecked(false);
-        }
+        hostRateBtn.setChecked(LoginScreen.loggedHost.getHostRatingNotificationEnabled());
+
 
         SwitchMaterial  accRateBtn = dialog.findViewById(R.id.toggleSwitchAccommodationRate);
-        if (LoginScreen.loggedHost.getAccommodationRatingNotificationEnabled()){
-            accRateBtn.setChecked(true);
-        } else {
-            accRateBtn.setChecked(false);
-        }
+        accRateBtn.setChecked(LoginScreen.loggedHost.getAccommodationRatingNotificationEnabled());
+
         Button btnSave = dialog.findViewById(R.id.saveBtn);
 
         btnSave.setOnClickListener(new View.OnClickListener() {
@@ -196,6 +185,9 @@ public class NotificationsFragment extends Fragment {
                     accRateNotification = false;
                 }
                 Host newHost = new Host(LoginScreen.loggedHost.getFirstName(), LoginScreen.loggedHost.getLastName(), LoginScreen.loggedHost.getAddress(), LoginScreen.loggedHost.getPhone(), LoginScreen.loggedHost.getEmail(), LoginScreen.loggedHost.getPassword(), LoginScreen.loggedHost.blocked(), LoginScreen.loggedHost.isVerified(), LoginScreen.loggedHost.isActive(), LoginScreen.loggedHost.getProfilePicture(), LoginScreen.loggedHost.getRole(), LoginScreen.loggedHost.getAverageRating(), createResNotification, cancelResNotification, hostRateNotification, accRateNotification);
+                Long id = LoginScreen.loggedHost.getId();
+                LoginScreen.loggedHost = newHost;
+                LoginScreen.loggedHost.setId(id);
                 updateHost(newHost);
             }
         });
@@ -237,7 +229,10 @@ public class NotificationsFragment extends Fragment {
     }
 
     private void updateGuest(Guest guest) {
-        Call<Guest> updatedGuest = ClientUtils.guestService.updateGuest(guest, LoginScreen.loggedGuest.getId());
+        Log.d("NotificationsFragment", "Login guest " + LoginScreen.loggedGuest.isNotificationEnable());
+        Log.d("NotificationsFragment", "Guest " + guest.isNotificationEnable());
+
+        Call<Guest> updatedGuest = ClientUtils.guestService.updateGuest(LoginScreen.loggedGuest.getId(), guest);
         updatedGuest.enqueue(new Callback<Guest>() {
             @Override
             public void onResponse(Call<Guest> call, Response<Guest> response) {
@@ -263,7 +258,7 @@ public class NotificationsFragment extends Fragment {
             }
             @Override
             public void onFailure(Call<Guest> call, Throwable t) {
-                Log.d("NotificationsFragment", t.getMessage() != null?t.getMessage():"error");
+                Log.d("NotificationsFragment", "BLAAA " + t.getMessage() != null?t.getMessage():"error");
             }
         });
     }
@@ -274,9 +269,10 @@ public class NotificationsFragment extends Fragment {
             @Override
             public void onResponse(Call<ArrayList<Notification>> call, Response<ArrayList<Notification>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    Log.d("LoginScreen", "Successful response: " + response.body());
+                    Log.d("NotificationsFragment", "Successful response: " + response.body());
                     notifications = response.body();
                     Collections.sort(notifications, (n1, n2) -> n2.getTimestamp().compareTo(n1.getTimestamp()));
+
                     notificationAdapter.updateNotifications(notifications);
 
 //                    NotificationsFragment notificationsFragment = new NotificationsFragment(notifications, targetLayout);
@@ -285,9 +281,9 @@ public class NotificationsFragment extends Fragment {
 //                    transaction.replace(R.id.frame_notifications_container, notificationsFragment); //fragment_container
 //                    transaction.commit();
                 } else {
-                    Log.d("LoginScreen", "Unsuccessful response: " + response.code());
+                    Log.d("NotificationsFragment", "Unsuccessful response: " + response.code());
                     try {
-                        Log.d("LoginScreen", "Error Body: " + response.errorBody().string());
+                        Log.d("NotificationsFragment", "Error Body: " + response.errorBody().string());
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -296,7 +292,7 @@ public class NotificationsFragment extends Fragment {
 
             @Override
             public void onFailure(Call<ArrayList<Notification>> call, Throwable t) {
-                Log.d("LoginScreen", t.getMessage() != null ? t.getMessage() : "error");
+                Log.d("NotificationsFragment", t.getMessage() != null ? t.getMessage() : "error");
             }
         });
     }

@@ -77,11 +77,12 @@ public class CreateReservationFragment extends Fragment {
         this.accommodationImages = accommodationImages;
     }
 
-    public CreateReservationFragment(Accommodation accommodation, String checkIn, String checkOut, Integer guestsNumber) {
+    public CreateReservationFragment(Accommodation accommodation, String checkIn, String checkOut, Integer guestsNumber, List<Bitmap> accommodationImages) {
         this.accommodation = accommodation;
         this.checkIn = checkIn;
         this.checkOut = checkOut;
         this.guestsNumber = guestsNumber;
+        this.accommodationImages = accommodationImages;
     }
 
 
@@ -102,17 +103,26 @@ public class CreateReservationFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         initView(view);
         if (existingReservation!=null){
-            Log.d("CreateReservationFragment", "end date " + existingReservation.getEndDate());
-            if (getDaysPastOfCompletedReservation(existingReservation) >= 7){
-                btnCreate.setText("Add review");
-                btnCreate.setVisibility(View.VISIBLE);
+            user.setVisibility(View.VISIBLE);
+            if (LoginScreen.loggedUser.getRole().equals(Role.GUEST)) {
+
+                if (getDaysPastOfCompletedReservation(existingReservation) <= 7 && existingReservation.getStatus().equals(ReservationStatus.COMPLETED)) {
+                    btnCreate.setText("Add review");
+                    btnCreate.setVisibility(View.VISIBLE);
+                } else {
+                    btnCreate.setVisibility(View.INVISIBLE);
+                }
             } else {
                 btnCreate.setVisibility(View.INVISIBLE);
             }
             initExistingReservationView(view);
         } else {
+            user.setVisibility(View.INVISIBLE);
+            status.setVisibility(View.INVISIBLE);
+            reportUserBtn.setVisibility(View.INVISIBLE);
             initCreateReservationView(view);
         }
+
 
         if(btnCreate.getText().toString().equals("Add review")){
 
@@ -242,6 +252,9 @@ public class CreateReservationFragment extends Fragment {
 
     private void initView(View view){
         btnCreate = view.findViewById(R.id.buttonCreateRes);
+        reportUserBtn = view.findViewById(R.id.reportUserBtn);
+        user = view.findViewById(R.id.user);
+        status = view.findViewById(R.id.status);
     }
 
     private void createReservation(Reservation reservation){
@@ -279,6 +292,7 @@ public class CreateReservationFragment extends Fragment {
     }
 
     private void createNotification(Reservation newReservation) {
+        Log.d("CreateReservationFragment", "USAAAAAAAAAAO ");
         Notification notification = new Notification(null, newReservation.getAccommodation().getHost(), "New Reservation", "Check out for this! Created new reservation for " + newReservation.getAccommodation().getName() + " accommodation", new Date(), NotificationType.RESERVATION_CREATED, true);
         Call<Notification> createdNotification = ClientUtils.notificationService.createNotification(notification);
         createdNotification.enqueue(new Callback<Notification>() {
@@ -342,7 +356,7 @@ public class CreateReservationFragment extends Fragment {
         status  = view.findViewById(R.id.status);
         status.setText("Status: " + existingReservation.getStatus().toString());
 
-        user = view.findViewById(R.id.user);
+
         if (LoginScreen.loggedGuest != null){
             user.setText("Host: " + existingReservation.getAccommodation().getHost().getFirstName() + " " + existingReservation.getAccommodation().getHost().getLastName());
         } else if (LoginScreen.loggedHost != null){
@@ -352,6 +366,8 @@ public class CreateReservationFragment extends Fragment {
         reportUserBtn = view.findViewById(R.id.reportUserBtn);
         if (!existingReservation.getStatus().equals(ReservationStatus.COMPLETED)){
             reportUserBtn.setVisibility(View.INVISIBLE);
+        } else {
+            reportUserBtn.setVisibility(View.VISIBLE);
         }
     }
 
@@ -412,6 +428,7 @@ public class CreateReservationFragment extends Fragment {
             commentDialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
 
             postComment = commentDialog.findViewById(R.id.postButton);
+
             accommodationRating = commentDialog.findViewById(R.id.ratingBarAccommodation);
             hostRating = commentDialog.findViewById(R.id.hostRatingBar);
             accommodationCommentTxt = commentDialog.findViewById(R.id.commentAccommodationInput);

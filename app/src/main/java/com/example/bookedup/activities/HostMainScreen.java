@@ -520,7 +520,7 @@ public class HostMainScreen extends AppCompatActivity implements NavigationView.
                 if (response.isSuccessful()) {
                     byte[] photoData = response.body().bytes();
                     Bitmap profilePicture = BitmapFactory.decodeByteArray(photoData, 0, photoData.length);
-                    openFragment(new AccountFragment(profilePicture));
+                    openFragment(new AccountFragment(profilePicture, user));
                 } else {
                     Log.d("HostMainScreen", "Error code " + response.code());
                 }

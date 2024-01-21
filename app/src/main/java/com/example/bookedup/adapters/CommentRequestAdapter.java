@@ -93,8 +93,20 @@ public class CommentRequestAdapter extends RecyclerView.Adapter<CommentRequestAd
         holder.guestRating.setRating(currentReview.getReview());
         holder.comment.setText(String.valueOf(currentReview.getComment()));
         holder.who.setText(currentReview.getType().toString());
-        holder.host.setText("Host: " + currentReview.getHost().getFirstName() + " " + currentReview.getHost().getLastName());
-        holder.accommodation.setText("Accommodation: " + currentReview.getAccommodation());
+        if (currentReview.getHost() != null){
+            holder.host.setVisibility(View.VISIBLE);
+            holder.host.setText("Host: " + currentReview.getHost().getFirstName() + " " + currentReview.getHost().getLastName());
+
+        }else {
+            holder.host.setVisibility(View.INVISIBLE);
+        }
+        if (currentReview.getAccommodation() != null){
+            holder.accommodation.setVisibility(View.VISIBLE);
+            holder.accommodation.setText("Accommodation: " + currentReview.getAccommodation().getName());
+
+        } else {
+            holder.accommodation.setVisibility(View.INVISIBLE);
+        }
 
         Bitmap bitmap = userImages.get(currentReview.getGuest().getId());
         if (bitmap != null)

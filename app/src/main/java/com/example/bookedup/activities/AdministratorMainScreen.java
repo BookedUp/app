@@ -531,7 +531,7 @@ public class AdministratorMainScreen extends AppCompatActivity implements Naviga
                     byte[] photoData = response.body().bytes();
                     Bitmap profilePicture = BitmapFactory.decodeByteArray(photoData, 0, photoData.length);
 
-                    openFragment(new AccountFragment(profilePicture));
+                    openFragment(new AccountFragment(profilePicture, user));
                 } else {
                     Log.d("AdministratorMainScreen", "Error code " + response.code());
                 }

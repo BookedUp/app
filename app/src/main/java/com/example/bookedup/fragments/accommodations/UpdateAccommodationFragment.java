@@ -124,6 +124,8 @@ public class UpdateAccommodationFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        stringBuilderAvailibility = new StringBuilder();
+        stringBuilderPriceChange = new StringBuilder();
         initView(view);
         setInitialDate();
         setAccommodationData();
@@ -289,6 +291,7 @@ public class UpdateAccommodationFragment extends Fragment {
 
                 String availibilityString = availabilityTextView.getText().toString();
                 String[] parts = availibilityString.split("\\n");
+                Log.d("UpdateAccommodationFragment", "PARTS AVAILIBILITY  " + parts.length);
                 for (String p : parts){
                     String[] dates = p.split(" to ");
                     try {
@@ -538,7 +541,8 @@ public class UpdateAccommodationFragment extends Fragment {
         AtomicInteger uploadCount = new AtomicInteger(0);
         int size = accommodationImages.size();
 
-        if(accommodationImages.size() > 1){
+        while(size >= 1) {
+            Log.d("UpdateAccommodationFragment", "USAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAO SIZEEEE " + size);
 
             for (Bitmap bitmap : accommodationImages) {
                 if (!isImageAlreadyUploaded(bitmap)) {
@@ -566,6 +570,7 @@ public class UpdateAccommodationFragment extends Fragment {
                                 // Check if all images are uploaded
                                 if (uploadCount.incrementAndGet() == finalSize) {
                                     // All images are uploaded, call another function
+                                    Log.d("UpdateAccommodationFragment", "NASAO JE NEKE SLIKE");
                                     onAllImagesUploaded(uploadedPhotos);
                                 }
                             } else {
@@ -585,15 +590,18 @@ public class UpdateAccommodationFragment extends Fragment {
                         }
                     });
                 } else {
-                    size = accommodationImages.size() - 1;
+                    size -= 1;
+                    Log.d("UpdateAccommodationFragment", "USAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAO SIZEEEEposzle promene " + size);
                 }
             }
-        }else {
-            onAllImagesUploaded(uploadedPhotos);
+
         }
+        Log.d("UpdateAccommodationFragment", "ACC UMG SIZE JE 0");
+        onAllImagesUploaded(uploadedPhotos);
     }
 
     private void onAllImagesUploaded(List<Photo> uploadedPhotos) {
+        Log.d("UpdateAccommodationFragment", "USAAAAAAAAAAAAO u onAllImagesUploaded(");
         for(Photo photo : uploadedPhotos){
             Log.d("UpdateAccommodationFragment", "New photo " + photo.toString());
             if (!accommodation.getPhotos().contains(photo)){
@@ -675,17 +683,17 @@ public class UpdateAccommodationFragment extends Fragment {
 
 
     private void getData(){
-//        Log.d("UpdateAccommodationFragment", "Name " + nameEditText.getText().toString());
-//        Log.d("UpdateAccommodationFragment", "Address Street and Number " + addressStreetEditText.getText().toString());
-//        Log.d("UpdateAccommodationFragment", "Address City " + addressCityEditText.getText().toString());
-//        Log.d("UpdateAccommodationFragment", "Address Country " + addressCountryEditText.getText().toString());
-//        Log.d("UpdateAccommodationFragment", "Price" + priceEditText.getText().toString());
-//        Log.d("UpdateAccommodationFragment", "PriceType " + priceType);
-//        Log.d("UpdateAccommodationFragment", "Description " + overviewEditText.getText().toString());
-//        Log.d("UpdateAccommodationFragment", "Postal code " + addressPostalCodeEditText.getText().toString());
-//        Log.d("UpdateAccommodationFragment", "MinGuests " + minimumGuestsEditText.getText().toString());
-//        Log.d("UpdateAccommodationFragment", "MaxGuests " + maximumGuestsEditText.getText().toString());
-//        Log.d("UpdateAccommodationFragment", "Cancellation " + cancellationEditText.getText().toString());
+        Log.d("UpdateAccommodationFragment", "Name " + nameEditText.getText().toString());
+        Log.d("UpdateAccommodationFragment", "Address Street and Number " + addressStreetEditText.getText().toString());
+        Log.d("UpdateAccommodationFragment", "Address City " + addressCityEditText.getText().toString());
+        Log.d("UpdateAccommodationFragment", "Address Country " + addressCountryEditText.getText().toString());
+        Log.d("UpdateAccommodationFragment", "Price" + priceEditText.getText().toString());
+        Log.d("UpdateAccommodationFragment", "PriceType " + priceType);
+        Log.d("UpdateAccommodationFragment", "Description " + overviewEditText.getText().toString());
+        Log.d("UpdateAccommodationFragment", "Postal code " + addressPostalCodeEditText.getText().toString());
+        Log.d("UpdateAccommodationFragment", "MinGuests " + minimumGuestsEditText.getText().toString());
+        Log.d("UpdateAccommodationFragment", "MaxGuests " + maximumGuestsEditText.getText().toString());
+        Log.d("UpdateAccommodationFragment", "Cancellation " + cancellationEditText.getText().toString());
         if (nameEditText.getText().toString().isEmpty() || addressStreetEditText.getText().toString().isEmpty() || addressCityEditText.getText().toString().isEmpty() || addressCountryEditText.getText().toString().isEmpty() || addressPostalCodeEditText.getText().toString().isEmpty() || priceEditText.getText().toString().isEmpty() || overviewEditText.getText().toString().isEmpty() || priceType == null || minimumGuestsEditText.getText().toString().isEmpty() || maximumGuestsEditText.getText().toString().isEmpty() || cancellationEditText.getText().toString().isEmpty()){
             Toast.makeText(getActivity(),"Some fields are empty!", Toast.LENGTH_SHORT).show();
         } else {
@@ -751,13 +759,14 @@ public class UpdateAccommodationFragment extends Fragment {
     }
 
     private void getPriceChangesList(){
+        Log.d("UpdateAccommodationFragment", "SIZEEEEEEEEE " + priceChangesStringList.size());
         if(!priceChangesStringList.isEmpty()) {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
             sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
             for (String pc : priceChangesStringList) {
-                String[] lines = pc.split("\\n");
-                for (String line : lines) {
-                    String[] parts = line.split(" - ");
+//                String[] lines = pc.split("\\n");
+//                for (String line : lines) {
+                    String[] parts = pc.split(" - ");
                     Date dateChange = null;
                     Double newPrice = Double.parseDouble(parts[1]);
 
@@ -771,28 +780,28 @@ public class UpdateAccommodationFragment extends Fragment {
                 }
             }
         }
-    }
+
 
     private void update(String accommodationName, Address address, Double price, PriceType priceType, String description, List<Amenity> amenities, AccommodationType accommodationType, Integer minGuests, Integer maxGuests, Integer cancellationDeadLine, boolean automaticAcceptReservations){
 
         getPriceChangesList();
 
-//        Log.d("UpdateAccommodationFragment", "Name " + accommodationName);
-//        Log.d("UpdateAccommodationFragment", "Address " + address.toString());
-//        Log.d("UpdateAccommodationFragment", "Price " + price);
-//        Log.d("UpdateAccommodationFragment", "PriceType " + priceType);
-//        Log.d("UpdateAccommodationFragment", "Description " + description);
-//        Log.d("UpdateAccommodationFragment", "Amenities size " + amenities.size());
-//        Log.d("UpdateAccommodationFragment", "AccommodationType " + accommodationType);
-//        Log.d("UpdateAccommodationFragment", "MinGuests " + minGuests);
-//        Log.d("UpdateAccommodationFragment", "MaxGuests " + maxGuests);
-//        Log.d("UpdateAccommodationFragment", "Cancellation " + cancellationDeadLine);
-//        Log.d("UpdateAccommodationFragment", "Automatic " + automaticAcceptReservations);
-//        Log.d("UpdateAccommodationFragment", "PriceChanges size " + priceChanges.size());
-//        Log.d("UpdateAccommodationFragment", "PHOTOSZ SIZEEE " + photos.size());
-//        for(Photo photo : photos){
-//            Log.d("UpdateAccommodationFragment", "PHOTOOOOOOOOOOOOOOOOOOOO " + photo.toString());
-//        }
+        Log.d("AccommodationAdapter", "Name " + accommodationName);
+        Log.d("AccommodationAdapter", "Address " + address.toString());
+        Log.d("AccommodationAdapter", "Price " + price);
+        Log.d("AccommodationAdapter", "PriceType " + priceType);
+        Log.d("AccommodationAdapter", "Description " + description);
+        Log.d("AccommodationAdapter", "Amenities size " + amenities.size());
+        Log.d("AccommodationAdapter", "AccommodationType " + accommodationType);
+        Log.d("AccommodationAdapter", "MinGuests " + minGuests);
+        Log.d("AccommodationAdapter", "MaxGuests " + maxGuests);
+        Log.d("AccommodationAdapter", "Cancellation " + cancellationDeadLine);
+        Log.d("AccommodationAdapter", "Automatic " + automaticAcceptReservations);
+        Log.d("AccommodationAdapter", "PriceChanges size " + priceChanges.size());
+        Log.d("AccommodationAdapter", "PHOTOSZ SIZEEE " + photos.size());
+        for(Photo photo : photos){
+            Log.d("AccommodationAdapter", "PHOTOOOOOOOOOOOOOOOOOOOO " + photo.toString());
+        }
 
         Accommodation newAccommodation = new Accommodation(accommodationName, description, address, amenities, photos, minGuests, maxGuests, accommodationType, availibility, priceType, priceChanges, automaticAcceptReservations, AccommodationStatus.CHANGED, LoginScreen.loggedHost, price, 0.0, accommodation.getAverageRating(), cancellationDeadLine);
 
@@ -803,17 +812,17 @@ public class UpdateAccommodationFragment extends Fragment {
             public void onResponse(Call<Accommodation> call, Response<Accommodation> response) {
                 if (response.isSuccessful()) {
                     if (response.body() != null) {
-                        Log.d("UpdateAccommodationFragment", "Successful response: " + response.body());
+                        Log.d("AccommodationAdapter", "Successful response: " + response.body());
                         Accommodation newAccommodation = response.body();
                         Toast.makeText(requireContext(), "Accommodation updated!", Toast.LENGTH_SHORT).show();
                         updateAccommodationBtn.setEnabled(false);
                     } else {
-                        Log.d("UpdateAccommodationFragment", "Response body is null");
+                        Log.d("AccommodationAdapter", "Response body is null");
                     }
                 }  else if (response.code() == 403) {
                     Toast.makeText(requireContext(), "The accommodation has active reservations!", Toast.LENGTH_LONG).show();
                     try {
-                        Log.d("UpdateAccommodationFragment", "Error Body: " + response.errorBody().string());
+                        Log.d("AccommodationAdapter", "Error Body: " + response.errorBody().string());
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -822,7 +831,7 @@ public class UpdateAccommodationFragment extends Fragment {
 
             @Override
             public void onFailure(Call<Accommodation> call, Throwable t) {
-                Log.d("UpdateAccommodationFragment", t.getMessage() != null?t.getMessage():"error");
+                Log.d("AccommodationAdapter", t.getMessage() != null?t.getMessage():"error");
             }
         });
     }
@@ -940,13 +949,18 @@ public class UpdateAccommodationFragment extends Fragment {
             toggleSwitch.setChecked(false);
         }
 
+        availabilityStringList = new ArrayList<>();
+        Log.d("UpdateAccommodationFragment", "AVAILLIBILITYY " + accommodation.getAvailability().size());
+        Log.d("UpdateAccommodationFragment", "PRICE CAHNGES " + accommodation.getPriceChanges().size());
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
         sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
         if(!accommodation.getAvailability().isEmpty()){
             for (DateRange dr : accommodation.getAvailability()){
                 String startDate = sdf.format(dr.getStartDate());
                 String endDate = sdf.format(dr.getEndDate());
-                availabilityStringList.add(startDate + " to " + endDate);
+                if(!availabilityStringList.contains(startDate + " to " + endDate)){
+                    availabilityStringList.add(startDate + " to " + endDate);
+                }
             }
         } else {
             availabilityTextView.setText("");
@@ -958,10 +972,14 @@ public class UpdateAccommodationFragment extends Fragment {
 
         availabilityTextView.setText(stringBuilderAvailibility.toString());
 
+        priceChangesStringList = new ArrayList<>();
+
         if(!accommodation.getPriceChanges().isEmpty()){
             for (PriceChange pr : accommodation.getPriceChanges()){
                 String startDate = sdf.format(pr.getChangeDate());
-                priceChangesStringList.add(startDate + " - " + pr.getNewPrice());
+                if (!priceChangesStringList.contains(startDate + " - " + pr.getNewPrice())){
+                    priceChangesStringList.add(startDate + " - " + pr.getNewPrice());
+                }
             }
         } else {
             priceChangesTextView.setText("");

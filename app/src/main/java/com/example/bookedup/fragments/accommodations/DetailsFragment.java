@@ -115,7 +115,7 @@ public class DetailsFragment extends Fragment{
         book.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                openFragment(new CreateReservationFragment(accommodation, checkIn, checkOut, guestNum));
+                openFragment(new CreateReservationFragment(accommodation, checkIn, checkOut, guestNum, accommodationImages));
             }
         });
 
