@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,16 +30,22 @@ import com.example.bookedup.fragments.accommodations.DetailsFragment;
 import com.example.bookedup.fragments.reservations.CreateReservationFragment;
 import com.example.bookedup.fragments.reservations.ReservationListFragment;
 import com.example.bookedup.model.Accommodation;
+import com.example.bookedup.model.Notification;
 import com.example.bookedup.model.Reservation;
 import com.example.bookedup.model.User;
 import com.example.bookedup.model.enums.AccommodationStatus;
+import com.example.bookedup.model.enums.NotificationType;
 import com.example.bookedup.model.enums.ReservationStatus;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.function.IntBinaryOperator;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -48,17 +55,17 @@ public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.
 
     private List<Reservation> reservations;
     private Context context;
-
     private Fragment fragment;
-
     private int layout;
+    private Map<Long, List<Bitmap>> accommodationImages = new HashMap<>();
 
 
-    public ReservationAdapter(List<Reservation> reservations, Context context, int before_layout, Fragment fragment) {
+    public ReservationAdapter(List<Reservation> reservations, Context context, int before_layout, Fragment fragment, Map<Long, List<Bitmap>> accommodationImages) {
         this.reservations = reservations;
         this.context = context;
         this.fragment = fragment;
         this.layout = before_layout;
+        this.accommodationImages = accommodationImages;
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
@@ -111,18 +118,29 @@ public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.
         String formattedDateEnd = sdf.format(currentReservation.getEndDate());
         holder.checkOutDate.setText(formattedDateEnd);
 
-
-        if(!currentReservation.getAccommodation().getPhotos().isEmpty()) {
-            int drawableResourceId = context.getResources().getIdentifier(currentReservation.getAccommodation().getPhotos().get(0).getUrl(), "drawable", context.getPackageName());
-            holder.accommodationImage.setImageResource(drawableResourceId);
-        } else {
-            holder.accommodationImage.setImageResource(R.drawable.default_hotel_img);
+        List<Bitmap> bitmaps = accommodationImages.get(currentReservation.getAccommodation().getId());
+        if (!bitmaps.isEmpty()) {
+            if (bitmaps.get(0) != null) {
+                holder.accommodationImage.setImageBitmap(bitmaps.get(0));
+            } else {
+                holder.accommodationImage.setImageResource(R.drawable.default_hotel_img);
+            }
         }
+        if (currentReservation.getStatus().equals(ReservationStatus.CREATED)){
+            holder.btnManageRequest.setVisibility(View.VISIBLE);
+            holder.btnManageRequest.setText("Delete");
+        } else if (currentReservation.getStatus().equals(ReservationStatus.ACCEPTED)){
+            holder.btnManageRequest.setVisibility(View.VISIBLE);
+            holder.btnManageRequest.setText("Cancel");
+        } else {
+            holder.btnManageRequest.setVisibility(View.INVISIBLE);
+        }
+
 
         holder.btnViewDetails.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                CreateReservationFragment reservationFragment = new CreateReservationFragment(currentReservation);
+                CreateReservationFragment reservationFragment = new CreateReservationFragment(currentReservation, accommodationImages.get(currentReservation.getAccommodation().getId()));
                 AppCompatActivity activity = (AppCompatActivity) context;
                 FragmentManager fragmentManager = activity.getSupportFragmentManager();
                 FragmentTransaction transaction = fragmentManager.beginTransaction();
@@ -133,23 +151,14 @@ public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.
         });
 
 
-        if (currentReservation.getStatus().equals(ReservationStatus.CREATED)){
-            holder.btnManageRequest.setText("Delete");
-        } else if (currentReservation.getStatus().equals(ReservationStatus.ACCEPTED)){
-            holder.btnManageRequest.setText("Cancel");
-        }
-
-        if(!currentReservation.getStatus().equals(ReservationStatus.CREATED) && !currentReservation.getStatus().equals(ReservationStatus.ACCEPTED)){
-            holder.btnManageRequest.setVisibility(View.INVISIBLE);
-        }
 
         holder.btnManageRequest.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (holder.btnManageRequest.getText().toString().equals("Delete")){
-                    showDeleteConfirmationDialog("delete", currentReservation);
+                    showConfirmationDialog("delete", currentReservation);
                 } else if (holder.btnManageRequest.getText().toString().equals("Cancel")){
-                    showDeleteConfirmationDialog("cancel", currentReservation);
+                    showConfirmationDialog("cancel", currentReservation);
                 }
             }
         });
@@ -157,7 +166,7 @@ public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.
 
     }
 
-    private void showDeleteConfirmationDialog(String action, Reservation reservation) {
+    private void showConfirmationDialog(String action, Reservation reservation) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle(action + " confirmation")
                 .setMessage("Are you sure you want to " + action + "?")
@@ -181,7 +190,7 @@ public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.
                 })
                 .create()
                 .show();
-    }
+        }
 
 
     //FIZICKO BRISANJE
@@ -212,15 +221,14 @@ public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.
     }
 
     private void cancelReservation(Reservation reservation, String action){
-        Log.d("ReservationAdapter", "Logged guest " + LoginScreen.loggedGuest.getRole());
         Call<Reservation> cancelledReservation = ClientUtils.reservationService.cancelReservation(reservation.getId());
         cancelledReservation.enqueue(new Callback<Reservation>() {
             @Override
             public void onResponse(Call<Reservation> call, Response<Reservation> response) {
                 if (response.isSuccessful()) {
                     Reservation changedReservation = response.body();
-                    Toast.makeText(context, "Cancellation successful", Toast.LENGTH_SHORT).show();
-
+                    Toast.makeText(context, "Cancellation successful!", Toast.LENGTH_SHORT).show();
+                    createNotification(changedReservation);
                     updateListWithReservation(changedReservation, action);
                 } else {
                     Log.d("ReservationAdapter", "Unsuccessful response: " + response.code());
@@ -234,6 +242,34 @@ public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.
 
             @Override
             public void onFailure(Call<Reservation> call, Throwable t) {
+                Log.d("ReservationAdapter", t.getMessage() != null ? t.getMessage() : "error");
+            }
+        });
+    }
+
+    private void createNotification(Reservation newReservation) {
+        Notification notification = new Notification(null, newReservation.getAccommodation().getHost(), "Cancelled Reservation", "Bad news.. Your reservation for accommodation " + newReservation.getAccommodation().getName() + " has been cancelled. At least you shine today :)", new Date(), NotificationType.RESERVATION_CANCELED, true);
+        Call<Notification> createdNotification = ClientUtils.notificationService.createNotification(notification);
+        createdNotification.enqueue(new Callback<Notification>() {
+            @Override
+            public void onResponse(Call<Notification> call, Response<Notification> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    Log.d("ReservationAdapter", "Successful response: " + response.body());
+                    Notification newNotification = response.body();
+                    Log.d("ReservationAdapter", "Notification : " + newNotification.toString());
+                } else {
+                    // Log error details
+                    Log.d("ReservationAdapter", "Unsuccessful response: " + response.code());
+                    try {
+                        Log.d("ReservationAdapter", "Error Body: " + response.errorBody().string());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Notification> call, Throwable t) {
                 Log.d("ReservationAdapter", t.getMessage() != null ? t.getMessage() : "error");
             }
         });

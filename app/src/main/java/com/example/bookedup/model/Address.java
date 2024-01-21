@@ -1,6 +1,8 @@
 package com.example.bookedup.model;
 
-public class Address {
+import java.io.Serializable;
+
+public class Address implements Serializable {
     private Long id;
     private String country;
     private String city;
@@ -99,5 +101,19 @@ public class Address {
 
     public void setLongitude(double longitude) {
         this.longitude = longitude;
+    }
+
+    @Override
+    public String toString() {
+        return "Address{" +
+                "id=" + id +
+                ", country='" + country + '\'' +
+                ", city='" + city + '\'' +
+                ", postalCode='" + postalCode + '\'' +
+                ", streetAndNumber='" + streetAndNumber + '\'' +
+                ", active=" + active +
+                ", latitude=" + latitude +
+                ", longitude=" + longitude +
+                '}';
     }
 }

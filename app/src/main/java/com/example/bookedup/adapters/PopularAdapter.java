@@ -4,8 +4,11 @@ import static java.security.AccessController.getContext;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,23 +33,31 @@ import com.example.bookedup.model.Accommodation;
 import com.example.bookedup.model.Photo;
 import com.example.bookedup.model.Review;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
 public class PopularAdapter extends RecyclerView.Adapter<PopularAdapter.ViewHolder>{
-    private ArrayList<Accommodation> items;
+    private List<Accommodation> items;
+    private SparseArray<Bitmap> bitmapArray = new SparseArray<>();
+    private Map<Long, List<Bitmap>> accommodationImageMap = new HashMap<>();
     private Fragment fragment;
     int layout;
     private ArrayList<Review> reviews = new ArrayList<>();
 
-    public PopularAdapter(Fragment fragment, ArrayList<Accommodation> items, int beforeLayout) {
+    public PopularAdapter(Fragment fragment, List<Accommodation> items, int beforeLayout, Map<Long, List<Bitmap>> accommodationImageMap) {
         this.fragment = fragment;
         this.items = items;
         this.layout = beforeLayout;
+        this.accommodationImageMap = accommodationImageMap;
     }
 
     @NonNull
@@ -58,32 +69,29 @@ public class PopularAdapter extends RecyclerView.Adapter<PopularAdapter.ViewHold
 
     @Override
     public void onBindViewHolder(@NonNull PopularAdapter.ViewHolder holder, @SuppressLint("RecyclerView") int position) {
+        Accommodation accommodation = items.get(position);
         holder.titleTxt.setText(items.get(position).getName());
-        holder.locationTxt.setText(items.get(position).getAddress().getCountry() + " " + items.get(position).getAddress().getCity());
-        holder.scoreTxt.setText(""+items.get(position).getAverageRating());
-        if (!items.get(position).getPhotos().isEmpty()) {
-            String imageUrl = items.get(position).getPhotos().get(0).getUrl();
-            // Load the image using Glide
-            Glide.with(holder.itemView.getContext())
-                    .load(imageUrl)
-                    .transform(new CenterCrop(), new GranularRoundedCorners(40, 40, 40, 40))
-                    .into(holder.picImg);
-        } else {
-            // Provide a default image or handle the case where there are no photos
-            holder.picImg.setImageResource(R.drawable.default_hotel_img);
-        }
+        holder.locationTxt.setText(accommodation.getAddress().getCountry() + " " + accommodation.getAddress().getCity());
+        holder.scoreTxt.setText(""+accommodation.getAverageRating());
 
-
+        List<Bitmap> bitmaps = accommodationImageMap.get(accommodation.getId());
+        Log.d("PopularAdapter", "Accommodation id " + accommodation.getId());
+        Log.d("PopularAdapter", "Size " + bitmaps.size());
+        if (!bitmaps.isEmpty())
+            if (bitmaps.get(0) != null) {
+                holder.picImg.setImageBitmap(bitmaps.get(0));
+            }
+            else {
+                holder.picImg.setImageResource(R.drawable.default_hotel_img);
+            }
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 getAccommodationComments(items.get(position), v);
             }
         });
-
-
-
     }
+
 
     private void getAccommodationComments(Accommodation accommodation, View v){
         Call<ArrayList<Review>> accommodationReviews = ClientUtils.reviewService.getAccommodationReviews(accommodation.getId());
@@ -92,12 +100,11 @@ public class PopularAdapter extends RecyclerView.Adapter<PopularAdapter.ViewHold
             public void onResponse(Call<ArrayList<Review>> call, Response<ArrayList<Review>> response) {
                 if (response.isSuccessful()) {
                     reviews = response.body();
-
-                    DetailsFragment detailsFragment = new DetailsFragment();
+                    DetailsFragment detailsFragment = new DetailsFragment(accommodationImageMap.get(accommodation.getId()));
                     detailsFragment.setAccommodation(accommodation);
-
                     detailsFragment.setAccommodationReviews(reviews);
-                    getHostComments(accommodation, v);
+
+                    getHostComments(detailsFragment, accommodation, v);
                 } else {
                     Log.d("PopularFragment", "Failed to fetch updated guest data. Code: " + response.code());
                 }
@@ -110,19 +117,16 @@ public class PopularAdapter extends RecyclerView.Adapter<PopularAdapter.ViewHold
         });
     }
 
-    private void getHostComments(Accommodation accommodation, View v){
+    private void getHostComments(DetailsFragment detailsFragment, Accommodation accommodation, View v){
         Call<ArrayList<Review>> hostReviews = ClientUtils.reviewService.getHostReviewsByHostId(accommodation.getHost().getId());
         hostReviews.enqueue(new Callback<ArrayList<Review>>() {
             @Override
             public void onResponse(Call<ArrayList<Review>> call, Response<ArrayList<Review>> response) {
                 if (response.isSuccessful()) {
                     ArrayList<Review> hostReviews = response.body();
-
                     Context context = v.getContext();
-                    DetailsFragment detailsFragment = new DetailsFragment();
-                    detailsFragment.setAccommodation(accommodation);
-
                     detailsFragment.setHostReviews(hostReviews);
+
                     openDetailsFragment(detailsFragment,context);
                 } else {
                     Log.d("PopularFragment", "Failed to fetch updated guest data. Code: " + response.code());
@@ -143,12 +147,16 @@ public class PopularAdapter extends RecyclerView.Adapter<PopularAdapter.ViewHold
 
     private void openDetailsFragment(DetailsFragment detailsFragment, Context context){
         AppCompatActivity activity = (AppCompatActivity) context;
-        detailsFragment.setAccommodationReviews(reviews);
         FragmentTransaction transaction = activity.getSupportFragmentManager().beginTransaction();
         transaction.replace(layout, detailsFragment);
         transaction.addToBackStack(null);
         transaction.commit();
     }
+
+//    public void setBitmapForAccommodation(Long id, Bitmap bitmap) {
+//        bitmapArray.put(id.intValue(), bitmap);
+//        notifyDataSetChanged();
+//    }
 
     public class ViewHolder extends RecyclerView.ViewHolder{
 

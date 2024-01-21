@@ -1,6 +1,7 @@
 package com.example.bookedup.adapters;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,12 +24,15 @@ import com.example.bookedup.fragments.accommodations.SingleStatisticFragment;
 import com.example.bookedup.fragments.accommodations.UpdateAccommodationFragment;
 import com.example.bookedup.model.Accommodation;
 import com.example.bookedup.model.Reservation;
+import com.example.bookedup.model.Review;
 import com.example.bookedup.model.enums.AccommodationStatus;
 import com.example.bookedup.model.enums.ReservationStatus;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -39,10 +43,13 @@ public class AccommodationAdapter extends RecyclerView.Adapter<AccommodationAdap
     private List<Accommodation> accommodations;
     private Context context;
     private List<Reservation> reservations = new ArrayList<>();
+    private ArrayList<Review> accommodationReviews = new ArrayList<Review>();
+    private Map<Long, List<Bitmap>> accommodationImages = new HashMap<>();
 
-    public AccommodationAdapter(List<Accommodation> accommodations, Context context) {
+    public AccommodationAdapter(List<Accommodation> accommodations, Context context,Map<Long, List<Bitmap>> accommodationImages ) {
         this.accommodations = accommodations;
         this.context = context;
+        this.accommodationImages = accommodationImages;
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
@@ -96,34 +103,29 @@ public class AccommodationAdapter extends RecyclerView.Adapter<AccommodationAdap
         holder.price.setText(String.valueOf(currentRequest.getPrice()) + "$");
         holder.priceType.setText("/" + currentRequest.getPriceType().getPriceType());
 
-        // Postavljanje slike
-        //MENJACE SE
-        if (!currentRequest.getPhotos().isEmpty()){
-            int drawableResourceId = context.getResources().getIdentifier(currentRequest.getPhotos().get(0).getUrl(), "drawable", context.getPackageName());
-            holder.accommodationImage.setImageResource(drawableResourceId);
-        } else {
-            holder.accommodationImage.setImageResource(R.drawable.default_hotel_img);
-        }
+        List<Bitmap> bitmaps = accommodationImages.get(currentRequest.getId());
+        Log.d("AccommodationAdapter", "Accommodation id " + currentRequest.getId());
+        Log.d("AccommodationAdapter", "Size " + bitmaps.size());
+        if (!bitmaps.isEmpty())
+            if (bitmaps.get(0) != null) {
+                holder.accommodationImage.setImageBitmap(bitmaps.get(0));
+            }
+            else {
+                holder.accommodationImage.setImageResource(R.drawable.default_hotel_img);
+            }
 
 
         holder.btnViewDetails.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                DetailsFragment detailsFragment = new DetailsFragment();
-                detailsFragment.setAccommodation(currentRequest);
-                AppCompatActivity activity = (AppCompatActivity) context;
-                FragmentManager fragmentManager = activity.getSupportFragmentManager();
-                FragmentTransaction transaction = fragmentManager.beginTransaction();
-                transaction.replace(R.id.frame_layoutHost, detailsFragment);
-                transaction.addToBackStack(null);
-                transaction.commit();
+                getAccommodationComments(currentRequest, v);
             }
         });
 
         holder.btnEditDetails.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                UpdateAccommodationFragment updateAccommodationFragment = new UpdateAccommodationFragment(currentRequest);
+                UpdateAccommodationFragment updateAccommodationFragment = new UpdateAccommodationFragment(currentRequest, accommodationImages.get(currentRequest.getId()));
                 AppCompatActivity activity = (AppCompatActivity) context;
                 FragmentManager fragmentManager = activity.getSupportFragmentManager();
                 FragmentTransaction transaction = fragmentManager.beginTransaction();
@@ -151,6 +153,57 @@ public class AccommodationAdapter extends RecyclerView.Adapter<AccommodationAdap
             }
         });
 
+    }
+    private void getAccommodationComments(Accommodation accommodation, View v) {
+        Call<ArrayList<Review>> accommodationReviewsCall = ClientUtils.reviewService.getAccommodationReviews(accommodation.getId());
+        accommodationReviewsCall.enqueue(new Callback<ArrayList<Review>>() {
+            @Override
+            public void onResponse(Call<ArrayList<Review>> call, Response<ArrayList<Review>> response) {
+                if (response.isSuccessful()) {
+                    accommodationReviews = response.body();  // Update the global variable
+                    DetailsFragment detailsFragment = new DetailsFragment(accommodationImages.get(accommodation.getId()));
+                    detailsFragment.setAccommodation(accommodation);
+                    detailsFragment.setAccommodationReviews(accommodationReviews);
+
+                    getHostComments(detailsFragment, accommodation, v);
+                } else {
+                    Log.d("AccommodationAdapter", "Failed to fetch updated guest data. Code: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ArrayList<Review>> call, Throwable t) {
+                Log.d("AccommodationAdapter", "Failed to fetch updated guest data: " + t.getMessage());
+            }
+        });
+    }
+    private void getHostComments(DetailsFragment detailsFragment, Accommodation accommodation, View v){
+        Call<ArrayList<Review>> hostReviews = ClientUtils.reviewService.getHostReviewsByHostId(accommodation.getHost().getId());
+        hostReviews.enqueue(new Callback<ArrayList<Review>>() {
+            @Override
+            public void onResponse(Call<ArrayList<Review>> call, Response<ArrayList<Review>> response) {
+                if (response.isSuccessful()) {
+                    ArrayList<Review> hostReviews = response.body();
+                    detailsFragment.setHostReviews(hostReviews);
+
+                    openDetailsFragment(detailsFragment);
+                } else {
+                    Log.d("AccommodationAdapter", "Failed to fetch updated guest data. Code: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ArrayList<Review>> call, Throwable t) {
+                Log.d("AccommodationAdapter","Failed to fetch updated guest data: "  + t.getMessage());
+            }
+        });
+    }
+    private void openDetailsFragment(DetailsFragment detailsFragment){
+        AppCompatActivity activity = (AppCompatActivity) context;
+        FragmentTransaction transaction = activity.getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.frame_layoutHost, detailsFragment);
+        transaction.addToBackStack(null);
+        transaction.commit();
     }
 
     private void getHostsCompletedReservations(){

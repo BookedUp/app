@@ -19,13 +19,14 @@
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="match_parent"
+                android:layout_marginTop="50dp">
 
                 <ImageView
                     android:id="@+id/picImg"
-                    android:layout_width="wrap_content"
-                    android:layout_height="355dp"
-                    android:scaleType="centerCrop"
+                    android:layout_width="410dp"
+                    android:layout_height="290dp"
+                    android:scaleType="fitCenter"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
@@ -38,8 +39,8 @@
                     android:layout_width="35dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="end"
-                    android:layout_marginBottom="236dp"
-                    android:layout_marginRight="10dp"
+                    android:layout_marginEnd="4dp"
+                    android:layout_marginBottom="216dp"
                     app:backgroundTint="@android:color/white"
                     app:borderWidth="0dp"
                     app:elevation="5dp"
@@ -53,6 +54,13 @@
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="Tap for more images"
+                android:layout_marginStart="24dp"
+                android:layout_marginTop="10dp"/>
+
 
             <TextView
                 android:id="@+id/titleTxt"
@@ -63,7 +71,7 @@
                 android:textSize="24sp"
                 android:textColor="@color/black"
                 android:layout_marginStart="24dp"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="10dp"
                 android:layout_marginEnd="32dp"
                 />
 
@@ -211,9 +219,9 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:gravity="center_vertical"
-                    android:paddingLeft="15dp"
                     android:text="Comments and ratings"
                     android:textColor="@color/black"
+                    android:layout_marginStart="32dp"
                     android:textSize="20sp"
                     android:textStyle="bold" />
 
@@ -231,7 +239,7 @@
                    android:layout_height="match_parent"
                    android:layout_weight="1"
                    android:gravity="center_vertical"
-                   android:paddingLeft="15dp"
+                   android:layout_marginStart="32dp"
                    android:text="About accommodation"
                    android:textColor="@color/black"
                    android:textSize="15sp" />
@@ -245,6 +253,7 @@
                 android:layout_height="match_parent"
                 android:layout_below="@id/postButton"
                 android:layout_marginTop="10dp"
+                android:layout_marginStart="10dp"
                 tools:itemCount="3"/>
 
             <TextView
@@ -272,7 +281,7 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:gravity="center_vertical"
-                    android:paddingLeft="15dp"
+                    android:layout_marginStart="32dp"
                     android:text="About host"
                     android:textColor="@color/black"
                     android:textSize="15sp" />
@@ -285,6 +294,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_below="@id/postButton"
+                android:layout_marginStart="10dp"
                 android:layout_marginTop="10dp"
                 tools:itemCount="3"/>
 

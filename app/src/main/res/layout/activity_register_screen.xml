@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+
+<ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -7,193 +8,263 @@
     android:layout_height="match_parent"
     tools:context=".activities.LoginScreen">
 
-    <!-- Logo -->
-
-    <!-- Sign In Text -->
-    <ImageView
-        android:id="@+id/register_logoImageView"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="48dp"
-        android:layout_marginEnd="32dp"
-        android:src="@drawable/logo"
-        app:layout_constraintDimensionRatio="2:1"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/register_registerText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Register"
-        android:textSize="24sp"
-        android:typeface="sans"
-
-        app:layout_constraintBottom_toTopOf="@+id/register_email_address"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/register_logoImageView" />
-
-    <!-- Email address EditText -->
-    <EditText
-        android:id="@+id/register_email_address"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="40dp"
-        android:layout_marginEnd="24dp"
-        android:autofillHints="@string/prompt_register_email"
-        android:hint="@string/prompt_register_email"
-        android:padding="8dp"
-
-        android:background="@drawable/edit_text_rounded_corner"
-        android:elevation="5dp"
-        android:inputType="textEmailAddress"
-        android:minHeight="48dp"
-        android:selectAllOnFocus="true"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/register_registerText" />
-
-    <!-- Password EditText -->
-    <EditText
-        android:id="@+id/register_first_name"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="24dp"
-        android:background="@drawable/edit_text_rounded_corner"
-        android:elevation="5dp"
-        android:autofillHints="@string/prompt_register_firstname"
-        android:hint="@string/prompt_register_firstname"
-        android:padding="8dp"
-
-        android:minHeight="48dp"
-        android:selectAllOnFocus="true"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/register_email_address" />
-
-    <!-- Email address EditText -->
-    <EditText
-        android:id="@+id/register_last_name"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="24dp"
-        android:background="@drawable/edit_text_rounded_corner"
-        android:elevation="5dp"
-        android:padding="8dp"
-
-        android:autofillHints="@string/prompt_register_last_name"
-        android:hint="@string/prompt_register_last_name"
-        android:inputType="textPersonName"
-        android:minHeight="48dp"
-        android:selectAllOnFocus="true"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/register_first_name" />
-
-    <!-- Password EditText -->
-    <EditText
-        android:id="@+id/register_address"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="24dp"
-        android:autofillHints="@string/prompt_register_address"
-        android:hint="@string/prompt_register_address"
-        android:inputType="textPostalAddress"
-        android:minHeight="48dp"
-        android:padding="8dp"
-
-        android:selectAllOnFocus="true"
-        android:background="@drawable/edit_text_rounded_corner"
-        android:elevation="5dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/register_last_name" />
-    <!-- Email address EditText -->
-    <EditText
-        android:id="@+id/register_phone"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="24dp"
-        android:background="@drawable/edit_text_rounded_corner"
-        android:elevation="5dp"
-        android:autofillHints="@string/prompt_register_phone"
-        android:hint="@string/prompt_register_phone"
-        android:inputType="textPhonetic"
-        android:padding="8dp"
-
-        android:minHeight="48dp"
-        android:selectAllOnFocus="true"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/register_address" />
-
-
-
-    <!-- Login Button -->
-    <Button
-        android:id="@+id/continue_register"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="start"
-        android:layout_marginStart="48dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="48dp"
-        android:layout_marginBottom="64dp"
-        android:enabled="true"
-        android:text="@string/action_continue_register"
-        android:background="@drawable/btn_rounded_corner"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/register_switch"
-        app:layout_constraintVertical_bias="0.2" />
+        android:layout_height="wrap_content">
 
-    <!-- Register Button -->
-    <TextView
-        android:id="@+id/register_signInTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="24dp"
-        android:clickable="true"
-        android:minHeight="48dp"
-        android:onClick="openLoginScreen"
-        android:text="Already have an account? Sign in"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/continue_register"
-        app:layout_constraintVertical_bias="0.2" />
+        <ImageView
+            android:id="@+id/register_logoImageView"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="32dp"
+            android:layout_marginTop="48dp"
+            android:layout_marginEnd="32dp"
+            android:src="@drawable/usx"
+            app:layout_constraintDimensionRatio="2:1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+        <LinearLayout
+            android:id="@+id/buttonsContainer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="10dp"
+            app:layout_constraintBottom_toTopOf="@+id/register_registerText"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/register_logoImageView">
+            <Button
+                android:id="@+id/selectImageBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:clickable="true"
+                android:text="Select image"
+                android:layout_marginStart="70dp"/>
+            <Button
+                android:id="@+id/removeImageBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Remove image"
+                android:clickable="true"
+                android:layout_marginStart="10dp"/>
 
-    <Switch
-        android:id="@+id/register_switch"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Host"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="24dp"
-        android:layout_marginBottom="64dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/register_phone"
-        app:layout_constraintVertical_bias="0.2"
-         />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/register_registerText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Register"
+            android:layout_marginTop="20dp"
+            android:textSize="24sp"
+            android:typeface="sans"
+
+            app:layout_constraintBottom_toTopOf="@+id/register_email_address"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/buttonsContainer" />
+
+        <!-- Email address EditText -->
+        <EditText
+            android:id="@+id/register_email_address"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="24dp"
+            android:autofillHints="@string/prompt_register_email"
+            android:hint="@string/prompt_register_email"
+            android:padding="8dp"
+
+            android:background="@drawable/edit_text_rounded_corner"
+            android:elevation="5dp"
+            android:inputType="textEmailAddress"
+            android:minHeight="48dp"
+            android:selectAllOnFocus="true"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/register_registerText" />
+
+        <!-- Password EditText -->
+        <EditText
+            android:id="@+id/register_first_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="24dp"
+            android:background="@drawable/edit_text_rounded_corner"
+            android:elevation="5dp"
+            android:autofillHints="@string/prompt_register_firstname"
+            android:hint="@string/prompt_register_firstname"
+            android:padding="8dp"
+
+            android:minHeight="48dp"
+            android:selectAllOnFocus="true"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/register_email_address" />
+
+        <!-- Email address EditText -->
+        <EditText
+            android:id="@+id/register_last_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="24dp"
+            android:background="@drawable/edit_text_rounded_corner"
+            android:elevation="5dp"
+            android:padding="8dp"
+
+            android:autofillHints="@string/prompt_register_last_name"
+            android:hint="@string/prompt_register_last_name"
+            android:inputType="textPersonName"
+            android:minHeight="48dp"
+            android:selectAllOnFocus="true"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/register_first_name" />
+
+        <!-- Password EditText -->
+        <!-- Država EditText -->
+        <EditText
+            android:id="@+id/register_country"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="24dp"
+            android:background="@drawable/edit_text_rounded_corner"
+            android:elevation="5dp"
+            android:autofillHints="@string/prompt_register_country"
+            android:hint="@string/prompt_register_country"
+            android:inputType="text"
+            android:minHeight="48dp"
+            android:padding="8dp"
+            android:selectAllOnFocus="true"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/register_last_name" />
+
+        <!-- Grad EditText -->
+        <EditText
+            android:id="@+id/register_city"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="24dp"
+            android:background="@drawable/edit_text_rounded_corner"
+            android:elevation="5dp"
+            android:padding="8dp"
+            android:autofillHints="@string/prompt_register_city"
+            android:hint="@string/prompt_register_city"
+            android:inputType="text"
+            android:minHeight="48dp"
+            android:selectAllOnFocus="true"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/register_country" />
+
+        <!-- Ulica i broj EditText -->
+        <EditText
+            android:id="@+id/register_street_and_number"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="24dp"
+            android:background="@drawable/edit_text_rounded_corner"
+            android:elevation="5dp"
+            android:padding="8dp"
+            android:autofillHints="@string/prompt_register_street_and_number"
+            android:hint="@string/prompt_register_street_and_number"
+            android:inputType="text"
+            android:minHeight="48dp"
+            android:selectAllOnFocus="true"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/register_city" />
+
+        <!-- Email address EditText -->
+        <EditText
+            android:id="@+id/register_phone"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="24dp"
+            android:background="@drawable/edit_text_rounded_corner"
+            android:elevation="5dp"
+            android:autofillHints="@string/prompt_register_phone"
+            android:hint="@string/prompt_register_phone"
+            android:inputType="textPhonetic"
+            android:padding="8dp"
+
+            android:minHeight="48dp"
+            android:selectAllOnFocus="true"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/register_street_and_number" />
 
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- Login Button -->
+        <Button
+            android:id="@+id/continue_register"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:clickable="true"
+            android:layout_marginStart="48dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="48dp"
+            android:layout_marginBottom="64dp"
+            android:enabled="true"
+            android:text="@string/action_continue_register"
+            android:background="@drawable/btn_rounded_corner"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/register_switch"
+            app:layout_constraintVertical_bias="0.2" />
+
+        <!-- Register Button -->
+        <TextView
+            android:id="@+id/register_signInTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="24dp"
+            android:clickable="true"
+            android:minHeight="48dp"
+            android:onClick="openLoginScreen"
+            android:text="Already have an account? Sign in"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/continue_register"
+            app:layout_constraintVertical_bias="0.2" />
+
+        <Switch
+            android:id="@+id/register_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Host"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="24dp"
+            android:layout_marginBottom="64dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/register_phone"
+            app:layout_constraintVertical_bias="0.2"
+             />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

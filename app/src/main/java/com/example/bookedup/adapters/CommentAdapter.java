@@ -1,6 +1,7 @@
 package com.example.bookedup.adapters;
 
 import android.annotation.SuppressLint;
+import android.graphics.Bitmap;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,18 +18,23 @@ import com.bumptech.glide.load.resource.bitmap.CenterCrop;
 import com.bumptech.glide.load.resource.bitmap.GranularRoundedCorners;
 import com.example.bookedup.R;
 import com.example.bookedup.model.Review;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHolder>{
 
-    List<Review> reviews;
+    private List<Review> reviews;
     private Fragment fragment;
-    int layout;
+    private int layout;
+    private Map<Long, Bitmap> usersImages = new HashMap<>();
 
-    public CommentAdapter(Fragment fragment, List<Review> reviews, int beforeLayout) {
+    public CommentAdapter(Fragment fragment, List<Review> reviews, int beforeLayout, Map<Long, Bitmap> usersImages) {
         this.fragment = fragment;
         this.reviews = reviews;
         this.layout = beforeLayout;
+        this.usersImages = usersImages;
     }
 
     @NonNull
@@ -41,13 +47,9 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
     @Override
     public void onBindViewHolder(@NonNull CommentAdapter.ViewHolder holder, @SuppressLint("RecyclerView") int position) {
         Review currentReview = reviews.get(position);
-        if (currentReview.getGuest().getProfilePicture() != null) {
-            String imageUrl = currentReview.getGuest().getProfilePicture().getUrl();
-            // Load the image using Glide
-            Glide.with(holder.itemView.getContext())
-                    .load(imageUrl)
-                    .transform(new CenterCrop(), new GranularRoundedCorners(40, 40, 40, 40))
-                    .into(holder.guestImg);
+        Bitmap image = usersImages.get(currentReview.getGuest().getId());
+        if (image != null){
+            holder.guestImg.setImageBitmap(image);
         } else {
             holder.guestImg.setImageResource(R.drawable.default_hotel_img);
         }

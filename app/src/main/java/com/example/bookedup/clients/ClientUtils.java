@@ -5,6 +5,8 @@ import com.example.bookedup.adapters.DateTypeAdapter;
 import com.example.bookedup.services.AccommodationService;
 import com.example.bookedup.services.AdminService;
 import com.example.bookedup.services.HostService;
+import com.example.bookedup.services.NotificationService;
+import com.example.bookedup.services.PhotoService;
 import com.example.bookedup.services.ReservationService;
 import com.example.bookedup.services.ReviewService;
 import com.example.bookedup.services.UserReportService;
@@ -84,5 +86,8 @@ public class ClientUtils {
     public static ReservationService reservationService = retrofit.create(ReservationService.class);
     public static UserReportService userReportService = retrofit.create(UserReportService.class);
     public static ReviewService reviewService = retrofit.create(ReviewService.class);
+    public static PhotoService photoService = retrofit.create(PhotoService.class);
+
+    public static NotificationService notificationService = retrofit.create(NotificationService.class);
 
 }

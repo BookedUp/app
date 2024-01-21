@@ -4,6 +4,8 @@ import com.example.bookedup.model.LoginRequest;
 import com.example.bookedup.model.Token;
 import com.example.bookedup.model.User;
 
+import java.util.ArrayList;
+
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.DELETE;
@@ -22,6 +24,12 @@ public interface UserService {
     @POST("login")
     Call<Token> login(@Body LoginRequest loginRequest);
 
+    @POST("registration/android")
+    Call<Token> register(@Body User user);
+
+    @GET("users")
+    Call<ArrayList<User>> getUsers();
+
     @GET("users/{id}")
     Call<User> getUser(@Path("id") Long id);
 
@@ -30,6 +38,18 @@ public interface UserService {
 
     @DELETE("users/{id}")
     Call<User> deleteUser(@Path("id") Long id);
+
+    @PUT("users/{id}/block")
+    Call<User> blockUser(@Path("id") Long id);
+
+    @PUT("users/{id}/unblock")
+    Call<User> unblockUser(@Path("id") Long id);
+
+    @GET("users/blocked-users")
+    Call<ArrayList<User>> getBlockedUsers();
+
+    @GET("users/unblocked-users")
+    Call<ArrayList<User>> getUnblockedUsers();
 
 
 }

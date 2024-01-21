@@ -1,5 +1,7 @@
-package com.example.bookedup.reviews;
+package com.example.bookedup.fragments.reports;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -8,26 +10,38 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.bookedup.R;
 import com.example.bookedup.adapters.CommentAdapter;
-import com.example.bookedup.fragments.reservations.CreateReservationFragment;
+import com.example.bookedup.adapters.ReportReasonsAdapter;
+import com.example.bookedup.clients.ClientUtils;
 import com.example.bookedup.model.Review;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
-public class ReviewsListFragment extends Fragment {
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Response;
 
-    private ArrayList<Review> reviews = new ArrayList<>();
-    private int targetLayout;
+
+public class ReportsReasonListFragment extends Fragment {
+
+    private List<String> reasons = new ArrayList<>();
     private RecyclerView recyclerView;
 
-    public ReviewsListFragment(ArrayList<Review> reviews, int targetLayout) {
-        this.reviews = reviews;
-        this.targetLayout = targetLayout;
+    public ReportsReasonListFragment(List<String> reasons) {
+        this.reasons = reasons;
     }
 
     @Override
@@ -38,27 +52,25 @@ public class ReviewsListFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_reviews_list, container, false);
+        return inflater.inflate(R.layout.fragment_reports_reason_list, container, false);
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         initView(view);
-        initRecyclerView(reviews);
+        initRecyclerView();
 
     }
 
-    private void initRecyclerView(ArrayList<Review> reviews) {
+    private void initRecyclerView() {
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false));
-        CommentAdapter commentAdapter = new CommentAdapter(this, reviews, targetLayout);
-        recyclerView.setAdapter(commentAdapter);
+        ReportReasonsAdapter reasonsAdapter = new ReportReasonsAdapter(reasons);
+        recyclerView.setAdapter(reasonsAdapter);
     }
+
 
     private void initView(View view) {
-        recyclerView = view.findViewById(R.id.commentRecyclerView);
+        recyclerView = view.findViewById(R.id.reasonsRecyclerView);
     }
-
-
 }

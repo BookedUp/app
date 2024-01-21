@@ -3,6 +3,7 @@ package com.example.bookedup.fragments.accommodations;
 import android.app.DatePickerDialog;
 import android.content.ComponentName;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -40,8 +41,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.TimeZone;
 
 import retrofit2.Call;
@@ -51,15 +54,16 @@ import retrofit2.Response;
 public class FavouriteAccommodationFragment extends Fragment {
 
     private RecyclerView recyclerViewResults;
-
     private RecyclerView.Adapter adapterResults;
-
     private int targetLayout;
-
     private List<Accommodation> favourites = new ArrayList<Accommodation>();
+    private Map<Long, List<Bitmap>> accommodationImages = new HashMap<>();
 
 
-    public FavouriteAccommodationFragment() {}
+    public FavouriteAccommodationFragment(List<Accommodation> favourites, Map<Long, List<Bitmap>> accommodationImages) {
+        this.favourites = favourites;
+        this.accommodationImages = accommodationImages;
+    }
 
 
     @Override
@@ -82,9 +86,6 @@ public class FavouriteAccommodationFragment extends Fragment {
         findTargetLayout();
 //        getCallerData();
         initRecycleView();
-
-
-
     }
 
     private void initView(View view){
@@ -114,7 +115,7 @@ public class FavouriteAccommodationFragment extends Fragment {
     private void initRecycleView() {
 
         recyclerViewResults.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false));
-        adapterResults = new FavouriteAccommodationAdapter(favourites, targetLayout);
+        adapterResults = new FavouriteAccommodationAdapter(favourites, targetLayout, accommodationImages);
         recyclerViewResults.setAdapter(adapterResults);
     }
 

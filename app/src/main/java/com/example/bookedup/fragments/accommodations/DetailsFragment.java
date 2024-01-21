@@ -2,8 +2,9 @@ package com.example.bookedup.fragments.accommodations;
 
 import android.app.Dialog;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -31,25 +32,29 @@ import com.bumptech.glide.load.resource.bitmap.GranularRoundedCorners;
 import com.example.bookedup.R;
 import com.example.bookedup.activities.LoginScreen;
 import com.example.bookedup.adapters.CommentAdapter;
-import com.example.bookedup.adapters.PopularDestinationAdapter;
 import com.example.bookedup.clients.ClientUtils;
+import com.example.bookedup.fragments.account.AccountFragment;
 import com.example.bookedup.fragments.reservations.CreateReservationFragment;
 import com.example.bookedup.model.Accommodation;
 import com.example.bookedup.model.Guest;
+import com.example.bookedup.model.Photo;
 import com.example.bookedup.model.Review;
+import com.example.bookedup.model.User;
 import com.example.bookedup.model.enums.Amenity;
-import com.example.bookedup.model.enums.ReviewType;
-import com.example.bookedup.reviews.ReviewsListFragment;
+import com.example.bookedup.fragments.reviews.ReviewsListFragment;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
-import java.util.TimeZone;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -58,22 +63,21 @@ public class DetailsFragment extends Fragment {
 
     private TextView titleTxt, locationTxt, descriptionTxt, scoreTxt, priceTxt, pricePerTxt, staysTimeTxt, seeMoreAccTxt, seeMoreHostTxt;
     private ImageView picImg;
-    private int daysNum = 0, guestNum = 0, targetLayout;
+    private int daysNum = 0, guestNum = 0, targetLayout, currentImageIndex;
     private boolean isFavourite = false;
-    private FloatingActionButton commentPopup, favouriteButton;
-    private Dialog commentDialog;
-    private Button book, postComment;
+    private FloatingActionButton favouriteButton;
+    private Button book;
     private String checkIn, checkOut;
     private FragmentManager fragmentManager;
     private Accommodation accommodation;
-    private RecyclerView.Adapter commmentAdapter;
     private RecyclerView recyclerViewAccommodation, recyclerViewHost;
     private ArrayList<Review> accommodationReviews = new ArrayList<>();
     private ArrayList<Review> hostReviews = new ArrayList<>();
-    private RatingBar accommodationRating, hostRating;
-    private EditText accommodationCommentTxt, hostCommentTxt;
     private CommentAdapter commentAdapter;
-    public DetailsFragment() {}
+    private List<Bitmap> accommodationImages;
+    public DetailsFragment(List<Bitmap> accommodationImages) {
+        this.accommodationImages = accommodationImages;
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -97,6 +101,13 @@ public class DetailsFragment extends Fragment {
         initView(view);
         initAccommodationCommentsRecyclerView(accommodationReviews);
         initHostCommentsRecyclerView(hostReviews);
+
+        picImg.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showNextImage();
+            }
+        });
 
         book.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -134,6 +145,16 @@ public class DetailsFragment extends Fragment {
                 }
             }
         });
+    }
+
+    private void showNextImage() {
+        if (!accommodationImages.isEmpty()) {
+            currentImageIndex = (currentImageIndex + 1) % accommodationImages.size();
+            picImg.setImageBitmap(accommodationImages.get(currentImageIndex));
+        }
+        if(accommodationImages.size() == 1){
+            Toast.makeText(requireContext(), "No more images to show!", Toast.LENGTH_SHORT).show();
+        }
     }
 
 
@@ -291,6 +312,12 @@ public class DetailsFragment extends Fragment {
     private void initView(View view) {
         fragmentManager = getParentFragmentManager();
         favouriteButton = view.findViewById(R.id.favouriteButton);
+        if (LoginScreen.loggedGuest == null){
+            favouriteButton.setVisibility(View.INVISIBLE);
+        } else {
+            favouriteButton.setVisibility(View.VISIBLE);
+        }
+
         titleTxt = view.findViewById(R.id.titleTxt);
         locationTxt = view.findViewById(R.id.locationTxt);;
         descriptionTxt = view.findViewById(R.id.descriptionTxt);
@@ -308,7 +335,8 @@ public class DetailsFragment extends Fragment {
         descriptionTxt.setText(accommodation.getDescription());
 
         if (accommodation.getTotalPrice() == 0) {
-            priceTxt.setVisibility(View.GONE);
+            priceTxt.setVisibility(View.INVISIBLE);
+            book.setVisibility(View.INVISIBLE);
         } else {
             priceTxt.setText(String.valueOf(accommodation.getTotalPrice()) + "$");
         }
@@ -320,22 +348,7 @@ public class DetailsFragment extends Fragment {
             staysTimeTxt.setText(guestNum + " adults "  + daysNum + " days");
         }
         displayAmenities(accommodation.getAmenities(), view);
-
-
-        //MENJACE SE
-
-        String imageUrl = "";
-
-        if (!accommodation.getPhotos().isEmpty()) {
-            imageUrl = accommodation.getPhotos().get(0).getUrl();
-        } else {
-            imageUrl = "android.resource://" + requireContext().getPackageName() + "/" + R.drawable.default_hotel_img;
-        }
-
-        Glide.with(requireContext()).load(imageUrl)
-                .transform(new CenterCrop(), new GranularRoundedCorners(40, 40, 40, 40))
-                .into(picImg);
-
+        picImg.setImageBitmap(accommodationImages.get(0));
 
         recyclerViewAccommodation = view.findViewById(R.id.commentRecyclerView);
         recyclerViewHost = view.findViewById(R.id.hostRecyclerView);
@@ -353,16 +366,45 @@ public class DetailsFragment extends Fragment {
 
     private void initAccommodationCommentsRecyclerView(ArrayList<Review> reviews){
         List<Review> limitedList = reviews.subList(0, Math.min(reviews.size(), 3));
-        recyclerViewAccommodation.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false));
-        commentAdapter = new CommentAdapter(this, limitedList, targetLayout);
-        recyclerViewAccommodation.setAdapter(commentAdapter);
+        loadProfilePictures(limitedList, recyclerViewAccommodation);
     }
 
     private void initHostCommentsRecyclerView(ArrayList<Review> reviews){
         List<Review> limitedList = reviews.subList(0, Math.min(reviews.size(), 3));
-        recyclerViewHost.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false));
-        commentAdapter = new CommentAdapter(this, limitedList, targetLayout);
-        recyclerViewHost.setAdapter(commentAdapter);
+        loadProfilePictures(limitedList, recyclerViewHost);
+    }
+
+
+    private void loadProfilePictures(List<Review> reviews, RecyclerView recyclerView){
+        Map<Long, Bitmap> usersImageMap = new HashMap<>();
+        ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+        AtomicInteger loadedImagesCount = new AtomicInteger(0);
+
+        for (Review review : reviews) {
+            executorService.execute(() -> {
+                try {
+                    Call<ResponseBody> photoCall = ClientUtils.photoService.loadPhoto(review.getGuest().getProfilePicture().getId());
+                    Response<ResponseBody> response = photoCall.execute();
+
+                    if (response.isSuccessful()) {
+                        byte[] photoData = response.body().bytes();
+                        Bitmap bitmap = BitmapFactory.decodeByteArray(photoData, 0, photoData.length);
+                        usersImageMap.put(review.getGuest().getId(), bitmap);
+
+                        if (loadedImagesCount.incrementAndGet() == reviews.size()) {
+                            recyclerView.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false));
+                            commentAdapter = new CommentAdapter(this, reviews, targetLayout, usersImageMap);
+                            recyclerView.setAdapter(commentAdapter);
+                        }
+                    } else {
+                        Log.d("DetailsFragment", "Error code " + response.code());
+                    }
+                } catch (IOException e) {
+                    Log.e("DetailsFragment", "Error reading response body: " + e.getMessage());
+                }
+            });
+        }
+        executorService.shutdown();
     }
 
     private void displayAmenities(List<Amenity> amenities, View view) {

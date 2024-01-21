@@ -28,4 +28,7 @@
     <string name="open_nav">Open Navigation Drawer</string>
     <string name="close_nav">Close Navigation Drawer</string>
     <string name="availability_label">Availability: </string>
+    <string name="prompt_register_country">Country</string>
+    <string name="prompt_register_city">City</string>
+    <string name="prompt_register_street_and_number">Street and number</string>
 </resources>

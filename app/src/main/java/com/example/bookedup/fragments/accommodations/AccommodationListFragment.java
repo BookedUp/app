@@ -1,6 +1,7 @@
 package com.example.bookedup.fragments.accommodations;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -11,7 +12,6 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,22 +19,14 @@ import android.widget.Toast;
 
 import com.example.bookedup.R;
 import com.example.bookedup.adapters.AccommodationAdapter;
-import com.example.bookedup.adapters.ReservationAdapter;
 import com.example.bookedup.adapters.TypeAdapter;
 import com.example.bookedup.model.Accommodation;
-import com.example.bookedup.model.Address;
-import com.example.bookedup.model.Photo;
-import com.example.bookedup.model.Reservation;
 import com.example.bookedup.model.enums.AccommodationStatus;
-import com.example.bookedup.model.enums.PriceType;
-import com.example.bookedup.model.enums.ReservationStatus;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class AccommodationListFragment extends Fragment implements TypeAdapter.TypeSelectionListener {
 
@@ -43,15 +35,14 @@ public class AccommodationListFragment extends Fragment implements TypeAdapter.T
     private AccommodationAdapter accommodationAdapter;
     private int layout_caller;
     private List<Accommodation> accommodations = new ArrayList<>();
+    private Map<Long, List<Bitmap>> accommodationImages = new HashMap<>();
 
-    public AccommodationListFragment() {}
-
-    public static AccommodationListFragment newInstance(String param1, String param2) {
-        AccommodationListFragment fragment = new AccommodationListFragment();
-        Bundle args = new Bundle();
-        fragment.setArguments(args);
-        return fragment;
+    public AccommodationListFragment(Map<Long, List<Bitmap>> accommodationImages, int layout_caller, List<Accommodation> accommodations) {
+        this.accommodationImages = accommodationImages;
+        this.layout_caller = layout_caller;
+        this.accommodations = accommodations;
     }
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -68,21 +59,21 @@ public class AccommodationListFragment extends Fragment implements TypeAdapter.T
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        getCallerData();
+//        getCallerData();
         initUI(view);
 
     }
 
-    private void getCallerData(){
-        Bundle arguments = getArguments();
-        if (arguments != null) {
-            String resultsJson = arguments.getString("resultsJson");
-            layout_caller = arguments.getInt("layout_caller");
-            Type type = new TypeToken<ArrayList<Accommodation>>() {}.getType();
-            accommodations = new Gson().fromJson(resultsJson, type);
-            Log.d("AccommodationListFragment", "ACC SIZE " + accommodations.size());
-        }
-    }
+//    private void getCallerData(){
+//        Bundle arguments = getArguments();
+//        if (arguments != null) {
+//            String resultsJson = arguments.getString("resultsJson");
+//            layout_caller = arguments.getInt("layout_caller");
+//            Type type = new TypeToken<ArrayList<Accommodation>>() {}.getType();
+//            accommodations = new Gson().fromJson(resultsJson, type);
+//            Log.d("AccommodationListFragment", "ACC SIZE " + accommodations.size());
+//        }
+//    }
 
     private void initUI(View view){
         typeRecyclerView = view.findViewById(R.id.fal_recyclerType);
@@ -93,7 +84,7 @@ public class AccommodationListFragment extends Fragment implements TypeAdapter.T
         accommodationRecyclerView = view.findViewById(R.id.cards_myAccommodations);
         accommodationRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         Context context = getContext();
-        accommodationAdapter = new AccommodationAdapter(accommodations, context);
+        accommodationAdapter = new AccommodationAdapter(accommodations, context, accommodationImages);
         accommodationRecyclerView.setAdapter(accommodationAdapter);
     }
 
@@ -113,7 +104,7 @@ public class AccommodationListFragment extends Fragment implements TypeAdapter.T
 
     private void updateAccommodationAdapter(String selectedType) {
         List<Accommodation> updatedList = getUpdatedAccommodationList(selectedType);
-        accommodationAdapter = new AccommodationAdapter(updatedList, getContext());
+        accommodationAdapter = new AccommodationAdapter(updatedList, getContext(), accommodationImages);
         accommodationRecyclerView.setAdapter(accommodationAdapter);
     }
 

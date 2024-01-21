@@ -17,7 +17,7 @@ public class Review {
     private Host host;
     private Accommodation accommodation;
     private ReviewType type;
-    private Boolean approved;
+    private boolean approved;
 
     public Review(Guest guest, int review, String comment, String date, Host host, Accommodation accommodation, ReviewType type, Boolean approved) {
         this.guest = guest;
