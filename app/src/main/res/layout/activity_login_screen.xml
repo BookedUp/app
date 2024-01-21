@@ -122,6 +122,7 @@
         android:layout_marginTop="16dp"
         android:layout_marginEnd="48dp"
         android:layout_marginBottom="64dp"
+        android:clickable="true"
         android:background="@drawable/btn_rounded_corner"
         android:enabled="true"
         android:text="@string/action_sign_in"

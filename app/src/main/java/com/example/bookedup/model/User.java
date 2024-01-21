@@ -2,7 +2,9 @@ package com.example.bookedup.model;
 
 import com.example.bookedup.model.enums.Role;
 
-public class User {
+import java.io.Serializable;
+
+public class User implements Serializable {
     private Long id;
     private String firstName;
     private String lastName;
@@ -10,7 +12,7 @@ public class User {
     private Integer phone;
     private String email;
     private String password;
-    private boolean isBlocked;
+    private boolean blocked;
     private boolean verified;
     private boolean active;
     private Photo profilePicture;
@@ -21,7 +23,7 @@ public class User {
     }
 
     public User(Long id, String firstName, String lastName, Address address, Integer phone,
-                String email, String password, boolean isBlocked, boolean verified,
+                String email, String password, boolean blocked, boolean verified,
                 boolean active, Photo profilePicture, Role role) {
         this.id = id;
         this.firstName = firstName;
@@ -30,21 +32,21 @@ public class User {
         this.phone = phone;
         this.email = email;
         this.password = password;
-        this.isBlocked = isBlocked;
+        this.blocked = blocked;
         this.verified = verified;
         this.active = active;
         this.profilePicture = profilePicture;
         this.role = role;
     }
 
-    public User(String firstName, String lastName, Address address, Integer phone, String email, String password, boolean isBlocked, boolean verified, boolean active, Photo profilePicture, Role role) {
+    public User(String firstName, String lastName, Address address, Integer phone, String email, String password, boolean blocked, boolean verified, boolean active, Photo profilePicture, Role role) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.address = address;
         this.phone = phone;
         this.email = email;
         this.password = password;
-        this.isBlocked = isBlocked;
+        this.blocked = blocked;
         this.verified = verified;
         this.active = active;
         this.profilePicture = profilePicture;
@@ -108,12 +110,12 @@ public class User {
         this.password = password;
     }
 
-    public boolean isBlocked() {
-        return isBlocked;
+    public boolean blocked() {
+        return blocked;
     }
 
     public void setBlocked(boolean blocked) {
-        isBlocked = blocked;
+        blocked = blocked;
     }
 
     public boolean isVerified() {
@@ -158,7 +160,7 @@ public class User {
                 ", phone=" + phone +
                 ", email='" + email + '\'' +
                 ", password='" + password + '\'' +
-                ", isBlocked=" + isBlocked +
+                ", isBlocked=" + blocked +
                 ", verified=" + verified +
                 ", active=" + active +
                 ", profilePicture=" + profilePicture +

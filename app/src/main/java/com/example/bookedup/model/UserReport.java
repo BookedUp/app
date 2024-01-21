@@ -6,6 +6,12 @@ public class UserReport {
     private User reportedUser;
     private boolean status;
 
+    public UserReport(Long id, String reason, User reportedUser, boolean status) {
+        this.id = id;
+        this.reason = reason;
+        this.reportedUser = reportedUser;
+        this.status = status;
+    }
 
     public UserReport(String reason, User reportedUser, boolean status) {
         this.reason = reason;

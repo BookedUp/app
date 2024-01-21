@@ -1,11 +1,7 @@
 package com.example.bookedup.services;
 
 import com.example.bookedup.model.Accommodation;
-import com.example.bookedup.model.enums.AccommodationType;
-import com.example.bookedup.model.enums.Amenity;
-
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import retrofit2.Call;

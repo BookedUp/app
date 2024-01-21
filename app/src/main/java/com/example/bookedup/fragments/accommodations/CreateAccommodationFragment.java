@@ -3,6 +3,7 @@ package com.example.bookedup.fragments.accommodations;
 import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
@@ -44,6 +45,9 @@ import com.example.bookedup.model.enums.Amenity;
 import com.example.bookedup.model.enums.PriceType;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -53,7 +57,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -243,6 +252,8 @@ public class CreateAccommodationFragment extends Fragment {
         }
     }
 
+
+
     private void setupListeners() {
 
         selectImageBtn.setOnClickListener(new View.OnClickListener() {
@@ -420,11 +431,93 @@ public class CreateAccommodationFragment extends Fragment {
         createAccommodationBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getData();
+                uploadImages();
             }
         });
 
     }
+
+    private void uploadImages() {
+        Log.d("CreateAccommodationFragment", "USAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAO" + selectedImageUris.size());
+
+        List<Photo> uploadedPhotos = new ArrayList<>();
+        AtomicInteger uploadCount = new AtomicInteger(0);
+
+        for (Uri uri : selectedImageUris) {
+            try {
+                Bitmap bitmap = MediaStore.Images.Media.getBitmap(requireActivity().getContentResolver(), uri);
+
+                // Convert Bitmap to File
+                String fileName = "acc" + System.currentTimeMillis() + ".jpg";
+                File imageFile = bitmapToFile(bitmap, fileName);
+
+                // Convert File to MultipartBody.Part
+                RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), imageFile);
+                MultipartBody.Part imagePart = MultipartBody.Part.createFormData("image", fileName, requestFile);
+
+                // Call the method to upload the image
+                Call<ResponseBody> uploadCall = ClientUtils.photoService.uploadPhoto(imagePart);
+                int finalSize = selectedImageUris.size();
+                uploadCall.enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        if (response.isSuccessful()) {
+                            Photo photo = new Photo("images/" + fileName, "Caption", true);
+                            Log.d("CreateAccommodationFragment", "Photo NEWNEW NEW " + photo);
+                            uploadedPhotos.add(photo);
+
+                            // Check if all images are uploaded
+                            if (uploadCount.incrementAndGet() == finalSize) {
+                                // All images are uploaded, call another function
+                                getData(uploadedPhotos);
+                            }
+                        } else {
+                            // Log error details
+                            Log.d("CreateAccommodationFragment", "Unsuccessful response: " + response.code());
+                            try {
+                                Log.d("CreateAccommodationFragment", "Error Body: " + response.errorBody().string());
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                        Log.d("CreateAccommodationFragment", t.getMessage() != null ? t.getMessage() : "error");
+                    }
+                });
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private File bitmapToFile(Bitmap bitmap, String filename) {
+        try {
+            // Create a file with a unique timestamp-based filename
+
+            File file = new File(requireContext().getCacheDir(), filename);
+            file.createNewFile();
+
+            // Convert bitmap to byte array
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos); // Use JPEG format
+            byte[] bitmapdata = bos.toByteArray();
+
+            // Write the bytes to the file
+            FileOutputStream fos = new FileOutputStream(file);
+            fos.write(bitmapdata);
+            fos.flush();
+            fos.close();
+
+            return file;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
 
 
     private void handleDateSelection(int year, int month, int dayOfMonth) {
@@ -528,18 +621,7 @@ public class CreateAccommodationFragment extends Fragment {
         }
     }
 
-    private void getData(){
-        if (!selectedImageUris.isEmpty()) {
-            for (Uri imageUri : selectedImageUris) {
-                String imageUrl = imageUri.toString();
-                Log.d("CreateAccommodationFragment", "Image url " + imageUrl);
-//                    String caption = "Caption";
-//                    boolean active = true;
-//
-//                    Photo photo = new Photo(imageUrl, caption, active);
-//                    photos.add(photo);
-            }
-        }
+    private void getData(List<Photo> photos){
         if (nameEditText.getText().toString().isEmpty() || addressStreetEditText.getText().toString().isEmpty() || addressCityEditText.getText().toString().isEmpty() || addressCountryEditText.getText().toString().isEmpty() || addressPostalCodeEditText.getText().toString().isEmpty() || priceEditText.getText().toString().isEmpty() || overviewEditText.getText().toString().isEmpty() || priceType == null || minimumGuestsEditText.getText().toString().isEmpty() || maximumGuestsEditText.getText().toString().isEmpty() || cancellationEditText.getText().toString().isEmpty()){
             Toast.makeText(getActivity(),"Fill the fields!", Toast.LENGTH_SHORT).show();
         } else {
@@ -601,12 +683,12 @@ public class CreateAccommodationFragment extends Fragment {
             }
 
 
-//            create(accommodationName, address, price, priceType, description, amenities, type, minGuests, maxGuests, cancellationDeadLine, automaticAcceptReservations, priceChanges);
+            create(accommodationName, address, price, priceType, description, amenities, type, minGuests, maxGuests, cancellationDeadLine, automaticAcceptReservations, priceChanges, photos);
         }
     }
 
 
-    private void create(String accommodationName, Address address, Double price, PriceType priceType, String description, List<Amenity> amenities, AccommodationType accommodationType, Integer minGuests, Integer maxGuests, Integer cancellationDeadLine, boolean automaticAcceptReservations, List<PriceChange> priceChanges){
+    private void create(String accommodationName, Address address, Double price, PriceType priceType, String description, List<Amenity> amenities, AccommodationType accommodationType, Integer minGuests, Integer maxGuests, Integer cancellationDeadLine, boolean automaticAcceptReservations, List<PriceChange> priceChanges, List<Photo> photos){
         Log.d("CreateAccommodationFragment", "Name " + accommodationName);
         Log.d("CreateAccommodationFragment", "Address " + address.toString());
         Log.d("CreateAccommodationFragment", "Price " + price);
@@ -619,6 +701,7 @@ public class CreateAccommodationFragment extends Fragment {
         Log.d("CreateAccommodationFragment", "Cancellation " + cancellationDeadLine);
         Log.d("CreateAccommodationFragment", "Automatic " + automaticAcceptReservations);
         Log.d("CreateAccommodationFragment", "PriceChanges size " + priceChanges.size());
+        Log.d("CreateAccommodationFragment", "Photos size " + photos.size());
 
 
 

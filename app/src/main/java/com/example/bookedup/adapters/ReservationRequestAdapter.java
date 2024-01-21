@@ -1,6 +1,7 @@
 package com.example.bookedup.adapters;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -24,16 +25,23 @@ import com.example.bookedup.fragments.accommodations.AccommodationRequestFragmen
 import com.example.bookedup.fragments.reservations.CreateReservationFragment;
 import com.example.bookedup.fragments.reservations.ReservationRequestFragment;
 import com.example.bookedup.model.Accommodation;
+import com.example.bookedup.model.Notification;
 import com.example.bookedup.model.Reservation;
+import com.example.bookedup.model.Review;
 import com.example.bookedup.model.enums.AccommodationStatus;
+import com.example.bookedup.model.enums.NotificationType;
 import com.example.bookedup.model.enums.ReservationStatus;
+import com.example.bookedup.model.enums.ReviewType;
 import com.google.gson.Gson;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -43,17 +51,16 @@ public class ReservationRequestAdapter extends RecyclerView.Adapter<ReservationR
 
     private List<Reservation> reservations;
     private Context context;
-
     private int layout;
-
     private Fragment fragment;
+    private Map<Long, List<Bitmap>> accommodationImages = new HashMap<>();
 
-    public ReservationRequestAdapter(List<Reservation> reservations, Context context, int before_layout, Fragment fragment) {
+    public ReservationRequestAdapter(List<Reservation> reservations, Context context, int before_layout, Fragment fragment, Map<Long, List<Bitmap>> accommodationImages) {
         this.reservations = reservations;
         this.context = context;
         this.layout = before_layout;
         this.fragment = fragment;
-
+        this.accommodationImages = accommodationImages;
 
     }
 
@@ -90,8 +97,6 @@ public class ReservationRequestAdapter extends RecyclerView.Adapter<ReservationR
     public void onBindViewHolder(@NonNull ReservationRequestAdapter.ViewHolder holder, int position) {
         Reservation currentReservation = reservations.get(position);
 
-        Log.d("ReservationRequestAdapter", "Res " + currentReservation.toString());
-
         holder.title.setText(currentReservation.getAccommodation().getName());
         holder.averageRating.setText(String.valueOf(currentReservation.getAccommodation().getAverageRating()));
 
@@ -111,9 +116,15 @@ public class ReservationRequestAdapter extends RecyclerView.Adapter<ReservationR
         String formattedDateEnd = dateFormat.format(currentReservation.getEndDate());
         holder.checkOutDate.setText(formattedDateEnd);
 
+        List<Bitmap> bitmaps = accommodationImages.get(currentReservation.getAccommodation().getId());
+        if (!bitmaps.isEmpty())
+            if (bitmaps.get(0) != null) {
+                holder.accommodationImage.setImageBitmap(bitmaps.get(0));
+            }
+            else {
+                holder.accommodationImage.setImageResource(R.drawable.default_hotel_img);
+            }
 
-        int drawableResourceId = context.getResources().getIdentifier(currentReservation.getAccommodation().getPhotos().get(0).getUrl(), "drawable", context.getPackageName());
-        holder.accommodationImage.setImageResource(drawableResourceId);
 
 
         if (!currentReservation.getStatus().equals(ReservationStatus.CREATED)){
@@ -128,7 +139,7 @@ public class ReservationRequestAdapter extends RecyclerView.Adapter<ReservationR
             @Override
             public void onClick(View v) {
                 Log.d("ReservationRequestAdapter", "layout  " + layout);
-                CreateReservationFragment reservationFragment = new CreateReservationFragment(currentReservation);
+                CreateReservationFragment reservationFragment = new CreateReservationFragment(currentReservation, accommodationImages.get(currentReservation.getAccommodation().getId()));
                 AppCompatActivity activity = (AppCompatActivity) context;
                 FragmentManager fragmentManager = activity.getSupportFragmentManager();
                 FragmentTransaction transaction = fragmentManager.beginTransaction();
@@ -165,6 +176,7 @@ public class ReservationRequestAdapter extends RecyclerView.Adapter<ReservationR
                         Log.d("ReservationRequestAdapter", "Accepted Reservation " + reservation.toString());
 
                         updateList(reservation);
+                        createNotification(reservation);
                     } else {
                         Log.d("ReservationRequestAdapter", "Response body is null");
                     }
@@ -215,6 +227,39 @@ public class ReservationRequestAdapter extends RecyclerView.Adapter<ReservationR
             @Override
             public void onFailure(Call<Reservation> call, Throwable t) {
                 Log.d("ReservationRequestAdapter", t.getMessage() != null?t.getMessage():"error");
+            }
+        });
+    }
+    private void createNotification(Reservation reservation) {
+        Notification notification = null;
+        if (reservation.getStatus().equals(ReservationStatus.ACCEPTED)){
+            notification = new Notification(null, reservation.getGuest(), "Reservation response", "Guess what? You reservation for accommodation " + reservation.getAccommodation().getName() + " has been accepted! Enjoy and come back again!", new Date(), NotificationType.RESERVATION_REQUEST_RESPONSE, true);
+        } else if (reservation.getStatus().equals(ReservationStatus.REJECTED)){
+            notification = new Notification(null, reservation.getGuest(), "Reservation response", "Your reservation for accommodation " + reservation.getAccommodation().getName() + " has been declined", new Date(), NotificationType.RESERVATION_REQUEST_RESPONSE, true);
+        }
+
+        Call<Notification> createdNotification = ClientUtils.notificationService.createNotification(notification);
+        createdNotification.enqueue(new Callback<Notification>() {
+            @Override
+            public void onResponse(Call<Notification> call, Response<Notification> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    Log.d("ReservationRequestAdapter", "Successful response: " + response.body());
+                    Notification newNotification = response.body();
+                    Log.d("ReservationRequestAdapter", "Notification : " + newNotification.toString());
+                } else {
+                    // Log error details
+                    Log.d("ReservationRequestAdapter", "Unsuccessful response: " + response.code());
+                    try {
+                        Log.d("ReservationRequestAdapter", "Error Body: " + response.errorBody().string());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Notification> call, Throwable t) {
+                Log.d("ReservationRequestAdapter", t.getMessage() != null ? t.getMessage() : "error");
             }
         });
     }

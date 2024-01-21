@@ -1,6 +1,8 @@
 package com.example.bookedup.adapters;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -21,6 +23,7 @@ import com.example.bookedup.fragments.accommodations.DetailsFragment;
 import com.example.bookedup.fragments.accommodations.SearchFilterFragment;
 import com.example.bookedup.model.Accommodation;
 import com.example.bookedup.model.Destination;
+import com.example.bookedup.model.Photo;
 import com.google.gson.Gson;
 
 import java.io.IOException;
@@ -28,21 +31,30 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
 public class PopularDestinationAdapter extends RecyclerView.Adapter<PopularDestinationAdapter.ViewHolder> {
 
+    private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
     private List<Destination> destinationList;
-
+    private Context context;
     private List<Accommodation> results = new ArrayList<Accommodation>();
     private String whereToGo;
-
-    private int layout;
+    private Date startDate = new Date(), endDate = new Date();
+    private int layout, guestsNumber = 0;
+    private Map<Long, List<Bitmap>> accommodationImageMap = new ConcurrentHashMap<>();
 
     public PopularDestinationAdapter(List<Destination> destinationList, int targetLayout) {
         this.destinationList = destinationList;
@@ -65,7 +77,7 @@ public class PopularDestinationAdapter extends RecyclerView.Adapter<PopularDesti
             @Override
             public void onClick(View v) {
                 whereToGo = destination.getDestinationName();
-                openSearchFilterFragment(v, whereToGo);
+                openSearchFilterFragment(v);
 
             }
         });
@@ -73,21 +85,16 @@ public class PopularDestinationAdapter extends RecyclerView.Adapter<PopularDesti
 
     }
 
-    private void openSearchFilterFragment(View v, String whereToGo) {
-
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-        Date startDate = new Date();
-        Date endDate = new Date();
+    private void openSearchFilterFragment(View v) {
         startDate.setHours(13);
         endDate.setHours(13);
 
 
         List<Object> amenities = new ArrayList<>();
-        Integer guestsNumber = 0;
-        Log.d("PopularDestinationAdapter", "StartDate " + startDate);
-        Log.d("PopularDestinationAdapter", "EndDate " + endDate);
-        Log.d("PopularDestinationAdapter", "Location " + whereToGo);
-        Log.d("PopularDestinationAdapter", "GuestsNumber " + guestsNumber);
+//        Log.d("PopularDestinationAdapter", "StartDate " + startDate);
+//        Log.d("PopularDestinationAdapter", "EndDate " + endDate);
+//        Log.d("PopularDestinationAdapter", "Location " + whereToGo);
+//        Log.d("PopularDestinationAdapter", "GuestsNumber " + guestsNumber);
 
         Call<ArrayList<Accommodation>> searchedResults = ClientUtils.accommodationService.searchAccommodations(
                 whereToGo,
@@ -102,43 +109,46 @@ public class PopularDestinationAdapter extends RecyclerView.Adapter<PopularDesti
                 ""
         );
 
-        Log.d("PopularDestinationAdapter", "Prosaoooooo" + searchedResults);
+//        Log.d("PopularDestinationAdapter", "Prosaoooooo" + searchedResults);
 
 
         searchedResults.enqueue(new Callback<ArrayList<Accommodation>>() {
             @Override
             public void onResponse(Call<ArrayList<Accommodation>> call, Response<ArrayList<Accommodation>> response) {
                 if (response.isSuccessful()) {
-                    if (response.body() != null) {
+
                         Log.d("PopularDestinationAdapter", "Successful response: " + response.body());
                         results = response.body();
                         for (Accommodation accommodation : results) {
                             Log.d("PopularDestinationAdapter", "Accommodation: " + accommodation);
                         }
 
-                        Context context = v.getContext();
-                        if (context instanceof AppCompatActivity) {
-                            AppCompatActivity activity = (AppCompatActivity) context;
-                            SearchFilterFragment searchFilterFragment = new SearchFilterFragment();
-
-                            Bundle bundle = new Bundle();
-                            bundle.putString("whereToGo", whereToGo);
-                            bundle.putInt("guestsNumber", guestsNumber);
-                            bundle.putString("checkIn", dateFormat.format(startDate));
-                            bundle.putString("checkOut", dateFormat.format(endDate));
-                            String resultsJson = new Gson().toJson(results);
-                            bundle.putString("resultsJson", resultsJson);
-
-                            searchFilterFragment.setArguments(bundle);
-
-                            FragmentTransaction transaction = activity.getSupportFragmentManager().beginTransaction();
-                            transaction.replace(layout, searchFilterFragment);
-                            transaction.addToBackStack(null);  // Optional: Adds the transaction to the back stack
-                            transaction.commit();
+                        context = v.getContext();
+                        if (!results.isEmpty()){
+                            getLoadPictures(results);
+                        } else {
+                            openSearchFilterFragment(whereToGo, results, guestsNumber, startDate, endDate, accommodationImageMap);
                         }
-                    } else {
-                        Log.d("PopularDestinationAdapter", "Response body is null");
-                    }
+
+//                        if (context instanceof AppCompatActivity) {
+//                            AppCompatActivity activity = (AppCompatActivity) context;
+//                            SearchFilterFragment searchFilterFragment = new SearchFilterFragment();
+//
+//                            Bundle bundle = new Bundle();
+//                            bundle.putString("whereToGo", whereToGo);
+//                            bundle.putInt("guestsNumber", guestsNumber);
+//                            bundle.putString("checkIn", dateFormat.format(startDate));
+//                            bundle.putString("checkOut", dateFormat.format(endDate));
+//                            String resultsJson = new Gson().toJson(results);
+//                            bundle.putString("resultsJson", resultsJson);
+//
+//                            searchFilterFragment.setArguments(bundle);
+//
+//                            FragmentTransaction transaction = activity.getSupportFragmentManager().beginTransaction();
+//                            transaction.replace(layout, searchFilterFragment);
+//                            transaction.addToBackStack(null);  // Optional: Adds the transaction to the back stack
+//                            transaction.commit();
+
                 }  else {
                     // Log error details
                     Log.d("PopularDestinationAdapter", "Unsuccessful response: " + response.code());
@@ -155,6 +165,66 @@ public class PopularDestinationAdapter extends RecyclerView.Adapter<PopularDesti
                 Log.d("PopularDestinationAdapter", t.getMessage() != null?t.getMessage():"error");
             }
         });
+    }
+
+    private void getLoadPictures(List<Accommodation> results) {
+        ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+        AtomicInteger totalImagesToLoad = new AtomicInteger(0);
+
+        for (Accommodation accommodation : results) {
+            List<Bitmap> photosBitmap = new ArrayList<>();
+            for(Photo photo : accommodation.getPhotos()) {
+                totalImagesToLoad.incrementAndGet();
+                executorService.execute(() -> {
+                    try {
+                        Call<ResponseBody> photoCall = ClientUtils.photoService.loadPhoto(photo.getId());
+                        Response<ResponseBody> response = photoCall.execute();
+
+                        if (response.isSuccessful()) {
+                            byte[] photoData = response.body().bytes();
+                            Bitmap bitmap = BitmapFactory.decodeByteArray(photoData, 0, photoData.length);
+                            photosBitmap.add(bitmap);
+
+                            // Smanjite broj preostalih slika koje treba učitati
+                            int remainingImages = totalImagesToLoad.decrementAndGet();
+
+                            if (remainingImages == 0) {
+                                // All images are loaded, update the adapter
+                                openSearchFilterFragment(whereToGo, results, guestsNumber, startDate, endDate, accommodationImageMap);
+                            }
+                        } else {
+                            Log.d("SearchFilterFragment", "Error code " + response.code());
+                        }
+                    } catch (IOException e) {
+                        Log.e("SearchFilterFragment", "Error reading response body: " + e.getMessage());
+                    }
+                });
+            }
+            accommodationImageMap.put(accommodation.getId(), photosBitmap);
+        }
+        executorService.shutdown();
+    }
+
+    private void openSearchFilterFragment(String whereToGo, List<Accommodation> results, Integer guestsNumber, Date startDate, Date endDate, Map<Long, List<Bitmap>> accommodationImages){
+        if (context instanceof AppCompatActivity) {
+            AppCompatActivity activity = (AppCompatActivity) context;
+            SearchFilterFragment searchFilterFragment = new SearchFilterFragment(accommodationImages);
+
+            Bundle bundle = new Bundle();
+            bundle.putString("whereToGo", whereToGo);
+            bundle.putInt("guestsNumber", guestsNumber);
+            bundle.putString("checkIn", dateFormat.format(startDate));
+            bundle.putString("checkOut", dateFormat.format(endDate));
+            String resultsJson = new Gson().toJson(results);
+            bundle.putString("resultsJson", resultsJson);
+
+            searchFilterFragment.setArguments(bundle);
+
+            FragmentTransaction transaction = activity.getSupportFragmentManager().beginTransaction();
+            transaction.replace(layout, searchFilterFragment);
+            transaction.addToBackStack(null);  // Optional: Adds the transaction to the back stack
+            transaction.commit();
+        }
     }
 
     @Override

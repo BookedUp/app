@@ -1,9 +1,15 @@
 package com.example.bookedup.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.method.PasswordTransformationMethod;
 import android.util.Log;
 import android.view.View;
@@ -13,24 +19,40 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.example.bookedup.R;
 import com.example.bookedup.clients.ClientUtils;
 import com.example.bookedup.fragments.accommodations.AccommodationListFragment;
+import com.example.bookedup.model.Accommodation;
 import com.example.bookedup.model.Admin;
 import com.example.bookedup.model.Guest;
 import com.example.bookedup.model.Host;
 import com.example.bookedup.model.JwtUtils;
 import com.example.bookedup.model.LoginRequest;
+import com.example.bookedup.model.Notification;
+import com.example.bookedup.model.Photo;
+import com.example.bookedup.model.Review;
 import com.example.bookedup.model.Token;
 import com.example.bookedup.model.User;
 import com.example.bookedup.model.enums.Role;
 import com.example.bookedup.services.AdminService;
 import com.example.bookedup.services.UserService;
+import com.example.bookedup.utils.SharedViewModel;
 
 import org.json.JSONException;
 
 import java.io.IOException;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -41,16 +63,13 @@ public class LoginScreen extends AppCompatActivity {
     private EditText password;
     private Button loginButton;
     private TextView registerTextView;
-
     private TextView forgotPasswordTextView;
-
     public static User loggedUser;
-
     public static Guest loggedGuest;
-
     public static Host loggedHost;
-
     public static Admin loggedAdmin;
+    private Long userId;
+    private List<Accommodation> mostPopularAccommodations = new ArrayList<>();
 
 
     @Override
@@ -94,7 +113,7 @@ public class LoginScreen extends AppCompatActivity {
                             Log.d("LoginScreen", "Token RESPONSE: " + authResponse.getToken());
                             ClientUtils.setAuthToken(authResponse.getToken());
                             try {
-                                long userId = handleLoginSuccess(authResponse.getToken());
+                                userId = handleLoginSuccess(authResponse.getToken());
                                 if (userId != 0){
                                     openUserActivity(userId);
                                 } else {
@@ -125,19 +144,16 @@ public class LoginScreen extends AppCompatActivity {
         registerTextView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Prelazak na RegisterScreenActivity
                 openRegisterScreen();
             }
         });
-
-        // Postavljanje klika na TextView za registraciju
         forgotPasswordTextView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Prelazak na RegisterScreenActivity
                 openForgotPasswordScreen();
             }
         });
+
     }
 
     private void togglePasswordVisibility() {
@@ -160,6 +176,7 @@ public class LoginScreen extends AppCompatActivity {
                 if (response.isSuccessful()) {
                     loggedUser = response.body();
 //                    Log.d("LoginScreen", "User: " + loggedUser.toString());
+//                    startPolling();
                     if (loggedUser.getRole().equals(Role.GUEST)){
                         findGuest(loggedUser);
                     } else if (loggedUser.getRole().equals(Role.HOST)){
@@ -196,7 +213,6 @@ public class LoginScreen extends AppCompatActivity {
         return 0;
     }
 
-    // Dodajte ovu funkciju za otvaranje ekrana za registraciju
     private void openRegisterScreen() {
         Intent registerIntent = new Intent(this, RegisterScreen.class);
         startActivity(registerIntent);
@@ -206,6 +222,97 @@ public class LoginScreen extends AppCompatActivity {
         Intent forgotPasswordIntent = new Intent(this, ForgotPasswordScreen.class);
         startActivity(forgotPasswordIntent);
     }
+
+//    private void setMostPopularAccommodations(Intent intent){
+//        Call<ArrayList<Accommodation>> mostPopular = ClientUtils.accommodationService.getMostPopular();
+//        mostPopular.enqueue(new Callback<ArrayList<Accommodation>>() {
+//            @Override
+//            public void onResponse(Call<ArrayList<Accommodation>> call, Response<ArrayList<Accommodation>> response) {
+//                if (response.isSuccessful()) {
+//                    if (response.body() != null) {
+//                        Log.d("HomeFragment", "Successful response: " + response.body());
+//                        mostPopularAccommodations = response.body();
+//                        getLoadPictures(mostPopularAccommodations, intent);
+//                    } else {
+//                        Log.d("HomeFragment", "Response body is null");
+//                    }
+//                }  else {
+//                    // Log error details
+//                    Log.d("HomeFragment", "Unsuccessful response: " + response.code());
+//                    try {
+//                        Log.d("HomeFragment", "Error Body: " + response.errorBody().string());
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//            }
+//
+//            @Override
+//            public void onFailure(Call<ArrayList<Accommodation>> call, Throwable t) {
+//                Log.d("HomeFragment", t.getMessage() != null?t.getMessage():"error");
+//            }
+//        });
+//    }
+
+//    private void getLoadPictures(List<Accommodation> mostPopularAccommodations, Intent intent) {
+//        Map<Long, List<Bitmap>> accommodationImageMap = new ConcurrentHashMap<>();
+//        ExecutorService executorService = Executors.newFixedThreadPool(8);
+//        AtomicInteger totalImagesToLoad = new AtomicInteger(0);
+//
+//        for (Accommodation accommodation : mostPopularAccommodations) {
+//            List<Bitmap> photosBitmap = new ArrayList<>();
+//            for(Photo photo : accommodation.getPhotos()) {
+//                totalImagesToLoad.incrementAndGet();
+//                executorService.execute(() -> {
+//                    try {
+//                        Call<ResponseBody> photoCall = ClientUtils.photoService.loadPhoto(photo.getId());
+//                        Response<ResponseBody> response = photoCall.execute();
+//                        try {
+//
+//                            if (response.isSuccessful()) {
+//                                byte[] photoData = response.body().bytes();
+//
+//                                Bitmap bitmap = Glide.with(this)
+//                                        .asBitmap()
+//                                        .load(photoData)
+//                                        .override(300, 300)
+//                                        .submit()
+//                                        .get();
+//                                photosBitmap.add(bitmap);
+//
+//                                int remainingImages = totalImagesToLoad.decrementAndGet();
+//
+//                                if (remainingImages == 0) {
+//                                    SharedViewModel sharedViewModel = new ViewModelProvider(this).get(SharedViewModel.class);
+//                                    sharedViewModel.setMostPopularAccommodations(mostPopularAccommodations);
+//                                    sharedViewModel.setAccommodationImageMap(accommodationImageMap);
+//                                    runOnUiThread(() -> {
+//                                        if (!isFinishing()) {
+//                                            startActivity(intent);
+//                                        }
+//                                    });
+//
+//                                }
+//                            } else {
+//                                Log.d("HomeFragment", "Error code " + response.code());
+//                            }
+//                        } catch (ExecutionException e) {
+//                            throw new RuntimeException(e);
+//                        } catch (InterruptedException e) {
+//                            throw new RuntimeException(e);
+//                        } finally {
+//                            response.body().close(); // Close the response body after using it
+//                        }
+//                    } catch (IOException e) {
+//                        Log.e("HomeFragment", "Error reading response body: " + e.getMessage());
+//                    }
+//                });
+//            }
+//            accommodationImageMap.put(accommodation.getId(), photosBitmap);
+//        }
+//        executorService.shutdown();
+//    }
+
 
     private void findGuest(User loggedUser){
         Log.d("LoginScreen", "USAO1 ");
@@ -219,6 +326,7 @@ public class LoginScreen extends AppCompatActivity {
                     loggedGuest = response.body();
                     Log.d("LoginScreen", "User: " + loggedGuest.toString());
                     Intent guestIntent = new Intent(LoginScreen.this, GuestMainScreen.class);
+//                    setMostPopularAccommodations(guestIntent);
                     startActivity(guestIntent);
                 } else {
                     Log.d("LoginScreen", "Unsuccessful response: " + response.code());
@@ -249,6 +357,7 @@ public class LoginScreen extends AppCompatActivity {
                     loggedHost = response.body();
                     Log.d("LoginScreen", "Host: " + loggedHost.toString());
                     Intent hostIntent = new Intent(LoginScreen.this, HostMainScreen.class);
+//                    setMostPopularAccommodations(hostIntent);
                     startActivity(hostIntent);
                 } else {
                     Log.d("LoginScreen", "Unsuccessful response: " + response.code());
@@ -280,6 +389,7 @@ public class LoginScreen extends AppCompatActivity {
                     loggedAdmin = response.body();
                     Log.d("LoginScreen", "Admin: " + loggedAdmin.toString());
                     Intent adminIntent = new Intent(LoginScreen.this, AdministratorMainScreen.class);
+//                    setMostPopularAccommodations(adminIntent);
                     startActivity(adminIntent);
                 } else {
                     Log.d("LoginScreen", "Unsuccessful response: " + response.code());

@@ -1,52 +1,127 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="350dp"
-    android:layout_height="450dp"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent"
     android:layout_gravity="center"
     android:background="@drawable/comment_backgorund">
-
-    <ImageView
-        android:id="@+id/person"
-        android:layout_width="150dp"
-        android:layout_height="130dp"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="18dp"
-        android:src="@drawable/commss"
-        />
-    <TextView
-        android:id="@+id/usernameTxt"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Leave a commment!"
-        android:textSize="24sp"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="18dp"
-        android:layout_below="@id/person"
-        ></TextView>
-    <EditText
-        android:id="@+id/commentInput"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="120dp"
-        android:hint="comment"
-        android:textSize="18sp"
-        android:layout_below="@id/person"
-        android:layout_marginTop="70dp"
-        android:gravity="center"
-        android:layout_marginRight="22dp"
-        android:layout_marginLeft="22dp"
-        />
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:background="@drawable/comment_backgorund">
 
-    <Button
-        android:id="@+id/postButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Post"
-        android:textSize="18sp"
-        android:layout_below="@id/commentInput"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="18dp"
-        android:padding="10dp" />
+        <ImageView
+            android:id="@+id/person"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="18dp"
+            android:src="@drawable/commss"
+            />
 
-    </RelativeLayout>
+        <TextView
+            android:id="@+id/accommodationRatingTxt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Rate the accommodation"
+            android:textSize="20sp"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="10dp"
+            android:layout_below="@id/person"
+            ></TextView>
+
+        <RatingBar
+            android:id="@+id/ratingBarAccommodation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/accommodationRatingTxt"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="10dp"
+            android:numStars="5"
+            android:stepSize="1"
+            android:rating="0" />
+
+
+        <TextView
+            android:id="@+id/commentInputTxt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Leave a commment!"
+            android:textSize="20sp"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="10dp"
+            android:layout_below="@id/ratingBarAccommodation"
+            ></TextView>
+        <EditText
+            android:id="@+id/commentAccommodationInput"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:hint="Share your experience..."
+            android:textSize="18sp"
+            android:layout_below="@id/commentInputTxt"
+            android:layout_marginTop="10dp"
+            android:gravity="center"
+            android:layout_marginRight="22dp"
+            android:layout_marginLeft="22dp"
+            />
+
+        <TextView
+            android:id="@+id/hostRatingTxt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Rate the host"
+            android:textSize="20sp"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="18dp"
+            android:layout_below="@id/commentAccommodationInput"
+            ></TextView>
+
+        <RatingBar
+            android:id="@+id/hostRatingBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/hostRatingTxt"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="10dp"
+            android:numStars="5"
+            android:stepSize="1"
+            android:rating="0" />
+
+        <TextView
+            android:id="@+id/commentHostInputTxt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Leave a commment!"
+            android:textSize="20sp"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="10dp"
+            android:layout_below="@id/hostRatingBar"
+            ></TextView>
+
+        <EditText
+            android:id="@+id/commentHostInput"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:hint="Share your experience..."
+            android:textSize="18sp"
+            android:layout_below="@id/commentHostInputTxt"
+            android:layout_marginTop="10dp"
+            android:gravity="center"
+            android:layout_marginRight="22dp"
+            android:layout_marginLeft="22dp" />
+
+        <Button
+            android:id="@+id/postButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Post"
+            android:textSize="18sp"
+            android:layout_below="@id/commentHostInput"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="18dp"
+            android:padding="10dp" />
+
+        </RelativeLayout>
+</ScrollView>

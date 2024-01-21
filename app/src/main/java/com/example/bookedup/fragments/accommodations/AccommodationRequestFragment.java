@@ -1,6 +1,6 @@
 package com.example.bookedup.fragments.accommodations;
 
-import android.content.Context;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -14,52 +14,32 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.bookedup.R;
-import com.example.bookedup.adapters.PopularAdapter;
 import com.example.bookedup.adapters.RequestAdapter;
 import com.example.bookedup.adapters.TypeAdapter;
-import com.example.bookedup.clients.ClientUtils;
-import com.example.bookedup.fragments.home.HomeFragment;
 import com.example.bookedup.model.Accommodation;
-import com.example.bookedup.model.Reservation;
 import com.example.bookedup.model.enums.AccommodationStatus;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 //import com.example.bookedup.utils.DataGenerator;
 
-import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+import java.util.Map;
 
 public class AccommodationRequestFragment extends Fragment implements TypeAdapter.TypeSelectionListener {
 
-    private RecyclerView typeRecyclerView;
-    private RecyclerView requestRecyclerView;
-
+    private RecyclerView typeRecyclerView, requestRecyclerView;;
     private TypeAdapter typeAdapter;
     private RequestAdapter requestAdapter;
-
     private List<Accommodation> allAccommodations = new ArrayList<>();
-
     private List<Accommodation> copyAccommodations = new ArrayList<>();
-
     private List<Accommodation> filteredList = new ArrayList<>();
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private Map<Long, List<Bitmap>> accommodationImages = new HashMap<>();
 
-    public AccommodationRequestFragment() {}
-
-    public static AccommodationRequestFragment newInstance(String param1, String param2) {
-        AccommodationRequestFragment fragment = new AccommodationRequestFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
+    public AccommodationRequestFragment(Map<Long, List<Bitmap>> accommodationImages) {
+        this.accommodationImages = accommodationImages;
     }
 
     @Override
@@ -93,7 +73,7 @@ public class AccommodationRequestFragment extends Fragment implements TypeAdapte
     private void initUI(View view){
         requestRecyclerView = view.findViewById(R.id.cards_accommodationRequests);
         requestRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        requestAdapter = new RequestAdapter(new ArrayList<>(allAccommodations), getContext(), this);
+        requestAdapter = new RequestAdapter(new ArrayList<>(allAccommodations), getContext(), this, accommodationImages);
         requestRecyclerView.setAdapter(requestAdapter);
 
 

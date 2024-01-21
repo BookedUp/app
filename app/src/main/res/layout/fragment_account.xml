@@ -1,138 +1,271 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center"
-    tools:context="fragments.account.AccountFragment"
-    android:layout_margin="20dp">
-
-    <ImageView
-        android:layout_width="160dp"
-        android:layout_height="160dp"
-        android:background="@drawable/circular_bg"
-        android:backgroundTint="@color/gold"
-        android:src="@drawable/guest"
-        android:scaleType="centerCrop"
-        android:layout_marginBottom="20dp"
-        android:id="@+id/profile_image_view"/>
+    android:fillViewport="true"
+    android:layout_marginTop="70dp"
+    android:layout_marginBottom="70dp">
 
 
-    <EditText
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="8dp"
-        android:hint="First name"
-        android:inputType="text"
-        android:layout_margin="10dp"
-        android:background="@drawable/edit_text_rounded_corner"
-        android:elevation="5dp"
-        android:id="@+id/profile_first_name"
-        />
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="8dp"
-        android:hint="Last name"
-        android:inputType="text"
-        android:layout_margin="10dp"
-        android:background="@drawable/edit_text_rounded_corner"
-        android:elevation="5dp"
-        android:id="@+id/profile_last_name"
-        />
+        android:orientation="vertical"
+        android:gravity="center"
+        tools:context="fragments.account.AccountFragment"
+        android:layout_margin="20dp">
 
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="8dp"
-        android:hint="Address"
-        android:inputType="text"
-        android:layout_margin="10dp"
-        android:background="@drawable/edit_text_rounded_corner"
-        android:elevation="5dp"
-        android:id="@+id/profile_address"
-        />
 
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="10dp"
-        android:hint="Phone"
-        android:inputType="text"
-        android:layout_margin="10dp"
-        android:background="@drawable/edit_text_rounded_corner"
-        android:elevation="5dp"
-        android:id="@+id/profile_phone"
-        />
+        <ImageView
+            android:layout_width="160dp"
+            android:layout_height="160dp"
+            android:background="@drawable/circular_bg"
+            android:backgroundTint="@color/gold"
+            android:src="@drawable/guest"
+            android:scaleType="centerCrop"
+            android:layout_marginBottom="20dp"
+            android:id="@+id/profile_image_view"/>
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:elevation="5dp"
-        android:background="@drawable/edit_text_rounded_corner">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_gravity="center">
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Select Image"
+                android:id="@+id/select_image_button"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="10dp"
+                android:layout_marginStart="50dp"
+                android:background="@drawable/btn_rounded_corner"
+                android:textColor="@android:color/white"
+                android:onClick="selectImage"/>
+
+            <!-- Dugme za brisanje slike -->
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Delete Image"
+                android:layout_marginStart="10dp"
+                android:id="@+id/delete_image_button"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/btn_rounded_corner"
+                android:textColor="@android:color/white"
+                android:onClick="deleteImage"/>
+        </LinearLayout>
+
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:hint="First name"
+            android:inputType="text"
+            android:layout_margin="10dp"
+            android:background="@drawable/edit_text_rounded_corner"
+            android:elevation="5dp"
+            android:id="@+id/profile_first_name"
+            />
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:hint="Last name"
+            android:inputType="text"
+            android:layout_margin="10dp"
+            android:background="@drawable/edit_text_rounded_corner"
+            android:elevation="5dp"
+            android:id="@+id/profile_last_name"
+            />
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:hint="Address"
+            android:inputType="text"
+            android:layout_margin="10dp"
+            android:background="@drawable/edit_text_rounded_corner"
+            android:elevation="5dp"
+            android:id="@+id/profile_address"
+            />
 
         <EditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="10dp"
-            android:hint="Password"
+            android:hint="Phone"
+            android:inputType="text"
+            android:layout_margin="10dp"
             android:background="@drawable/edit_text_rounded_corner"
-            android:inputType="textPassword"
-            android:selectAllOnFocus="true"
-            android:id="@+id/profile_password"/>
+            android:elevation="5dp"
+            android:id="@+id/profile_phone"
+            />
 
-        <!-- Eye Button -->
-        <ImageView
-            android:id="@+id/pass_visibility"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_password_eye"
-            android:contentDescription="Toggle password visibility"
-            android:paddingEnd="8dp"
-            android:paddingStart="8dp"
-            android:clickable="true"
-            android:focusable="true"
-            android:onClick="togglePasswordVisibility"
-            android:layout_alignTop="@id/profile_password"
-            android:layout_alignBottom="@id/profile_password"
-            android:layout_alignParentEnd="true"/>
-    </RelativeLayout>
-
-
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:gravity="center_vertical"
-        android:layout_marginTop="20dp"
-        android:orientation="vertical">
-        <Button
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/btn_rounded_corner"
-            android:text="Update profile"
-            android:id="@+id/profile_update_btn"/>
+            android:layout_margin="10dp"
+            android:elevation="5dp"
+            android:background="@drawable/edit_text_rounded_corner">
 
-        <Button
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="10dp"
+                android:hint="Password"
+                android:background="@drawable/edit_text_rounded_corner"
+                android:inputType="textPassword"
+                android:selectAllOnFocus="true"
+                android:id="@+id/profile_password"/>
+
+            <!-- Eye Button -->
+            <ImageView
+                android:id="@+id/pass_visibility"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_password_eye"
+                android:contentDescription="Toggle password visibility"
+                android:paddingEnd="8dp"
+                android:paddingStart="8dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:onClick="togglePasswordVisibility"
+                android:layout_alignTop="@id/profile_password"
+                android:layout_alignBottom="@id/profile_password"
+                android:layout_alignParentEnd="true"/>
+        </RelativeLayout>
+
+        <LinearLayout
+            android:id="@+id/createReservationSwitch"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/btn_rounded_corner"
-            android:layout_marginTop="8dp"
-            android:text="Delete profile"
-            android:id="@+id/profile_delete_btn"/>
+            android:layout_below="@id/cancellationEditText"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp">
 
-        <ProgressBar
-            android:layout_width="32dp"
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Create reservation notification"
+                android:textSize="18sp"
+                android:textColor="@android:color/black"
+                android:layout_gravity="center_vertical"
+                android:paddingStart="8dp"/>
+
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/toggleSwitchCreateRes"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="37dp"/>
+
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/cancelReservationSwitch"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:indeterminateTint="@color/gold"
-            android:layout_gravity="center"
-            android:id="@+id/profile_progress_bar"/>
+            android:layout_below="@id/cancellationEditText"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cancel reservation notification"
+                android:textSize="18sp"
+                android:textColor="@android:color/black"
+                android:layout_gravity="center_vertical"
+                android:paddingStart="8dp"/>
+
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/toggleSwitchCancelReservation"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="35dp"/>
+
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/hostRatingSwitch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/cancellationEditText"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Host rating notification"
+                android:textSize="18sp"
+                android:textColor="@android:color/black"
+                android:layout_gravity="center_vertical"
+                android:paddingStart="8dp"/>
+
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/toggleSwitchHostRating"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="95dp"/>
+
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/accommodationRatingSwitch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/cancellationEditText"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Accommodation rating notification"
+                android:textSize="18sp"
+                android:textColor="@android:color/black"
+                android:layout_gravity="center_vertical"
+                android:paddingStart="8dp"/>
+
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/toggleSwitchAccommodationRating"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:gravity="center_vertical"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="40dp"
+            android:orientation="vertical">
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/btn_rounded_corner"
+                android:text="Update profile"
+                android:id="@+id/profile_update_btn"/>
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/btn_rounded_corner"
+                android:layout_marginTop="8dp"
+                android:text="Delete profile"
+                android:id="@+id/profile_delete_btn" />
+
+            <ProgressBar
+                android:layout_width="32dp"
+                android:layout_height="wrap_content"
+                android:indeterminateTint="@color/gold"
+                android:layout_gravity="center"
+                android:id="@+id/profile_progress_bar" />
+        </LinearLayout>
     </LinearLayout>
-
-
-
-
-
-</LinearLayout>
+</ScrollView>

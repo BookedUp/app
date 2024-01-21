@@ -19,13 +19,14 @@
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="match_parent"
+                android:layout_marginTop="50dp">
 
                 <ImageView
                     android:id="@+id/picImg"
-                    android:layout_width="wrap_content"
-                    android:layout_height="355dp"
-                    android:scaleType="centerCrop"
+                    android:layout_width="410dp"
+                    android:layout_height="290dp"
+                    android:scaleType="fitCenter"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
@@ -38,8 +39,8 @@
                     android:layout_width="35dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="end"
-                    android:layout_marginBottom="236dp"
-                    android:layout_marginRight="10dp"
+                    android:layout_marginEnd="4dp"
+                    android:layout_marginBottom="216dp"
                     app:backgroundTint="@android:color/white"
                     app:borderWidth="0dp"
                     app:elevation="5dp"
@@ -53,6 +54,13 @@
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="Tap for more images"
+                android:layout_marginStart="24dp"
+                android:layout_marginTop="10dp"/>
+
 
             <TextView
                 android:id="@+id/titleTxt"
@@ -63,7 +71,7 @@
                 android:textSize="24sp"
                 android:textColor="@color/black"
                 android:layout_marginStart="24dp"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="10dp"
                 android:layout_marginEnd="32dp"
                 />
 
@@ -211,237 +219,87 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:gravity="center_vertical"
-                    android:paddingLeft="15dp"
-                    android:text="Comments"
+                    android:text="Comments and ratings"
                     android:textColor="@color/black"
+                    android:layout_marginStart="32dp"
                     android:textSize="20sp"
                     android:textStyle="bold" />
 
-                <com.google.android.material.floatingactionbutton.FloatingActionButton
-                    android:id="@+id/addCommentBtn"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="end"
-                    android:layout_marginEnd="6dp"
-                    android:layout_marginTop="6dp"
-                    app:srcCompat="@android:drawable/ic_input_add"
-                    app:borderWidth="0dp"
-                    app:elevation="5dp"
-                    app:fabSize="auto"
-                    app:fabCustomSize="35dp"
-                    app:backgroundTint="@android:color/white"
-                    app:tint="#9e8d5f"/>
 
             </LinearLayout>
 
+           <LinearLayout
+               android:layout_width="match_parent"
+               android:layout_height="match_parent"
+               android:layout_marginTop="10dp">
 
-            <androidx.cardview.widget.CardView
+               <TextView
+                   android:id="@+id/acc_comments"
+                   android:layout_width="0dp"
+                   android:layout_height="match_parent"
+                   android:layout_weight="1"
+                   android:gravity="center_vertical"
+                   android:layout_marginStart="32dp"
+                   android:text="About accommodation"
+                   android:textColor="@color/black"
+                   android:textSize="15sp" />
+
+
+           </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/commentRecyclerView"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:animateLayoutChanges="true"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="4dp"
-                app:cardUseCompatPadding="true"
-                >
+                android:layout_height="match_parent"
+                android:layout_below="@id/postButton"
+                android:layout_marginTop="10dp"
+                android:layout_marginStart="10dp"
+                tools:itemCount="3"/>
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:animateLayoutChanges="true"
-                    android:orientation="vertical">
-                    <RelativeLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:padding="6dp">
-                        <ImageView
-                            android:id="@+id/guestImg"
-                            android:layout_width="70dp"
-                            android:layout_height="70dp"
-                            android:layout_alignParentStart="true"
-                            android:layout_centerVertical="true"
-                            android:layout_gravity="center"
-                            android:paddingLeft="14dp"
-                            app:srcCompat="@drawable/guest"
-                            android:layout_alignParentLeft="true"/>
-                        <LinearLayout
-                            android:id="@+id/linearLayout"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignParentTop="true"
-                            android:layout_marginStart="4dp"
-                            android:layout_marginTop="2dp"
-                            android:layout_toEndOf="@+id/guestImg"
-                            android:orientation="vertical"
-                            android:layout_marginLeft="4dp"
-                            android:layout_toRightOf="@+id/guestImg">
-                            <TextView
-                                android:id="@+id/guestInfo"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_marginBottom="2dp"
-                                android:text="Loren Smith"
-                                android:textSize="17sp"
-                                android:textStyle="bold"/>
-                            <RatingBar
-                                android:id="@+id/guestRating"
-                                style="?android:attr/ratingBarStyleSmall"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_toEndOf="@+id/guestInfo"
-                                android:layout_toRightOf="@+id/guestInfo"
-                                android:layout_marginTop="4dp"
-                                android:stepSize="0.5"
-                                android:numStars="5"
-                                android:rating="4.5"/>
-
-                            <TextView
-                                android:id="@+id/comment"
-                                android:layout_width="300dp"
-                                android:layout_height="wrap_content"
-                                android:text="Absolutely loved my stay! The accommodation was not only cozy and stylish but also impeccably clean." />
-                        </LinearLayout>
-                    </RelativeLayout>
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:animateLayoutChanges="true"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="4dp"
-                app:cardUseCompatPadding="true">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:animateLayoutChanges="true"
-                    android:orientation="vertical">
-                    <RelativeLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:padding="6dp">
-                        <ImageView
-                            android:id="@+id/guestImg2"
-                            android:layout_width="70dp"
-                            android:layout_height="70dp"
-                            android:layout_alignParentStart="true"
-                            android:layout_centerVertical="true"
-                            android:layout_gravity="center"
-                            android:paddingLeft="14dp"
-                            app:srcCompat="@drawable/guest"
-                            android:layout_alignParentLeft="true"/>
-                        <LinearLayout
-                            android:id="@+id/linearLayout2"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignParentTop="true"
-                            android:layout_marginStart="4dp"
-                            android:layout_marginTop="2dp"
-                            android:layout_toEndOf="@+id/guestImg2"
-                            android:orientation="vertical"
-                            android:layout_marginLeft="4dp"
-                            android:layout_toRightOf="@+id/guestImg2">
-                            <TextView
-                                android:id="@+id/guestInfo2"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_marginBottom="2dp"
-                                android:text="Loren Smith"
-                                android:textSize="17sp"
-                                android:textStyle="bold"/>
-                            <RatingBar
-                                android:id="@+id/guestRating2"
-                                style="?android:attr/ratingBarStyleSmall"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_toEndOf="@+id/guestInfo"
-                                android:layout_toRightOf="@+id/guestInfo"
-                                android:layout_marginTop="4dp"
-                                android:stepSize="0.5"
-                                android:numStars="5"
-                                android:rating="4.5"/>
-
-                            <TextView
-                                android:id="@+id/comment2"
-                                android:layout_width="300dp"
-                                android:layout_height="wrap_content"
-                                android:text="Absolutely loved my stay! The accommodation was not only cozy and stylish but also impeccably clean." />
-                        </LinearLayout>
-                    </RelativeLayout>
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:animateLayoutChanges="true"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="4dp"
-                app:cardUseCompatPadding="true">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:animateLayoutChanges="true"
-                    android:orientation="vertical">
-                    <RelativeLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:padding="6dp">
-                        <ImageView
-                            android:id="@+id/guestImg3"
-                            android:layout_width="70dp"
-                            android:layout_height="70dp"
-                            android:layout_alignParentStart="true"
-                            android:layout_centerVertical="true"
-                            android:layout_gravity="center"
-                            android:paddingLeft="14dp"
-                            app:srcCompat="@drawable/guest"
-                            android:layout_alignParentLeft="true"/>
-                        <LinearLayout
-                            android:id="@+id/linearLayout3"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignParentTop="true"
-                            android:layout_marginStart="4dp"
-                            android:layout_marginTop="2dp"
-                            android:layout_toEndOf="@+id/guestImg3"
-                            android:orientation="vertical"
-                            android:layout_marginLeft="4dp"
-                            android:layout_toRightOf="@+id/guestImg3">
-                            <TextView
-                                android:id="@+id/guestInfo3"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_marginBottom="2dp"
-                                android:text="Loren Smith"
-                                android:textSize="17sp"
-                                android:textStyle="bold"/>
-                            <RatingBar
-                                android:id="@+id/guestRating3"
-                                style="?android:attr/ratingBarStyleSmall"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_toEndOf="@+id/guestInfo3"
-                                android:layout_toRightOf="@+id/guestInfo3"
-                                android:layout_marginTop="4dp"
-                                android:stepSize="0.5"
-                                android:numStars="5"
-                                android:rating="4.5"/>
-
-                            <TextView
-                                android:id="@+id/comment3"
-                                android:layout_width="300dp"
-                                android:layout_height="wrap_content"
-                                android:text="Absolutely loved my stay! The accommodation was not only cozy and stylish but also impeccably clean." />
-                        </LinearLayout>
-                    </RelativeLayout>
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
             <TextView
-                android:id="@+id/seeMoreTxt"
+                android:id="@+id/seeMoreAccTxt"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="See more"
+                android:textColor="@color/gold"
+                android:textSize="18sp"
+                android:layout_marginTop="8dp"
+                android:layout_gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:textAlignment="center"
+                android:onClick="onSeeMoreClick"
+                android:layout_marginBottom="25dp"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:id="@+id/host_comments"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:layout_marginStart="32dp"
+                    android:text="About host"
+                    android:textColor="@color/black"
+                    android:textSize="15sp" />
+
+
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/hostRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_below="@id/postButton"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="10dp"
+                tools:itemCount="3"/>
+
+            <TextView
+                android:id="@+id/seeMoreHostTxt"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:text="See more"
