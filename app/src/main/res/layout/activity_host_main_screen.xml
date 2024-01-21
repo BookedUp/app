@@ -26,6 +26,28 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:id="@+id/frame_layoutHost"/>
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/background_dim"
+            android:visibility="invisible"
+            android:id="@+id/darkBackground"/>
+
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+
+            <ProgressBar
+                android:id="@+id/loadingProgressBar"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="100dp"
+                android:visibility="visible" />
+        </RelativeLayout>
 
 
         <androidx.coordinatorlayout.widget.CoordinatorLayout  android:layout_width="match_parent"
@@ -50,6 +72,23 @@
                     android:background="@android:color/transparent"/>
 
             </com.google.android.material.bottomappbar.BottomAppBar>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/background_dim"
+                android:visibility="visible"
+                android:id="@+id/darkBackgroundBottomAppBar"/>
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fabHostScreen"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|center"
+                android:backgroundTint="@color/white"
+                android:src="@drawable/ic_baseline_add_24"
+                app:maxImageSize="40dp"
+                android:layout_marginBottom="16dp"
+                app:tint="@color/gold" />
 
 
         </androidx.coordinatorlayout.widget.CoordinatorLayout>

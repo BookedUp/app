@@ -1,119 +1,176 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center"
-    tools:context="fragments.account.AccountFragment"
-    android:layout_margin="20dp">
-
-    <ImageView
-        android:layout_width="160dp"
-        android:layout_height="160dp"
-        android:background="@drawable/circular_bg"
-        android:backgroundTint="@color/gold"
-        android:src="@drawable/guest"
-        android:scaleType="centerCrop"
-        android:layout_marginBottom="20dp"
-        android:id="@+id/profile_image_view"/>
-
-
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="8dp"
-        android:hint="First name"
-        android:inputType="text"
-        android:layout_margin="10dp"
-        android:background="@drawable/edit_text_rounded_corner"
-        android:elevation="5dp"
-        android:id="@+id/profile_first_name"
-        />
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="8dp"
-        android:hint="Last name"
-        android:inputType="text"
-        android:layout_margin="10dp"
-        android:background="@drawable/edit_text_rounded_corner"
-        android:elevation="5dp"
-        android:id="@+id/profile_last_name"
-        />
-
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="8dp"
-        android:hint="Address"
-        android:inputType="text"
-        android:layout_margin="10dp"
-        android:background="@drawable/edit_text_rounded_corner"
-        android:elevation="5dp"
-        android:id="@+id/profile_address"
-        />
-
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="10dp"
-        android:hint="Phone"
-        android:inputType="text"
-        android:layout_margin="10dp"
-        android:background="@drawable/edit_text_rounded_corner"
-        android:elevation="5dp"
-        android:id="@+id/profile_phone"
-        />
-
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="10dp"
-        android:autofillHints="@string/prompt_password"
-
-        android:hint="Password"
-        android:layout_margin="10dp"
-        android:background="@drawable/edit_text_rounded_corner"
-        android:elevation="5dp"
-        android:inputType="textPassword"
-        android:selectAllOnFocus="true"
-
-        android:id="@+id/profile_password"
-        />
+    android:fillViewport="true"
+    android:layout_marginTop="70dp"
+    android:layout_marginBottom="70dp">
 
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:gravity="center_vertical"
-        android:layout_marginTop="20dp"
-        android:orientation="vertical">
-        <Button
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        tools:context=".fragments.account.AccountFragment"
+        android:layout_margin="20dp">
+
+
+        <ImageView
+            android:layout_width="160dp"
+            android:layout_height="160dp"
+            android:background="@drawable/circular_bg"
+            android:backgroundTint="@color/gold"
+            android:src="@drawable/guest"
+            android:scaleType="centerCrop"
+            android:layout_marginBottom="20dp"
+            android:id="@+id/profile_image_view"/>
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/btn_rounded_corner"
-            android:text="Update profile"
-            android:id="@+id/profle_update_btn"/>
+            android:orientation="horizontal"
+            android:layout_gravity="center">
 
-        <Button
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Select Image"
+                android:id="@+id/select_image_button"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="10dp"
+                android:layout_marginStart="50dp"
+                android:background="@drawable/btn_rounded_corner"
+                android:textColor="@android:color/white"
+                android:onClick="selectImage"/>
+
+            <!-- Dugme za brisanje slike -->
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Delete Image"
+                android:layout_marginStart="10dp"
+                android:id="@+id/delete_image_button"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/btn_rounded_corner"
+                android:textColor="@android:color/white"
+                android:onClick="deleteImage"/>
+        </LinearLayout>
+
+
+        <EditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/btn_rounded_corner"
-            android:layout_marginTop="8dp"
-            android:text="Delete profile"
-            android:id="@+id/profle_delete_btn"/>
-
-        <ProgressBar
-            android:layout_width="32dp"
+            android:padding="8dp"
+            android:hint="First name"
+            android:inputType="text"
+            android:layout_margin="10dp"
+            android:background="@drawable/edit_text_rounded_corner"
+            android:elevation="5dp"
+            android:id="@+id/profile_first_name"
+            />
+        <EditText
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:indeterminateTint="@color/gold"
-            android:layout_gravity="center"
-            android:id="@+id/profile_progress_bar"/>
+            android:padding="8dp"
+            android:hint="Last name"
+            android:inputType="text"
+            android:layout_margin="10dp"
+            android:background="@drawable/edit_text_rounded_corner"
+            android:elevation="5dp"
+            android:id="@+id/profile_last_name"
+            />
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:hint="Address"
+            android:inputType="text"
+            android:layout_margin="10dp"
+            android:background="@drawable/edit_text_rounded_corner"
+            android:elevation="5dp"
+            android:id="@+id/profile_address"
+            />
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:hint="Phone"
+            android:inputType="text"
+            android:layout_margin="10dp"
+            android:background="@drawable/edit_text_rounded_corner"
+            android:elevation="5dp"
+            android:id="@+id/profile_phone"
+            />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:elevation="5dp"
+            android:background="@drawable/edit_text_rounded_corner">
+
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="10dp"
+                android:hint="Password"
+                android:background="@drawable/edit_text_rounded_corner"
+                android:inputType="textPassword"
+                android:selectAllOnFocus="true"
+                android:id="@+id/profile_password"/>
+
+            <!-- Eye Button -->
+            <ImageView
+                android:id="@+id/pass_visibility"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_password_eye"
+                android:contentDescription="Toggle password visibility"
+                android:paddingEnd="8dp"
+                android:paddingStart="8dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:onClick="togglePasswordVisibility"
+                android:layout_alignTop="@id/profile_password"
+                android:layout_alignBottom="@id/profile_password"
+                android:layout_alignParentEnd="true"/>
+        </RelativeLayout>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:gravity="center_vertical"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="40dp"
+            android:orientation="vertical">
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/btn_rounded_corner"
+                android:text="Update profile"
+                android:id="@+id/profile_update_btn"/>
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/btn_rounded_corner"
+                android:layout_marginTop="8dp"
+                android:text="Delete profile"
+                android:id="@+id/profile_delete_btn" />
+
+            <ProgressBar
+                android:layout_width="32dp"
+                android:layout_height="wrap_content"
+                android:indeterminateTint="@color/gold"
+                android:layout_gravity="center"
+                android:id="@+id/profile_progress_bar" />
+        </LinearLayout>
     </LinearLayout>
-
-
-
-
-
-</LinearLayout>
+</ScrollView>

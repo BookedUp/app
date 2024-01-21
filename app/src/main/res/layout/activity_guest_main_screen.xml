@@ -53,16 +53,16 @@
 
             </com.google.android.material.bottomappbar.BottomAppBar>
 
-            <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/fab"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom|center"
-                android:backgroundTint="@color/white"
-                android:src="@drawable/ic_baseline_add_24"
-                app:maxImageSize="40dp"
-                android:layout_marginBottom="16dp"
-                app:tint="@color/gold" />
+<!--            <com.google.android.material.floatingactionbutton.FloatingActionButton-->
+<!--                android:id="@+id/fab"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_gravity="bottom|center"-->
+<!--                android:backgroundTint="@color/white"-->
+<!--                android:src="@drawable/ic_baseline_add_24"-->
+<!--                app:maxImageSize="40dp"-->
+<!--                android:layout_marginBottom="16dp"-->
+<!--                app:tint="@color/gold" />-->
         </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
 

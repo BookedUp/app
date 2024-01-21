@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- card_layout.xml -->
+<!-- res/layout/card_accommodation_request.xml -->
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- Image Layout -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <!-- Hotel Image -->
+        <ImageView
+            android:id="@+id/myAcc_imageHotel"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:scaleType="centerCrop"
+            android:src="@drawable/hotel1" />
+
+        <!-- Accommodation Details Layout -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <!-- Naziv smestaja -->
+            <TextView
+                android:id="@+id/myAcc_Title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Naziv smestaja"
+                android:layout_marginLeft="12dp"
+                />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="8dp">
+
+                <ImageView
+                    android:id="@+id/myAcc_iconRating"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_star"
+                    android:contentDescription="Rating Icon"
+                    android:layout_marginLeft="12dp"/>
+
+                <!-- Tekst za ocenu -->
+                <TextView
+                    android:id="@+id/myAcc_averageRating"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Ocena"
+                    android:layout_marginLeft="8dp"/>
+            </LinearLayout>
+
+
+            <!-- Status smestaja -->
+            <TextView
+                android:id="@+id/myAcc_status"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Status smestaja"
+                android:textStyle="bold"
+                android:layout_marginLeft="12dp"
+                android:layout_marginTop="6dp"
+
+                />
+
+            <!-- Lokacija -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="8dp">
+
+                <ImageView
+                    android:id="@+id/myAcc_iconLocation"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_location"
+                    android:contentDescription="Location Icon"
+                    android:layout_marginLeft="12dp"/>
+
+                <!-- Tekst za ocenu -->
+                <TextView
+                    android:id="@+id/myAcc_address"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Adresa"
+                    android:layout_marginLeft="8dp"/>
+            </LinearLayout>
+
+            <!-- Includes Taxes and Fees -->
+            <TextView
+                android:id="@+id/myAcc_textIncludesTaxesAndFees"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Includes taxes and fees"
+                android:layout_marginTop="12dp"
+                android:layout_marginLeft="12dp"
+                />
+
+
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginLeft="12dp"
+                >
+
+                <TextView
+                    android:id="@+id/myAcc_price"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="150$"/>
+
+                <TextView
+                    android:id="@+id/myAcc_priceType"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="/per guest"/>
+            </LinearLayout>
+            <!-- View Details Button -->
+
+            <Button
+                android:id="@+id/myAcc_btnViewDetails"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:layout_marginLeft="12dp"
+                android:text="View Details"
+                />
+
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="8dp">
+
+        <Button
+            android:id="@+id/getStatisticBtn"
+            android:layout_marginTop="12dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Statistic"
+            />
+
+        <Button
+            android:id="@+id/myAcc_btnEditDetails"
+            android:layout_marginTop="12dp"
+            android:layout_marginStart="12dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Edit Details"
+            />
+
+
+    </LinearLayout>
+
+
+    <!-- Buttons Layout -->
+
+</LinearLayout>

@@ -9,6 +9,7 @@
     <color name="neutral">#FAFAD2</color>
     <color name="gold_star">#FFC107</color>
     <color name="dark_grey">#5A5A5A</color>
+    <color name="gray_100">#f5f4f7</color>
 
 
 </resources>
