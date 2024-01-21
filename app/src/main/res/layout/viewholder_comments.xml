@@ -50,14 +50,32 @@
                         android:orientation="vertical"
                         android:layout_marginLeft="4dp"
                         android:layout_toRightOf="@+id/guestImg">
-                        <TextView
-                            android:id="@+id/guestInfo"
+                        <LinearLayout
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginBottom="2dp"
-                            android:text="Loren Smith"
-                            android:textSize="17sp"
-                            android:textStyle="bold"/>
+                            android:layout_height="match_parent"
+                            android:orientation="horizontal">
+                            <TextView
+                                android:id="@+id/guestInfo"
+                                android:layout_width="210dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="2dp"
+                                android:text="Loren Smith"
+                                android:layout_marginTop="15dp"
+                                android:textSize="17sp"
+                                android:textStyle="bold"/>
+
+                            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                                android:id="@+id/commentReportBtn"
+                                android:layout_width="35dp"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="end"
+                                app:backgroundTint="@android:color/white"
+                                app:elevation="5dp"
+                                app:fabCustomSize="35dp"
+                                app:srcCompat="@drawable/ic_user_reports"
+                                app:tint="#9e8d5f" />
+
+                        </LinearLayout>
                         <RatingBar
                             android:id="@+id/guestRating"
                             style="?android:attr/ratingBarStyleSmall"

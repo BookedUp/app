@@ -14,7 +14,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:gravity="center"
-        tools:context=".fragments.account.AccountFragment"
+        tools:context=".fragments.account.AccountAdministratorFragment"
         android:layout_margin="20dp">
 
 
@@ -141,6 +141,7 @@
                 android:layout_alignBottom="@id/profile_password"
                 android:layout_alignParentEnd="true"/>
         </RelativeLayout>
+
 
 
         <LinearLayout

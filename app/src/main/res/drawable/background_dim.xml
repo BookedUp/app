@@ -1,0 +1,14 @@
+<!-- background_dim.xml -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Transparentni sloj -->
+    <item android:drawable="@android:color/transparent" />
+
+    <!-- Sloj boje za blago zatamnjenje -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#33000000" /> <!-- Prilagodite ovu vrednost prema vašim željama -->
+        </shape>
+    </item>
+
+</layer-list>

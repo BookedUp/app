@@ -1,6 +1,7 @@
 package com.example.bookedup.services;
 
 import com.example.bookedup.model.Guest;
+import com.example.bookedup.model.Host;
 import com.example.bookedup.model.LoginRequest;
 import com.example.bookedup.model.Token;
 import com.example.bookedup.model.User;
@@ -22,6 +23,9 @@ public interface GuestService {
 
     @GET("guests/{id}")
     Call<Guest> getGuest(@Path("id") Long id);
+
+    @PUT("guests/{id}")
+    Call<Guest> updateGuest(@Body Guest guest, @Path("id") Long id);
 
     @PUT("guests/{guestId}/add-favourite/{accommodationId}")
     Call<Void> addFavouriteAccommodation(@Path("guestId") Long guestId, @Path("accommodationId") Long accommodationId);

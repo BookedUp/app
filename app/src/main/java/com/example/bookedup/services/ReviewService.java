@@ -23,6 +23,10 @@ public interface ReviewService {
     @GET("reviews")
     Call<ArrayList<Review>> getReviews();
 
+    @GET("reviews/unapproved")
+    Call<ArrayList<Review>> getUnapprovedReviews();
+
+
     @POST("reviews")
     Call<Review> createReview(@Body Review review);
 

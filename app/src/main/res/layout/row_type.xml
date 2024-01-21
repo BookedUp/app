@@ -8,6 +8,8 @@
     android:orientation="vertical"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+
+
     <LinearLayout android:gravity="center_vertical"
         android:id="@+id/linearLayout"
         android:layout_height="wrap_content"
@@ -19,6 +21,7 @@
         android:paddingTop="@dimen/_15pxv" style="@style/groupStylegreen_A400cornerRadius">
 
 
+
         <TextView android:ellipsize="end" android:id="@+id/row_type"
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"
@@ -26,5 +29,7 @@
             android:text="All"
             android:textColor="@color/gold"
             style="@style/txtRalewayromanbold10" />
+
+
     </LinearLayout>
 </LinearLayout>

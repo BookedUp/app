@@ -9,8 +9,6 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.LinearLayoutManager;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -29,11 +27,11 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.bookedup.R;
-import com.example.bookedup.adapters.PopularAdapter;
 import com.example.bookedup.clients.ClientUtils;
 import com.example.bookedup.fragments.about.AboutUsFragment;
 import com.example.bookedup.fragments.accommodations.AccommodationListFragment;
@@ -50,19 +48,18 @@ import com.example.bookedup.model.Notification;
 import com.example.bookedup.model.Photo;
 import com.example.bookedup.model.Reservation;
 import com.example.bookedup.model.User;
-import com.example.bookedup.model.enums.ReservationStatus;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationBarView;
 import com.google.android.material.navigation.NavigationView;
-import com.google.gson.Gson;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -85,8 +82,13 @@ public class HostMainScreen extends AppCompatActivity implements NavigationView.
     private List<Accommodation> myAccommodations = new ArrayList<>();
     private ArrayList<Notification> notifications = new ArrayList<>();
     private boolean reservationsIsClicked = false;
-//    private List<Accommodation> mostPopularAccommodations = new ArrayList<>();
-//    private Map<Long, List<Bitmap>> accommodationImages = new HashMap<>();
+
+    private ProgressBar progressBar;
+    private int count = 0;
+    private Timer timer;
+
+    private View darkBackground;
+    private View darkBackgroundBottomAppBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -94,14 +96,10 @@ public class HostMainScreen extends AppCompatActivity implements NavigationView.
         setContentView(R.layout.activity_host_main_screen);
         checkForNewNotifications();
 
-//        Intent intent = getIntent();
-//
-//        if (intent != null) {
-//            mostPopularAccommodations = (List<Accommodation>) intent.getSerializableExtra("mostPopularAccommodations");
-//            accommodationImages = (Map<Long, List<Bitmap>>) intent.getSerializableExtra("photosBitmap");
-//
-//            // Use the received lists...
-//        }
+        progressBar = findViewById(R.id.loadingProgressBar);
+        darkBackground = findViewById(R.id.darkBackground);
+        darkBackgroundBottomAppBar = findViewById(R.id.darkBackgroundBottomAppBar);
+        progressBar.setVisibility(View.INVISIBLE);
 
         bottomNavigationView=findViewById(R.id.bottomNavigationViewHost);
         drawerLayout=findViewById(R.id.drawer_layoutHost);
@@ -154,6 +152,40 @@ public class HostMainScreen extends AppCompatActivity implements NavigationView.
                 showBottomDialog();
             }
         });
+    }
+
+    private void initiateProgressBar() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                progressBar.setVisibility(View.VISIBLE);
+                darkBackground.setVisibility(View.VISIBLE);
+                progressBar.setProgress(0);
+            }
+        });
+
+        // Postavi brojač na 0
+        count = 0;
+
+        // Pokreni Timer za okretanje progres bara
+        timer = new Timer();
+        TimerTask timerTask = new TimerTask() {
+            @Override
+            public void run() {
+                count++;
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        progressBar.setProgress(count);
+                    }
+                });
+
+                if (count == 100) {
+                    timer.cancel();
+                }
+            }
+        };
+        timer.schedule(timerTask, 0, 100);
     }
 
     private void checkForNewNotifications() {
@@ -291,6 +323,11 @@ public class HostMainScreen extends AppCompatActivity implements NavigationView.
     }
 
     private void getLoadPictures(List<Accommodation> myAccommodations, List<Reservation> myReservations) {
+        initiateProgressBar();
+        if (progressBar.getVisibility() == View.VISIBLE) {
+            darkBackground.setVisibility(View.VISIBLE);
+            darkBackgroundBottomAppBar.setVisibility(View.VISIBLE);
+        }
         Map<Long, List<Bitmap>> accommodationImageMap = new ConcurrentHashMap<>();
         ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         AtomicInteger totalImagesToLoad = new AtomicInteger(0);
@@ -323,9 +360,13 @@ public class HostMainScreen extends AppCompatActivity implements NavigationView.
                                 photosBitmap.add(bitmap);
                                 int remainingImages = totalImagesToLoad.decrementAndGet();
                                 if (remainingImages == 0) {
-                                    // All images are loaded, update the adapter
-                                    Fragment fragment = findFragment(myAccommodations, myReservations, accommodationImageMap);
-                                    openFragment(fragment);
+                                    runOnUiThread(() -> {
+                                        progressBar.setVisibility(View.GONE);
+                                        darkBackground.setVisibility(View.GONE);
+                                        darkBackgroundBottomAppBar.setVisibility(View.GONE);
+                                        Fragment fragment = findFragment(myAccommodations, myReservations, accommodationImageMap);
+                                        openFragment(fragment);
+                                    });
                                 }
                             } else {
                                 Log.d("HostMainScreeen", "Error code " + response.code());

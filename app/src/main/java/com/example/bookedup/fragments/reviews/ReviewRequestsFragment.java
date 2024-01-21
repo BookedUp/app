@@ -99,15 +99,13 @@ public class ReviewRequestsFragment extends Fragment implements TypeAdapter.Type
 
     private List<String> getTypeList() {
         List<String> types = new ArrayList<>();
-        types.add("All Comments");
-        types.add("Waiting For Approval");
-        types.add("Accepted");
+        types.add("Unapproved");
         return types;
     }
 
     @Override
     public void onTypeSelected(String selectedType) {
-        getAllReviews(selectedType);
+        updateReviewAdapter(selectedType);
     }
 
     private void updateReviewAdapter(String selectedType) {
@@ -121,20 +119,6 @@ public class ReviewRequestsFragment extends Fragment implements TypeAdapter.Type
         switch (selectedType) {
             case "All Comments":
                 filteredList.addAll(reviews);
-                break;
-            case "Waiting For Approval":
-                for (Review review : reviews) {
-                    if (!review.getApproved()) {
-                        filteredList.add(review);
-                    }
-                }
-                break;
-            case "Accepted":
-                for (Review review : reviews) {
-                    if (review.getApproved()) {
-                        filteredList.add(review);
-                    }
-                }
                 break;
         }
         if(filteredList.isEmpty()){

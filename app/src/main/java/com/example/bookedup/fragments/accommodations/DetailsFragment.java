@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,7 +16,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,22 +27,25 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.resource.bitmap.CenterCrop;
-import com.bumptech.glide.load.resource.bitmap.GranularRoundedCorners;
 import com.example.bookedup.R;
 import com.example.bookedup.activities.LoginScreen;
 import com.example.bookedup.adapters.CommentAdapter;
 import com.example.bookedup.clients.ClientUtils;
-import com.example.bookedup.fragments.account.AccountFragment;
 import com.example.bookedup.fragments.reservations.CreateReservationFragment;
 import com.example.bookedup.model.Accommodation;
 import com.example.bookedup.model.Guest;
-import com.example.bookedup.model.Photo;
 import com.example.bookedup.model.Review;
-import com.example.bookedup.model.User;
+import com.example.bookedup.model.ReviewReport;
+import com.example.bookedup.model.UserReport;
 import com.example.bookedup.model.enums.Amenity;
 import com.example.bookedup.fragments.reviews.ReviewsListFragment;
+import com.example.bookedup.model.enums.Role;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.IOException;
@@ -49,7 +53,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -65,7 +68,7 @@ public class DetailsFragment extends Fragment {
     private ImageView picImg;
     private int daysNum = 0, guestNum = 0, targetLayout, currentImageIndex;
     private boolean isFavourite = false;
-    private FloatingActionButton favouriteButton;
+    private FloatingActionButton favouriteButton, commentReportBtn;
     private Button book;
     private String checkIn, checkOut;
     private FragmentManager fragmentManager;
@@ -75,6 +78,7 @@ public class DetailsFragment extends Fragment {
     private ArrayList<Review> hostReviews = new ArrayList<>();
     private CommentAdapter commentAdapter;
     private List<Bitmap> accommodationImages;
+    private MapView mapView;
     public DetailsFragment(List<Bitmap> accommodationImages) {
         this.accommodationImages = accommodationImages;
     }
@@ -88,6 +92,8 @@ public class DetailsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_details, container, false);
+        mapView = view.findViewById(R.id.mapView);
+        mapView.onCreate(savedInstanceState);
 
         return view;
     }
@@ -97,10 +103,14 @@ public class DetailsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         findTargetLayout();
         getCallerData();
-        isAccommodationFavourite();
+        if (LoginScreen.loggedUser.getRole().equals(Role.GUEST)) {
+            isAccommodationFavourite();
+        }
+
         initView(view);
         initAccommodationCommentsRecyclerView(accommodationReviews);
         initHostCommentsRecyclerView(hostReviews);
+
 
         picImg.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -145,7 +155,30 @@ public class DetailsFragment extends Fragment {
                 }
             }
         });
+
+        mapView.onResume();
+
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        mapView.getMapAsync(new OnMapReadyCallback() {
+            @Override
+            public void onMapReady(GoogleMap googleMap) {
+                if (googleMap != null) {
+                    LatLng location = new LatLng(accommodation.getAddress().getLatitude(), accommodation.getAddress().getLongitude());
+                    googleMap.addMarker(new MarkerOptions().position(location).title("Accommodation Location"));
+                    googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15.0f));
+                } else {
+                    Log.e("DetailsFragment", "GoogleMap is null");
+                }
+            }
+        });
+        mapView.onResume(); // Dodajte ovde
+    }
+
+
 
     private void showNextImage() {
         if (!accommodationImages.isEmpty()) {
@@ -171,7 +204,7 @@ public class DetailsFragment extends Fragment {
                         setHeartColor(R.color.grey);
                     }
                 } else {
-                    Log.d("DetailsFragment", "Unsuccessful response: " + response.code());
+                    Log.d("DetailsFragment", "ABDBSDBBJ Unsuccessful response: " + response.code());
                     try {
                         Log.d("DetailsFragment", "Error Body: " + response.errorBody().string());
                     } catch (IOException e) {
@@ -312,10 +345,10 @@ public class DetailsFragment extends Fragment {
     private void initView(View view) {
         fragmentManager = getParentFragmentManager();
         favouriteButton = view.findViewById(R.id.favouriteButton);
-        if (LoginScreen.loggedGuest == null){
-            favouriteButton.setVisibility(View.INVISIBLE);
-        } else {
+        if (LoginScreen.loggedUser.getRole().equals(Role.GUEST)){
             favouriteButton.setVisibility(View.VISIBLE);
+        } else {
+            favouriteButton.setVisibility(View.INVISIBLE);
         }
 
         titleTxt = view.findViewById(R.id.titleTxt);
@@ -350,11 +383,24 @@ public class DetailsFragment extends Fragment {
         displayAmenities(accommodation.getAmenities(), view);
         picImg.setImageBitmap(accommodationImages.get(0));
 
+
         recyclerViewAccommodation = view.findViewById(R.id.commentRecyclerView);
         recyclerViewHost = view.findViewById(R.id.hostRecyclerView);
         seeMoreAccTxt = view.findViewById(R.id.seeMoreAccTxt);
         seeMoreHostTxt = view.findViewById(R.id.seeMoreHostTxt);
     }
+
+    private void setMapLocation(MapView mapView, double latitude, double longitude) {
+        mapView.getMapAsync(new OnMapReadyCallback() {
+            @Override
+            public void onMapReady(GoogleMap googleMap) {
+                LatLng location = new LatLng(latitude, longitude);
+                googleMap.addMarker(new MarkerOptions().position(location).title("Accommodation Location"));
+                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15.0f));
+            }
+        });
+    }
+
 
 
     private void openFragment(Fragment fragment){
@@ -379,6 +425,7 @@ public class DetailsFragment extends Fragment {
         Map<Long, Bitmap> usersImageMap = new HashMap<>();
         ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         AtomicInteger loadedImagesCount = new AtomicInteger(0);
+        Handler handler = new Handler(Looper.getMainLooper());
 
         for (Review review : reviews) {
             executorService.execute(() -> {
@@ -392,9 +439,11 @@ public class DetailsFragment extends Fragment {
                         usersImageMap.put(review.getGuest().getId(), bitmap);
 
                         if (loadedImagesCount.incrementAndGet() == reviews.size()) {
-                            recyclerView.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false));
-                            commentAdapter = new CommentAdapter(this, reviews, targetLayout, usersImageMap);
-                            recyclerView.setAdapter(commentAdapter);
+                            handler.post(() -> {
+                                recyclerView.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false));
+                                commentAdapter = new CommentAdapter(this, reviews, targetLayout, usersImageMap);
+                                recyclerView.setAdapter(commentAdapter);
+                            });
                         }
                     } else {
                         Log.d("DetailsFragment", "Error code " + response.code());
@@ -433,6 +482,22 @@ public class DetailsFragment extends Fragment {
             amenitiesContainer.addView(amenityView);
         }
     }
+
+
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        mapView.onPause();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mapView.onDestroy();
+    }
+
+
 
 
 

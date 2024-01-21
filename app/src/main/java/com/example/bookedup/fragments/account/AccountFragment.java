@@ -1,19 +1,15 @@
 package com.example.bookedup.fragments.account;
 
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
 
 import android.provider.MediaStore;
-import android.provider.OpenableColumns;
 import android.text.method.PasswordTransformationMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -29,13 +25,9 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.CenterCrop;
 import com.bumptech.glide.load.resource.bitmap.GranularRoundedCorners;
 import com.example.bookedup.R;
-import com.example.bookedup.activities.GuestMainScreen;
 import com.example.bookedup.activities.LoginScreen;
 import com.example.bookedup.activities.SplashScreen;
-import com.example.bookedup.adapters.PopularAdapter;
 import com.example.bookedup.clients.ClientUtils;
-import com.example.bookedup.fragments.home.HomeFragment;
-import com.example.bookedup.model.Accommodation;
 import com.example.bookedup.model.Address;
 import com.example.bookedup.model.Photo;
 import com.example.bookedup.model.User;
@@ -44,12 +36,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;

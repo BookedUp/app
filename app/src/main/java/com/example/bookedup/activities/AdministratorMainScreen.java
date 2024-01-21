@@ -8,9 +8,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -24,14 +22,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.lifecycle.ViewModelProvider;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.bookedup.R;
 import com.example.bookedup.clients.ClientUtils;
 import com.example.bookedup.fragments.about.AboutUsFragment;
@@ -40,29 +37,29 @@ import com.example.bookedup.fragments.account.AccountFragment;
 //import com.example.bookedup.fragments.admin.user.AdminManageUsersFragment;
 import com.example.bookedup.fragments.home.HomeFragment;
 import com.example.bookedup.fragments.language.LanguageFragment;
-import com.example.bookedup.fragments.notifications.NotificationsFragment;
+import com.example.bookedup.fragments.reports.ReviewReportFragment;
 import com.example.bookedup.fragments.reports.UserReportFragment;
 import com.example.bookedup.fragments.reviews.ReviewRequestsFragment;
 import com.example.bookedup.fragments.settings.SettingsFragment;
 import com.example.bookedup.fragments.users.UsersActivityFragment;
 import com.example.bookedup.model.Accommodation;
-import com.example.bookedup.model.Notification;
 import com.example.bookedup.model.Photo;
 import com.example.bookedup.model.Review;
+import com.example.bookedup.model.ReviewReport;
 import com.example.bookedup.model.User;
 import com.example.bookedup.model.UserReport;
-import com.example.bookedup.utils.SharedViewModel;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.gson.Gson;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -84,19 +81,24 @@ public class AdministratorMainScreen extends AppCompatActivity implements Naviga
     private List<UserReport> userReports = new ArrayList<>();
     private List<User> users = new ArrayList<>();
     private List<Review> reviews = new ArrayList<>();
-//    private List<Accommodation> mostPopularAccommodations = new ArrayList<>();
-//    private Map<Long, List<Bitmap>> accommodationImages = new HashMap<>();
+    private ProgressBar progressBar;
+    private int count = 0;
+    private Timer timer;
+
+    private View darkBackground;
+    private View darkBackgroundBottomAppBar;
+    private List<Review> reportedReviews;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_administrator_main_screen);
 
-//        SharedViewModel sharedViewModel = new ViewModelProvider(this).get(SharedViewModel.class);
-//        mostPopularAccommodations = sharedViewModel.getMostPopularAccommodations();
-//        accommodationImages = sharedViewModel.getAccommodationImageMap();
 
-
+        progressBar = findViewById(R.id.loadingProgressBar);
+        darkBackground = findViewById(R.id.darkBackground);
+        darkBackgroundBottomAppBar = findViewById(R.id.darkBackgroundBottomAppBar);
+        progressBar.setVisibility(View.INVISIBLE);
         bottomNavigationView=findViewById(R.id.bottomNavigationViewAdmin);
         drawerLayout=findViewById(R.id.drawer_layoutAdmin);
         NavigationView navigationView=findViewById(R.id.nav_viewAdmin);
@@ -131,7 +133,7 @@ public class AdministratorMainScreen extends AppCompatActivity implements Naviga
                     return true;
                 }
                 else if(itemId==R.id.nav_comments){
-                    setAllReviews();
+                    showBottomDialogForComments();
                     return true;
                 }
                 return false;
@@ -180,7 +182,73 @@ public class AdministratorMainScreen extends AppCompatActivity implements Naviga
 
     }
 
-    private void loadProfilePicturesForComments(){
+    private void showBottomDialogForComments() {
+
+        final Dialog dialog = new Dialog(this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.bottom_sheets_comments);
+
+        LinearLayout reportsContainer = dialog.findViewById(R.id.commentReportsContainer);
+        LinearLayout newCommentsContainer = dialog.findViewById(R.id.newCommentContainer);
+
+        reportsContainer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setAllReportedReviews();
+                dialog.dismiss();
+
+            }
+        });
+
+        newCommentsContainer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setAllReviews();
+                dialog.dismiss();
+
+            }
+        });
+
+
+        dialog.show();
+        dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.WRAP_CONTENT);
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        dialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation;
+        dialog.getWindow().setGravity(Gravity.BOTTOM);
+
+    }
+
+    private void setAllReportedReviews(){
+        Call<ArrayList<Review>> all = ClientUtils.reviewReportService.getAllReportedReviews();
+        all.enqueue(new Callback<ArrayList<Review>>() {
+            @Override
+            public void onResponse(Call<ArrayList<Review>> call, Response<ArrayList<Review>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    Log.d("AccommodationRequestFragment", "Successful response: " + response.body());
+                    reportedReviews = response.body();
+                    Log.d("AccommodationRequestFragment", "SIZEEEEEEEEEEE: " + reportedReviews.size());
+                    loadProfilePicturesForComments(reportedReviews, "reported");
+                } else {
+                    // Log error details
+                    Log.d("AccommodationRequestFragment", "Unsuccessful response: " + response.code());
+                    try {
+                        Log.d("AccommodationRequestFragment", "Error Body: " + response.errorBody().string());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ArrayList<Review>> call, Throwable t) {
+                Log.d("AccommodationRequestFragment", t.getMessage() != null ? t.getMessage() : "error");
+            }
+        });
+    }
+
+
+    private void loadProfilePicturesForComments(List<Review> reviews, String action){
+        Log.d("AdministratorMainScreen", "ACTION "+ action);
         Map<Long, Bitmap> usersImageMap = new HashMap<>();
         ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         AtomicInteger loadedImagesCount = new AtomicInteger(0);
@@ -198,7 +266,14 @@ public class AdministratorMainScreen extends AppCompatActivity implements Naviga
 
                         if (loadedImagesCount.incrementAndGet() == reviews.size()) {
                             this.runOnUiThread(() -> {
-                                openFragment(new ReviewRequestsFragment(reviews, usersImageMap, R.id.frame_layoutAdmin));
+                                progressBar.setVisibility(View.GONE);
+                                darkBackground.setVisibility(View.GONE);
+                                darkBackgroundBottomAppBar.setVisibility(View.GONE);
+                                if (action.equals("new")) {
+                                    openFragment(new ReviewRequestsFragment(reviews, usersImageMap, R.id.frame_layoutAdmin));
+                                }else if (action.equals("reported")){
+                                    openFragment(new ReviewReportFragment(reportedReviews, R.id.frame_layoutAdmin, usersImageMap));
+                                }
                             });
                         }
                     } else {
@@ -245,14 +320,19 @@ public class AdministratorMainScreen extends AppCompatActivity implements Naviga
     }
 
     private void setAllReviews(){
-        Call<ArrayList<Review>> allReviews = ClientUtils.reviewService.getReviews();
+        initiateProgressBar();
+        if (progressBar.getVisibility() == View.VISIBLE) {
+            darkBackground.setVisibility(View.VISIBLE);
+            darkBackgroundBottomAppBar.setVisibility(View.VISIBLE);
+        }
+        Call<ArrayList<Review>> allReviews = ClientUtils.reviewService.getUnapprovedReviews();
         allReviews.enqueue(new Callback<ArrayList<Review>>() {
             @Override
             public void onResponse(Call<ArrayList<Review>> call, Response<ArrayList<Review>> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     Log.d("AdministratorMainScreen", "Successful response: " + response.body());
                     reviews= response.body();
-                    loadProfilePicturesForComments();
+                    loadProfilePicturesForComments(reviews, "new");
                 } else {
                     // Log error details
                     Log.d("AdministratorMainScreen", "Unsuccessful response: " + response.code());
@@ -299,7 +379,47 @@ public class AdministratorMainScreen extends AppCompatActivity implements Naviga
         });
     }
 
+    private void initiateProgressBar() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                progressBar.setVisibility(View.VISIBLE);
+                darkBackground.setVisibility(View.VISIBLE);
+                progressBar.setProgress(0);
+            }
+        });
+
+        // Postavi brojač na 0
+        count = 0;
+
+        // Pokreni Timer za okretanje progres bara
+        timer = new Timer();
+        TimerTask timerTask = new TimerTask() {
+            @Override
+            public void run() {
+                count++;
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        progressBar.setProgress(count);
+                    }
+                });
+
+                if (count == 100) {
+                    timer.cancel();
+                }
+            }
+        };
+        timer.schedule(timerTask, 0, 100);
+    }
+
+
     private void getLoadPictures(List<Accommodation> allAccommodations) {
+        initiateProgressBar();
+        if (progressBar.getVisibility() == View.VISIBLE) {
+            darkBackground.setVisibility(View.VISIBLE);
+            darkBackgroundBottomAppBar.setVisibility(View.VISIBLE);
+        }
         Map<Long, List<Bitmap>> accommodationImageMap = new ConcurrentHashMap<>();
         ExecutorService executorService = Executors.newFixedThreadPool(8);
 
@@ -332,7 +452,12 @@ public class AdministratorMainScreen extends AppCompatActivity implements Naviga
                                 int remainingImages = totalImagesToLoad.decrementAndGet();
 
                                 if (remainingImages == 0) {
-                                    initializeAccommodationRequestFragment(accommodationImageMap);
+                                    runOnUiThread(() -> {
+                                        progressBar.setVisibility(View.GONE);
+                                        darkBackground.setVisibility(View.GONE);
+                                        darkBackgroundBottomAppBar.setVisibility(View.GONE);
+                                        initializeAccommodationRequestFragment(accommodationImageMap);
+                                    });
                                 }
                             } else {
                                 Log.d("AdministratorMainScreen", "Error code " + response.code());

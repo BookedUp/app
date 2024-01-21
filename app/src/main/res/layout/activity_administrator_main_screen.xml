@@ -25,7 +25,30 @@
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:id="@+id/frame_layoutAdmin"/>
+            android:id="@+id/frame_layoutAdmin" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/background_dim"
+            android:visibility="invisible"
+            android:id="@+id/darkBackground"/>
+
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+
+            <ProgressBar
+                android:id="@+id/loadingProgressBar"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="100dp"
+                android:visibility="visible" />
+        </RelativeLayout>
 
 
         <androidx.coordinatorlayout.widget.CoordinatorLayout  android:layout_width="match_parent"
@@ -42,6 +65,7 @@
                 android:backgroundTint="@color/white"
                 app:fabCradleMargin="10dp"
                 app:fabCradleRoundedCornerRadius="50dp">
+
                 <com.google.android.material.bottomnavigation.BottomNavigationView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -51,7 +75,17 @@
                     app:menu="@menu/bottom_navbar_menu_admin"
                     android:background="@android:color/transparent"/>
 
+
             </com.google.android.material.bottomappbar.BottomAppBar>
+
+            <!-- Dodajte ovo ispod BottomAppBar -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/background_dim"
+                android:visibility="invisible"
+                android:id="@+id/darkBackgroundBottomAppBar"/>
+
 
 
         </androidx.coordinatorlayout.widget.CoordinatorLayout>

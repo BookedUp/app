@@ -59,7 +59,7 @@ public class CommentRequestAdapter extends RecyclerView.Adapter<CommentRequestAd
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView guestImg;
-        TextView guestInfo, comment, commentStatus;
+        TextView guestInfo, comment, commentStatus, who, host, accommodation;
         RatingBar guestRating;
         Button acceptBtn, rejectBtn;
 
@@ -71,9 +71,10 @@ public class CommentRequestAdapter extends RecyclerView.Adapter<CommentRequestAd
             guestRating = itemView.findViewById(R.id.guestRating);
             comment = itemView.findViewById(R.id.comment);
             commentStatus = itemView.findViewById(R.id.commentStatus);
-
             acceptBtn = itemView.findViewById(R.id.acceptBtn);
-            rejectBtn = itemView.findViewById(R.id.rejectBtn);
+            who = itemView.findViewById(R.id.whoIsCommented);
+            host = itemView.findViewById(R.id.host);
+            accommodation = itemView.findViewById(R.id.accommodation);
         }
     }
 
@@ -91,6 +92,9 @@ public class CommentRequestAdapter extends RecyclerView.Adapter<CommentRequestAd
         holder.guestInfo.setText(currentReview.getGuest().getFirstName() + " " + currentReview.getGuest().getLastName());
         holder.guestRating.setRating(currentReview.getReview());
         holder.comment.setText(String.valueOf(currentReview.getComment()));
+        holder.who.setText(currentReview.getType().toString());
+        holder.host.setText("Host: " + currentReview.getHost().getFirstName() + " " + currentReview.getHost().getLastName());
+        holder.accommodation.setText("Accommodation: " + currentReview.getAccommodation());
 
         Bitmap bitmap = userImages.get(currentReview.getGuest().getId());
         if (bitmap != null)
@@ -102,11 +106,9 @@ public class CommentRequestAdapter extends RecyclerView.Adapter<CommentRequestAd
             holder.commentStatus.setText("APPROVED");
             holder.commentStatus.setTextColor(Color.GREEN);
             holder.acceptBtn.setEnabled(false);
-            holder.rejectBtn.setEnabled(true);
         } else {
             holder.commentStatus.setText("WAITING FOR APPROVAL");
             holder.commentStatus.setTextColor(Color.RED);
-            holder.rejectBtn.setEnabled(false);
             holder.acceptBtn.setEnabled(true);
         }
 
@@ -118,12 +120,12 @@ public class CommentRequestAdapter extends RecyclerView.Adapter<CommentRequestAd
             }
         });
 
-        holder.rejectBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                rejectReview(currentReview);
-            }
-        });
+//        holder.rejectBtn.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                rejectReview(currentReview);
+//            }
+//        });
     }
 
     private void acceptReview(Long id){

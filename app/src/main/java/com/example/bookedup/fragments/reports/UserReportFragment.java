@@ -10,10 +10,13 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.bookedup.R;
@@ -28,6 +31,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -45,6 +50,12 @@ public class UserReportFragment extends Fragment implements TypeAdapter.TypeSele
     private TypeAdapter typeAdapter;
     private UserReportAdapter userReportAdapter;
 
+    private ProgressBar progressBar;
+    private int count = 0;
+    private Timer timer;
+
+    private View darkBackground;
+
     public UserReportFragment(List<UserReport> originalReports, int targetLayout) {
         this.originalReports = originalReports;
         this.targetLayout = targetLayout;
@@ -59,7 +70,40 @@ public class UserReportFragment extends Fragment implements TypeAdapter.TypeSele
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_user_report, container, false);
+
     }
+
+    private void initiateProgressBar() {
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.post(() -> {
+            progressBar.setVisibility(View.VISIBLE);
+            darkBackground.setVisibility(View.VISIBLE);
+            progressBar.setProgress(0);
+
+        });
+
+        // Postavi brojač na 0
+        count = 0;
+
+        // Pokreni Timer za okretanje progres bara
+        timer = new Timer();
+        TimerTask timerTask = new TimerTask() {
+            @Override
+            public void run() {
+                count++;
+                handler.post(() -> {
+                    progressBar.setProgress(count);
+
+                });
+
+                if (count == 100) {
+                    timer.cancel();
+                }
+            }
+        };
+        timer.schedule(timerTask, 0, 100);
+    }
+
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
@@ -67,6 +111,10 @@ public class UserReportFragment extends Fragment implements TypeAdapter.TypeSele
         reports.clear();
         reports.addAll(originalReports);
         initView(view);
+        initiateProgressBar();
+        if (progressBar.getVisibility() == View.VISIBLE) {
+            darkBackground.setVisibility(View.VISIBLE);
+        }
         initUI(view);
         initReportsRecyclerView(reports);
 
@@ -74,6 +122,8 @@ public class UserReportFragment extends Fragment implements TypeAdapter.TypeSele
 
     private void initView(View view) {
         userReportRecyclerView = view.findViewById(R.id.userReportsRecyclerView);
+        progressBar = view.findViewById(R.id.loadingProgressBar);
+        darkBackground = view.findViewById(R.id.darkBackground);
     }
 
     private void initUI(View view){
@@ -142,6 +192,7 @@ public class UserReportFragment extends Fragment implements TypeAdapter.TypeSele
         Map<Long, Bitmap> usersImageMap = new HashMap<>();
         ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         AtomicInteger loadedImagesCount = new AtomicInteger(0);
+        Handler handler = new Handler(Looper.getMainLooper());
 
         for (UserReport userReport : reports) {
             executorService.execute(() -> {
@@ -156,9 +207,13 @@ public class UserReportFragment extends Fragment implements TypeAdapter.TypeSele
 
                         if (loadedImagesCount.incrementAndGet() == reports.size()) {
                             requireActivity().runOnUiThread(() -> {
-                                userReportRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false));
-                                userReportAdapter = new UserReportAdapter(this, new ArrayList<>(reports), targetLayout, usersImageMap);
-                                userReportRecyclerView.setAdapter(userReportAdapter);
+                                handler.post(() -> {
+                                    progressBar.setVisibility(View.GONE);
+                                    darkBackground.setVisibility(View.GONE);
+                                    userReportRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false));
+                                    userReportAdapter = new UserReportAdapter(this, new ArrayList<>(reports), targetLayout, usersImageMap);
+                                    userReportRecyclerView.setAdapter(userReportAdapter);
+                                });
                             });
                         }
                     } else {

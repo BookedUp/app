@@ -10,10 +10,13 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.bookedup.R;
@@ -29,6 +32,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -49,6 +54,12 @@ public class UsersActivityFragment extends Fragment  implements TypeAdapter.Type
     private Map<Long, Integer> numberOfReports = new HashMap<>();
     private Map<Long, List<String>> usersReportsReasons = new HashMap<>();
     private List<User> originalUsers = new ArrayList<>();
+
+    private ProgressBar progressBar;
+    private int count = 0;
+    private Timer timer;
+
+    private View darkBackground;
 
     public UsersActivityFragment(List<User> originalUsers, int targetLayout, Map<Long, Integer> numberOfReports, Map<Long, List<String>> usersReportsReasons) {
         this.originalUsers = originalUsers;
@@ -74,10 +85,45 @@ public class UsersActivityFragment extends Fragment  implements TypeAdapter.Type
         users.clear();
         users.addAll(originalUsers);
         initView(view);
+        initiateProgressBar();
+        if (progressBar.getVisibility() == View.VISIBLE) {
+            darkBackground.setVisibility(View.VISIBLE);
+        }
         initUI(view);
         initRecyclerView();
 
 
+    }
+
+    private void initiateProgressBar() {
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.post(() -> {
+            progressBar.setVisibility(View.VISIBLE);
+            darkBackground.setVisibility(View.VISIBLE);
+            progressBar.setProgress(0);
+
+        });
+
+        // Postavi brojač na 0
+        count = 0;
+
+        // Pokreni Timer za okretanje progres bara
+        timer = new Timer();
+        TimerTask timerTask = new TimerTask() {
+            @Override
+            public void run() {
+                count++;
+                handler.post(() -> {
+                    progressBar.setProgress(count);
+
+                });
+
+                if (count == 100) {
+                    timer.cancel();
+                }
+            }
+        };
+        timer.schedule(timerTask, 0, 100);
     }
 
     private void initUI(View view){
@@ -160,6 +206,8 @@ public class UsersActivityFragment extends Fragment  implements TypeAdapter.Type
 
                         if (loadedImagesCount.incrementAndGet() == users.size()) {
                             requireActivity().runOnUiThread(() -> {
+                                progressBar.setVisibility(View.GONE);
+                                darkBackground.setVisibility(View.GONE);
                                 usersRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false));
                                 userAdapter = new UserAdapter(this, new ArrayList<>(originalUsers), targetLayout, numberOfReports, usersReportsReasons);
                                 userAdapter.setImages(usersImageMap);
@@ -180,6 +228,8 @@ public class UsersActivityFragment extends Fragment  implements TypeAdapter.Type
 
     private void initView(View view) {
         usersRecyclerView = view.findViewById(R.id.usersRecyclerView);
+        progressBar = view.findViewById(R.id.loadingProgressBar);
+        darkBackground = view.findViewById(R.id.darkBackground);
     }
 
     public void updateUsersList(List<User> updatedList) {

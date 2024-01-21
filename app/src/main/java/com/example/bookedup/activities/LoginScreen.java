@@ -1,15 +1,9 @@
 package com.example.bookedup.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.ViewModelProvider;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.text.method.PasswordTransformationMethod;
 import android.util.Log;
 import android.view.View;
@@ -19,40 +13,24 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.bumptech.glide.Glide;
 import com.example.bookedup.R;
 import com.example.bookedup.clients.ClientUtils;
-import com.example.bookedup.fragments.accommodations.AccommodationListFragment;
 import com.example.bookedup.model.Accommodation;
 import com.example.bookedup.model.Admin;
 import com.example.bookedup.model.Guest;
 import com.example.bookedup.model.Host;
 import com.example.bookedup.model.JwtUtils;
 import com.example.bookedup.model.LoginRequest;
-import com.example.bookedup.model.Notification;
-import com.example.bookedup.model.Photo;
-import com.example.bookedup.model.Review;
 import com.example.bookedup.model.Token;
 import com.example.bookedup.model.User;
 import com.example.bookedup.model.enums.Role;
-import com.example.bookedup.services.AdminService;
-import com.example.bookedup.services.UserService;
-import com.example.bookedup.utils.SharedViewModel;
 
 import org.json.JSONException;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
 
-import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;

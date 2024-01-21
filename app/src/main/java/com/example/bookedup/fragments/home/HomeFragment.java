@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -49,6 +50,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -75,7 +78,11 @@ public class HomeFragment extends Fragment implements DatePickerDialog.OnDateSet
     private ImageView startDateBtn, endDateBtn;
     private String whereToGo, checkIn, checkOut;
     private ArrayList<Accommodation> mostPopularAccommodations = new ArrayList<>();
-//    private Map<Long, List<Bitmap>> accommodationImages = new HashMap<>();
+    private ProgressBar progressBar;
+    private int count = 0;
+    private Timer timer;
+
+    private View darkBackground;
 
 
     public HomeFragment() {
@@ -93,6 +100,11 @@ public class HomeFragment extends Fragment implements DatePickerDialog.OnDateSet
         super.onViewCreated(view, savedInstanceState);
         findTargetLayout();
         initView(view);
+        initView(view);
+        initiateProgressBar();
+        if (progressBar.getVisibility() == View.VISIBLE) {
+            darkBackground.setVisibility(View.VISIBLE);
+        }
         initRecycleView();
         isSearch = false;
 
@@ -134,6 +146,37 @@ public class HomeFragment extends Fragment implements DatePickerDialog.OnDateSet
         });
     }
 
+    private void initiateProgressBar() {
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.post(() -> {
+            progressBar.setVisibility(View.VISIBLE);
+            darkBackground.setVisibility(View.VISIBLE);
+            progressBar.setProgress(0);
+
+        });
+
+        // Postavi brojač na 0
+        count = 0;
+
+        // Pokreni Timer za okretanje progres bara
+        timer = new Timer();
+        TimerTask timerTask = new TimerTask() {
+            @Override
+            public void run() {
+                count++;
+                handler.post(() -> {
+                    progressBar.setProgress(count);
+
+                });
+
+                if (count == 100) {
+                    timer.cancel();
+                }
+            }
+        };
+        timer.schedule(timerTask, 0, 100);
+    }
+
     private void findTargetLayout(){
         Intent intent = getActivity().getIntent();
         ComponentName componentName = intent.getComponent();
@@ -158,6 +201,9 @@ public class HomeFragment extends Fragment implements DatePickerDialog.OnDateSet
         guestsNumberTxt = view.findViewById(R.id.guestsNumber);
         startDateBtn =  view.findViewById(R.id.startDate);
         endDateBtn =  view.findViewById(R.id.endDate);
+
+        progressBar = view.findViewById(R.id.loadingProgressBar);
+        darkBackground = view.findViewById(R.id.darkBackground);
     }
 
     private void searchFilter() {
@@ -290,6 +336,7 @@ public class HomeFragment extends Fragment implements DatePickerDialog.OnDateSet
         Map<Long, List<Bitmap>> accommodationImageMap = new ConcurrentHashMap<>();
         ExecutorService executorService = Executors.newFixedThreadPool(8);
         AtomicInteger totalImagesToLoad = new AtomicInteger(0);
+        Handler handler = new Handler(Looper.getMainLooper());
 
         for (Accommodation accommodation : mostPopularAccommodations) {
             List<Bitmap> photosBitmap = new ArrayList<>();
@@ -315,12 +362,15 @@ public class HomeFragment extends Fragment implements DatePickerDialog.OnDateSet
                                 int remainingImages = totalImagesToLoad.decrementAndGet();
 
                                 if (remainingImages == 0) {
-                                    // All images are loaded, update the adapter
-                                    if (isSearch) {
-                                        openSearchFilterFragment(whereToGo, results, guestsNumber, checkIn, checkOut, accommodationImageMap);
-                                    } else {
-                                        startPopularFragment(accommodationImageMap);
-                                    }
+                                    handler.post(() -> {
+                                        progressBar.setVisibility(View.GONE);
+                                        darkBackground.setVisibility(View.GONE);
+                                        if (isSearch) {
+                                            openSearchFilterFragment(whereToGo, results, guestsNumber, checkIn, checkOut, accommodationImageMap);
+                                        } else {
+                                            startPopularFragment(accommodationImageMap);
+                                        }
+                                    });
                                 }
                             } else {
                                 Log.d("HomeFragment", "Error code " + response.code());
