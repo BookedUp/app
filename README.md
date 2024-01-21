@@ -6,21 +6,20 @@ The app is developed using Java and XML, providing a user-friendly interface for
 
 ## Features
 
-### Host
-- **Manage Accoommodations:** Hosts can create, edit, and delete accommodarions for their available spaces or services.
-- **Booking Confirmation:** Receive and confirm bookings from guests.
-- **Notifications:** Get real-time updates on reservations and important information.
+### Accommodation Management
+- **Create, Read, Update, and Delete (CRUD):** Manage accommodations, supporting hosts in creating, editing, and deleting their available spaces or services.
+
+### Booking Management
+- **Confirmation System:** Handle booking confirmations and notifications between hosts and guests.
+- **Real-time Updates:** Provide real-time updates on reservations and important information.
+
+### User and System Analytics
+- **User Profile Management:** Allow guests and hosts to maintain profiles with booking history and preferences.
 - **System Analytics:** Access analytics and reports for accommodation engagements.
 
-### Guest
-- **Discover:** Browse through available accommodations, book appointments, and receive confirmation.
-- **User Profile:** Maintain a profile with booking history and preferences.
-- **Notifications:** Get real-time updates on booking status and important information.
-
-### Admin
-- **User Management:** Monitor and manage user accounts, including hosts and guests.
-- **Accommodation Management:** Monitor and manage accommodations, including new and changed.
-- **Review System:** Admins can oversee and moderate reviews and ratings.
+### Administration
+- **User and Accommodation Oversight:** Admins can monitor and manage user accounts and accommodations.
+- **Review System Oversight:** Admins can oversee and moderate reviews and ratings.
 
 ## Installation
 
