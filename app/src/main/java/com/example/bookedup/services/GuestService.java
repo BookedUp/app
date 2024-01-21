@@ -10,6 +10,7 @@ import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.Headers;
 import retrofit2.http.POST;
+import retrofit2.http.PUT;
 import retrofit2.http.Path;
 
 public interface GuestService {
@@ -21,4 +22,13 @@ public interface GuestService {
 
     @GET("guests/{id}")
     Call<Guest> getGuest(@Path("id") Long id);
+
+    @PUT("guests/{guestId}/add-favourite/{accommodationId}")
+    Call<Void> addFavouriteAccommodation(@Path("guestId") Long guestId, @Path("accommodationId") Long accommodationId);
+
+    @PUT("guests/{guestId}/remove-favourite/{accommodationId}")
+    Call<Void> removeFavouriteAccommodation(@Path("guestId") Long guestId, @Path("accommodationId") Long accommodationId);
+
+    @GET("guests/{guestId}/is-favourite/{accommodationId}")
+    Call<Boolean> isFavouriteAccommodation(@Path("guestId") Long guestId, @Path("accommodationId") Long accommodationId);
 }

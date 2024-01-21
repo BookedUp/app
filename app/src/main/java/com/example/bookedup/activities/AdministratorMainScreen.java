@@ -8,15 +8,30 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.ViewModelProvider;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.bookedup.R;
 import com.example.bookedup.clients.ClientUtils;
 import com.example.bookedup.fragments.about.AboutUsFragment;
@@ -26,17 +41,35 @@ import com.example.bookedup.fragments.account.AccountFragment;
 import com.example.bookedup.fragments.home.HomeFragment;
 import com.example.bookedup.fragments.language.LanguageFragment;
 import com.example.bookedup.fragments.notifications.NotificationsFragment;
+import com.example.bookedup.fragments.reports.UserReportFragment;
+import com.example.bookedup.fragments.reviews.ReviewRequestsFragment;
 import com.example.bookedup.fragments.settings.SettingsFragment;
+import com.example.bookedup.fragments.users.UsersActivityFragment;
 import com.example.bookedup.model.Accommodation;
+import com.example.bookedup.model.Notification;
+import com.example.bookedup.model.Photo;
+import com.example.bookedup.model.Review;
+import com.example.bookedup.model.User;
+import com.example.bookedup.model.UserReport;
+import com.example.bookedup.utils.SharedViewModel;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.gson.Gson;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -44,20 +77,25 @@ import retrofit2.Response;
 public class AdministratorMainScreen extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
 
     private DrawerLayout drawerLayout;
-
     private BottomNavigationView bottomNavigationView;
-
     private FragmentManager fragmentManager;
-
     private Toolbar toolbar;
-
     private List<Accommodation> allAccommodations = new ArrayList<Accommodation>();
-
+    private List<UserReport> userReports = new ArrayList<>();
+    private List<User> users = new ArrayList<>();
+    private List<Review> reviews = new ArrayList<>();
+//    private List<Accommodation> mostPopularAccommodations = new ArrayList<>();
+//    private Map<Long, List<Bitmap>> accommodationImages = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_administrator_main_screen);
+
+//        SharedViewModel sharedViewModel = new ViewModelProvider(this).get(SharedViewModel.class);
+//        mostPopularAccommodations = sharedViewModel.getMostPopularAccommodations();
+//        accommodationImages = sharedViewModel.getAccommodationImageMap();
+
 
         bottomNavigationView=findViewById(R.id.bottomNavigationViewAdmin);
         drawerLayout=findViewById(R.id.drawer_layoutAdmin);
@@ -84,23 +122,16 @@ public class AdministratorMainScreen extends AppCompatActivity implements Naviga
                     return true;
                 }
                 else if(itemId==R.id.nav_accommodation){
-                    AccommodationRequestFragment accommodationRequestFragment = new AccommodationRequestFragment();
-                    Bundle bundle = new Bundle();
-                    String resultsJson = new Gson().toJson(allAccommodations);
-                    bundle.putString("resultsJson", resultsJson);
-
-                    accommodationRequestFragment.setArguments(bundle);
-                    openFragment(accommodationRequestFragment);
+                    Log.d("AdministratorMainScreen", "all accommodations size " + allAccommodations.size());
+                    getLoadPictures(allAccommodations);
                     return true;
                 }
                 else if(itemId==R.id.nav_users){
-                    Toast.makeText(AdministratorMainScreen.this,"Favorites clicked",Toast.LENGTH_SHORT).show();
-//                    openFragment(new AdminManageUsersFragment());
+                    showBottomDialog();
                     return true;
                 }
                 else if(itemId==R.id.nav_comments){
-                    Toast.makeText(AdministratorMainScreen.this,"Favorites clicked",Toast.LENGTH_SHORT).show();
-                    //openFragment(new AccountFragment());
+                    setAllReviews();
                     return true;
                 }
                 return false;
@@ -112,14 +143,232 @@ public class AdministratorMainScreen extends AppCompatActivity implements Naviga
         openFragment(new HomeFragment());
     }
 
+
+    private void showBottomDialog() {
+
+        final Dialog dialog = new Dialog(this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.bottom_sheets);
+
+        LinearLayout reportsContainer = dialog.findViewById(R.id.userReportsContainer);
+        LinearLayout usersActivityContainer = dialog.findViewById(R.id.userActivityContainer);
+
+        reportsContainer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setUserReports();
+                dialog.dismiss();
+
+            }
+        });
+
+        usersActivityContainer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setAllUsers();
+                dialog.dismiss();
+
+            }
+        });
+
+
+        dialog.show();
+        dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.WRAP_CONTENT);
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        dialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation;
+        dialog.getWindow().setGravity(Gravity.BOTTOM);
+
+    }
+
+    private void loadProfilePicturesForComments(){
+        Map<Long, Bitmap> usersImageMap = new HashMap<>();
+        ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+        AtomicInteger loadedImagesCount = new AtomicInteger(0);
+
+        for (Review review : reviews) {
+            executorService.execute(() -> {
+                try {
+                    Call<ResponseBody> photoCall = ClientUtils.photoService.loadPhoto(review.getGuest().getProfilePicture().getId());
+                    Response<ResponseBody> response = photoCall.execute();
+
+                    if (response.isSuccessful()) {
+                        byte[] photoData = response.body().bytes();
+                        Bitmap bitmap = BitmapFactory.decodeByteArray(photoData, 0, photoData.length);
+                        usersImageMap.put(review.getGuest().getId(), bitmap);
+
+                        if (loadedImagesCount.incrementAndGet() == reviews.size()) {
+                            this.runOnUiThread(() -> {
+                                openFragment(new ReviewRequestsFragment(reviews, usersImageMap, R.id.frame_layoutAdmin));
+                            });
+                        }
+                    } else {
+                        Log.d("AdministratorMainScreen", "Error code " + response.code());
+                    }
+                } catch (IOException e) {
+                    Log.e("AdministratorMainScreen", "Error reading response body: " + e.getMessage());
+                }
+            });
+        }
+        executorService.shutdown();
+
+    }
+
+    private void setAllUsers(){
+        Call<ArrayList<User>> allUsers = ClientUtils.userService.getUsers();
+        allUsers.enqueue(new Callback<ArrayList<User>>() {
+            @Override
+            public void onResponse(Call<ArrayList<User>> call, Response<ArrayList<User>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    Log.d("AdministratorMainScreen", "Successful response: " + response.body());
+                    users = response.body();
+
+                    Map<Long, Integer> numberOfReports = calculateNumberOfUserReports();
+                    Map<Long, List<String>> usersReportsReasons = getReportsReasonList();
+                    openFragment(new UsersActivityFragment(users, R.id.frame_layoutAdmin, numberOfReports, usersReportsReasons));
+                } else {
+                    // Log error details
+                    Log.d("AdministratorMainScreen", "Unsuccessful response: " + response.code());
+                    try {
+                        Log.d("AdministratorMainScreen", "Error Body: " + response.errorBody().string());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ArrayList<User>> call, Throwable t) {
+                Log.d("AdministratorMainScreen", t.getMessage() != null ? t.getMessage() : "error");
+            }
+        });
+
+    }
+
+    private void setAllReviews(){
+        Call<ArrayList<Review>> allReviews = ClientUtils.reviewService.getReviews();
+        allReviews.enqueue(new Callback<ArrayList<Review>>() {
+            @Override
+            public void onResponse(Call<ArrayList<Review>> call, Response<ArrayList<Review>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    Log.d("AdministratorMainScreen", "Successful response: " + response.body());
+                    reviews= response.body();
+                    loadProfilePicturesForComments();
+                } else {
+                    // Log error details
+                    Log.d("AdministratorMainScreen", "Unsuccessful response: " + response.code());
+                    try {
+                        Log.d("AdministratorMainScreen", "Error Body: " + response.errorBody().string());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ArrayList<Review>> call, Throwable t) {
+                Log.d("AdministratorMainScreen", t.getMessage() != null ? t.getMessage() : "error");
+            }
+        });
+    }
+
+    private void updateUser(){
+        Call<User> updatedUser = ClientUtils.userService.getUser(LoginScreen.loggedAdmin.getId());
+        updatedUser.enqueue(new Callback<User>() {
+            @Override
+            public void onResponse(Call<User> call, Response<User> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    Log.d("GuestMainScreen", "Successful response: " + response.body());
+                    User refreshedUser = response.body();
+                    loadProfilePicture(refreshedUser);
+
+                } else {
+                    // Log error details
+                    Log.d("GuestMainScreen", "Unsuccessful response: " + response.code());
+                    try {
+                        Log.d("GuestMainScreen", "Error Body: " + response.errorBody().string());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<User> call, Throwable t) {
+                Log.d("GuestMainScreen", t.getMessage() != null ? t.getMessage() : "error");
+            }
+        });
+    }
+
+    private void getLoadPictures(List<Accommodation> allAccommodations) {
+        Map<Long, List<Bitmap>> accommodationImageMap = new ConcurrentHashMap<>();
+        ExecutorService executorService = Executors.newFixedThreadPool(8);
+
+        AtomicInteger totalImagesToLoad = new AtomicInteger(0);
+
+        for (Accommodation accommodation : allAccommodations) {
+            List<Bitmap> photosBitmap = new ArrayList<>();
+            for (Photo photo : accommodation.getPhotos()) {
+                totalImagesToLoad.incrementAndGet();
+
+                executorService.execute(() -> {
+                    try {
+                        Call<ResponseBody> photoCall = ClientUtils.photoService.loadPhoto(photo.getId());
+                        Response<ResponseBody> response = photoCall.execute();
+
+                        try {
+                            if (response.isSuccessful()) {
+                                byte[] photoData = response.body().bytes();
+
+                                // Use Glide for efficient image loading
+                                Bitmap bitmap = Glide.with(this)
+                                        .asBitmap()
+                                        .load(photoData)
+                                        .override(300, 300)
+                                        .submit()
+                                        .get();
+
+                                photosBitmap.add(bitmap);
+
+                                int remainingImages = totalImagesToLoad.decrementAndGet();
+
+                                if (remainingImages == 0) {
+                                    initializeAccommodationRequestFragment(accommodationImageMap);
+                                }
+                            } else {
+                                Log.d("AdministratorMainScreen", "Error code " + response.code());
+                            }
+                        } finally {
+                            response.body().close(); // Close the response body after using it
+                        }
+                    } catch (IOException | InterruptedException | ExecutionException e) {
+                        Log.e("AdministratorMainScreen", "Error processing image: " + e.getMessage());
+                    }
+                });
+            }
+            accommodationImageMap.put(accommodation.getId(), photosBitmap);
+        }
+
+        executorService.shutdown();
+    }
+
+    private void initializeAccommodationRequestFragment(Map<Long, List<Bitmap>> accommodationImages){
+        AccommodationRequestFragment accommodationRequestFragment = new AccommodationRequestFragment(accommodationImages);
+        Bundle bundle = new Bundle();
+        String resultsJson = new Gson().toJson(allAccommodations);
+        bundle.putString("resultsJson", resultsJson);
+
+        accommodationRequestFragment.setArguments(bundle);
+        openFragment(accommodationRequestFragment);
+    }
+
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int itemId = item.getItemId();
         if (itemId == R.id.nav_account){
-            openFragment(new AccountFragment());
+            updateUser();
         } else if(itemId == R.id.nav_notifications){
             //Toast.makeText(GuestMainScreen.this,"NOTIFICATIONS clicked",Toast.LENGTH_SHORT).show();
-            openFragment(new NotificationsFragment());
+//            openFragment(new NotificationsFragment());
         } else if(itemId == R.id.nav_language){
             //Toast.makeText(GuestMainScreen.this,"LANGUAGE clicked",Toast.LENGTH_SHORT).show();
             openFragment(new LanguageFragment());
@@ -141,6 +390,29 @@ public class AdministratorMainScreen extends AppCompatActivity implements Naviga
         drawerLayout.closeDrawer(GravityCompat.START);
 
         return true;
+    }
+
+    private void loadProfilePicture(User user){
+        ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+
+        executorService.execute(() -> {
+            try {
+                Call<ResponseBody> photoCall = ClientUtils.photoService.loadPhoto(user.getProfilePicture().getId());
+                Response<ResponseBody> response = photoCall.execute();
+
+                if (response.isSuccessful()) {
+                    byte[] photoData = response.body().bytes();
+                    Bitmap profilePicture = BitmapFactory.decodeByteArray(photoData, 0, photoData.length);
+
+                    openFragment(new AccountFragment(profilePicture));
+                } else {
+                    Log.d("AdministratorMainScreen", "Error code " + response.code());
+                }
+            } catch (IOException e) {
+                Log.e("AdministratorMainScreen", "Error reading response body: " + e.getMessage());
+            }
+        });
+        executorService.shutdown();
     }
 
     private void setAllAccommodations() {
@@ -169,12 +441,66 @@ public class AdministratorMainScreen extends AppCompatActivity implements Naviga
         });
     }
 
-    private  void replaceFragment(Fragment fragment){
-        FragmentManager fragmentManager=getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction=fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.frame_layoutAdmin,fragment);
-        fragmentTransaction.commit();
+    private void setUserReports(){
+        Call<ArrayList<UserReport>> reports = ClientUtils.userReportService.getUserReports();
+        reports.enqueue(new Callback<ArrayList<UserReport>>() {
+            @Override
+            public void onResponse(Call<ArrayList<UserReport>> call, Response<ArrayList<UserReport>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    Log.d("AdministratorMainScreen", "Successful response: " + response.body());
+                    userReports = response.body();
+                    openFragment(new UserReportFragment(userReports, R.id.frame_layoutAdmin));
+                } else {
+                    // Log error details
+                    Log.d("AdministratorMainScreen", "Unsuccessful response: " + response.code());
+                    try {
+                        Log.d("AdministratorMainScreen", "Error Body: " + response.errorBody().string());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ArrayList<UserReport>> call, Throwable t) {
+                Log.d("AdministratorMainScreen", t.getMessage() != null ? t.getMessage() : "error");
+            }
+        });
+
     }
+
+    private Map<Long, Integer> calculateNumberOfUserReports(){
+
+        Map<Long, Integer> numberOfReports = new HashMap<>();
+        for(User user : users){
+            int result = 0;
+            for(UserReport userReport : userReports){
+                if (user.getId().equals(userReport.getReportedUser().getId()) && userReport.isStatus()){;
+                    result += 1;
+                }
+            }
+            numberOfReports.put(user.getId(), result);
+        }
+        return numberOfReports;
+    }
+
+    private Map<Long, List<String>> getReportsReasonList(){
+        Map<Long, List<String>> userReportsReasons = new HashMap<>();
+        for(User user : users){
+            List<String> reasons = new ArrayList<>();
+            for(UserReport userReport : userReports){
+                Log.d("AdministratorMainScreen", "Comparing user " + user.getId() + " with reported user " + userReport.getReportedUser().getId() + " STATUS " + userReport.isStatus());
+                if (user.getId().equals(userReport.getReportedUser().getId()) && userReport.isStatus()){
+                    Log.d("AdministratorMainScreen", "USAAAAAAAAAAO");
+                    reasons.add(userReport.getReason());
+                }
+            }
+            userReportsReasons.put(user.getId(), reasons);
+        }
+        return userReportsReasons;
+    }
+
+
 
     @Override
     public void onBackPressed(){
@@ -191,5 +517,10 @@ public class AdministratorMainScreen extends AppCompatActivity implements Naviga
         FragmentTransaction transaction = fragmentManager.beginTransaction();
         transaction.replace(R.id.frame_layoutAdmin, fragment); //fragment_container
         transaction.commit();
-    }}
+    }
+
+
+
+
+}
 

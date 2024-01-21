@@ -1,6 +1,8 @@
 package com.example.bookedup.model;
 
-public class Photo {
+import java.io.Serializable;
+
+public class Photo implements Serializable {
     private Long id;
     private String url;
     private String caption;
@@ -52,5 +54,15 @@ public class Photo {
 
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    @Override
+    public String toString() {
+        return "Photo{" +
+                "id=" + id +
+                ", url='" + url + '\'' +
+                ", caption='" + caption + '\'' +
+                ", active=" + active +
+                '}';
     }
 }

@@ -3,6 +3,8 @@ package com.example.bookedup.fragments.accommodations;
 import android.app.DatePickerDialog;
 import android.content.ComponentName;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -28,6 +30,7 @@ import com.example.bookedup.clients.ClientUtils;
 import com.example.bookedup.fragments.calendar.CalendarFragment;
 import com.example.bookedup.model.Accommodation;
 import com.example.bookedup.model.Category;;
+import com.example.bookedup.model.Photo;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -39,10 +42,17 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.TimeZone;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -51,31 +61,22 @@ public class SearchFilterFragment extends Fragment implements DatePickerDialog.O
 
     private RecyclerView recyclerViewResults;
     private RecyclerView.Adapter adapterResults;
-
     private ImageView filter, startDateBtn, endDateBtn;
-    private boolean isStartDateButtonClicked;
-    private boolean isEndDateButtonClicked;
-
+    private boolean isStartDateButtonClicked, isEndDateButtonClicked;
     private FloatingActionButton search;
-
     private ArrayList<Accommodation> results = new ArrayList<Accommodation>();
-
     private static int targetLayout;
-
     private String whereToGo, checkIn, checkOut;
-
     private Integer guestsNumber;
-
     private EditText whereToGoTxt, guestsNumberTxt;
-
     private TextView checkInTxt, checkOutTxt;
-
-    private ArrayList<Accommodation> searchResults = new ArrayList<Accommodation>();
-
+//    private ArrayList<Accommodation> searchResults = new ArrayList<Accommodation>();
     private ArrayList<Category> categoryList = new ArrayList<>();
+    private Map<Long, List<Bitmap>> accommodationImages = new HashMap<>();
 
-    public SearchFilterFragment() {}
-
+    public SearchFilterFragment(Map<Long, List<Bitmap>> accommodationImages) {
+        this.accommodationImages = accommodationImages;
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -127,7 +128,10 @@ public class SearchFilterFragment extends Fragment implements DatePickerDialog.O
                 } else {
                     guestsNumber = 0;
                 }
-                searchFilter(whereToGoTxt.getText().toString(), guestsNumber, checkInTxt.getText().toString(), checkOutTxt.getText().toString());
+                whereToGo = whereToGoTxt.getText().toString();
+                checkIn = checkInTxt.getText().toString();
+                checkOut = checkOutTxt.getText().toString();
+                searchFilter();
             }
         });
 
@@ -181,9 +185,9 @@ public class SearchFilterFragment extends Fragment implements DatePickerDialog.O
             checkOut = arguments.getString("checkOut");
             String resultsJson = arguments.getString("resultsJson");
             Type type = new TypeToken<ArrayList<Accommodation>>(){}.getType();
-            searchResults = new Gson().fromJson(resultsJson, type);
+            results = new Gson().fromJson(resultsJson, type);
 
-            if (searchResults.isEmpty()){
+            if (results.isEmpty()){
                 Toast.makeText(getContext(), "No results!", Toast.LENGTH_SHORT).show();
             }
 
@@ -194,7 +198,7 @@ public class SearchFilterFragment extends Fragment implements DatePickerDialog.O
         }
     }
 
-    private void searchFilter(String whereToGo, Integer guestsNumber, String checkIn, String checkOut) {
+    private void searchFilter() {
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
         dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -229,9 +233,6 @@ public class SearchFilterFragment extends Fragment implements DatePickerDialog.O
                 ""
         );
 
-
-        String finalCheckIn = checkIn;
-        String finalCheckOut = checkOut;
         searchedResults.enqueue(new Callback<ArrayList<Accommodation>>() {
             @Override
             public void onResponse(Call<ArrayList<Accommodation>> call, Response<ArrayList<Accommodation>> response) {
@@ -242,7 +243,8 @@ public class SearchFilterFragment extends Fragment implements DatePickerDialog.O
                         for (Accommodation accommodation : results) {
                             Log.d("SearchFilterFragment", "Accommodation: " + accommodation);
                         }
-                        openSearchFilterFragment(whereToGo, results, guestsNumber, finalCheckIn, finalCheckOut);
+//                        openSearchFilterFragment(whereToGo, results, guestsNumber, checkIn, checkOut);
+                        getLoadPictures(results);
                     } else {
                         Toast.makeText(getContext(), "No accommodations found", Toast.LENGTH_SHORT).show();
                     }
@@ -264,8 +266,8 @@ public class SearchFilterFragment extends Fragment implements DatePickerDialog.O
         });
     }
 
-    private void openSearchFilterFragment(String whereToGo, List<Accommodation> results, Integer guestsNumber, String checkIn, String checkOut){
-        SearchFilterFragment searchFilterFragment = new SearchFilterFragment();
+    private void openSearchFilterFragment(String whereToGo, List<Accommodation> results, Integer guestsNumber, String checkIn, String checkOut, Map<Long, List<Bitmap>> accommodationImages){
+        SearchFilterFragment searchFilterFragment = new SearchFilterFragment(accommodationImages);
 
         Bundle bundle = new Bundle();
         bundle.putString("whereToGo", whereToGo);
@@ -285,7 +287,7 @@ public class SearchFilterFragment extends Fragment implements DatePickerDialog.O
 
 
     private void openFilterFragment(String whereToGo, Integer guestsNumber, String checkIn, String checkOut) {
-        FilterFragment filterFragment = new FilterFragment();
+        FilterFragment filterFragment = new FilterFragment(accommodationImages);
 
         Bundle bundle = new Bundle();
         bundle.putString("whereToGo", whereToGo);
@@ -303,8 +305,47 @@ public class SearchFilterFragment extends Fragment implements DatePickerDialog.O
     private void initRecycleView() {
 
         recyclerViewResults.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false));
-        adapterResults = new SearchAccommodationAdapter(searchResults, targetLayout, checkIn, checkOut, guestsNumber);
+        adapterResults = new SearchAccommodationAdapter(results, targetLayout, checkIn, checkOut, guestsNumber, accommodationImages);
         recyclerViewResults.setAdapter(adapterResults);
+    }
+
+    private void getLoadPictures(ArrayList<Accommodation> results) {
+        Map<Long, List<Bitmap>> accommodationImageMap = new ConcurrentHashMap<>();
+        ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+        AtomicInteger totalImagesToLoad = new AtomicInteger(0);
+
+        for (Accommodation accommodation : results) {
+            List<Bitmap> photosBitmap = new ArrayList<>();
+            for(Photo photo : accommodation.getPhotos()) {
+                totalImagesToLoad.incrementAndGet();
+                executorService.execute(() -> {
+                    try {
+                        Call<ResponseBody> photoCall = ClientUtils.photoService.loadPhoto(photo.getId());
+                        Response<ResponseBody> response = photoCall.execute();
+
+                        if (response.isSuccessful()) {
+                            byte[] photoData = response.body().bytes();
+                            Bitmap bitmap = BitmapFactory.decodeByteArray(photoData, 0, photoData.length);
+                            photosBitmap.add(bitmap);
+
+                            // Smanjite broj preostalih slika koje treba učitati
+                            int remainingImages = totalImagesToLoad.decrementAndGet();
+
+                            if (remainingImages == 0) {
+                                // All images are loaded, update the adapter
+                                openSearchFilterFragment(whereToGo, results, guestsNumber, checkIn, checkOut, accommodationImageMap);
+                            }
+                        } else {
+                            Log.d("SearchFilterFragment", "Error code " + response.code());
+                        }
+                    } catch (IOException e) {
+                        Log.e("SearchFilterFragment", "Error reading response body: " + e.getMessage());
+                    }
+                });
+            }
+            accommodationImageMap.put(accommodation.getId(), photosBitmap);
+        }
+        executorService.shutdown();
     }
 
 

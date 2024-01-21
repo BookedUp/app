@@ -2,6 +2,7 @@ package com.example.bookedup.fragments.accommodations;
 
 import android.content.ComponentName;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -38,8 +39,10 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -47,45 +50,24 @@ import retrofit2.Response;
 
 public class FilterFragment extends Fragment {
 
-    private ListView filtersBudget;
-
-    private ListView filtersPopular;
-
-    private ListView filtersCategory;
-    private ArrayAdapter<String> budget_adapter;
-    private ArrayAdapter<String> popular_adapter;
-
-    private ArrayAdapter<String> category_adapter;
-
+    private ListView filtersBudget, filtersPopular, filtersCategory;
+    private ArrayAdapter<String> budget_adapter, popular_adapter, category_adapter;
     private Button filter;
-
-    private View lastClickedBudgetView;
-
-    private View lastClickedTypeView;
+    private View lastClickedBudgetView, lastClickedTypeView;
     private String[] budgetFilter = {"0 - 500", "500 - 1000", "1000 - 1500", "1500 - 2000", "2000 and more"};
-
     private List<String> popularFilter = new ArrayList<String>();
-
     private List<String> categoryFilter = new ArrayList<String>();
     private List<Integer> selectedPopularFilters = new ArrayList<>();
-
     private List<Object> selectedAmenities = new ArrayList<Object>();
-
     private List<Accommodation> results = new ArrayList<Accommodation>();
-
     private String whereToGo, checkIn, checkOut;
-
     private Integer guestsNumber;
-
-    private double minPrice = 0.0;
-
-    private double maxPrice = 0.0;
-
+    private double minPrice = 0.0, maxPrice = 0.0;
     private AccommodationType type = null;
-
     private static int targetLayout;
-
-    public FilterFragment() {
+    private Map<Long, List<Bitmap>> accommodationImages = new HashMap<>();
+    public FilterFragment(Map<Long, List<Bitmap>> accommodationImages) {
+        this.accommodationImages = accommodationImages;
     }
 
     @Override
@@ -291,7 +273,7 @@ public class FilterFragment extends Fragment {
 //                            Log.d("FilterFragment", "Accommodation: " + accommodation);
 //                        }
                         Log.d("FilterFragment", "Results size " + results.size());
-                        openSearchFilterFragment(whereToGo, results, guestsNumber, checkIn, checkOut);
+                        openSearchFilterFragment(whereToGo, results, guestsNumber, checkIn, checkOut, accommodationImages);
 
                     } else {
                         Log.d("FilterFragment", "Response body is null");
@@ -314,9 +296,9 @@ public class FilterFragment extends Fragment {
         });
     }
 
-    private void openSearchFilterFragment(String whereToGo, List<Accommodation> results, Integer guestsNumber, String finalCheckIn, String finalCheckOut){
+    private void openSearchFilterFragment(String whereToGo, List<Accommodation> results, Integer guestsNumber, String finalCheckIn, String finalCheckOut, Map<Long, List<Bitmap>> accommodationImages){
         Log.d("FilterFragment", "Results size " + results.size());
-        SearchFilterFragment searchFilterFragment = new SearchFilterFragment();
+        SearchFilterFragment searchFilterFragment = new SearchFilterFragment(accommodationImages);
 
         Bundle bundle = new Bundle();
         bundle.putString("whereToGo", whereToGo);

@@ -10,9 +10,14 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
+import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
@@ -26,11 +31,14 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.example.bookedup.R;
+import com.example.bookedup.adapters.PopularAdapter;
 import com.example.bookedup.clients.ClientUtils;
 import com.example.bookedup.fragments.about.AboutUsFragment;
 import com.example.bookedup.fragments.accommodations.AccommodationListFragment;
 import com.example.bookedup.fragments.accommodations.CreateAccommodationFragment;
+import com.example.bookedup.fragments.accommodations.StatisticFragment;
 import com.example.bookedup.fragments.account.AccountFragment;
 import com.example.bookedup.fragments.home.HomeFragment;
 import com.example.bookedup.fragments.language.LanguageFragment;
@@ -38,7 +46,11 @@ import com.example.bookedup.fragments.notifications.NotificationsFragment;
 import com.example.bookedup.fragments.reservations.ReservationRequestFragment;
 import com.example.bookedup.fragments.settings.SettingsFragment;
 import com.example.bookedup.model.Accommodation;
+import com.example.bookedup.model.Notification;
+import com.example.bookedup.model.Photo;
 import com.example.bookedup.model.Reservation;
+import com.example.bookedup.model.User;
+import com.example.bookedup.model.enums.ReservationStatus;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationBarView;
@@ -47,8 +59,17 @@ import com.google.gson.Gson;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -56,19 +77,31 @@ import retrofit2.Response;
 public class HostMainScreen extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
 
     private DrawerLayout drawerLayout;
-
     private BottomNavigationView bottomNavigationView;
-
     private FragmentManager fragmentManager;
-
     private FloatingActionButton fab;
-
     private Toolbar toolbar;
+    private List<Reservation> myReservations = new ArrayList<>();
+    private List<Accommodation> myAccommodations = new ArrayList<>();
+    private ArrayList<Notification> notifications = new ArrayList<>();
+    private boolean reservationsIsClicked = false;
+//    private List<Accommodation> mostPopularAccommodations = new ArrayList<>();
+//    private Map<Long, List<Bitmap>> accommodationImages = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_host_main_screen);
+        checkForNewNotifications();
+
+//        Intent intent = getIntent();
+//
+//        if (intent != null) {
+//            mostPopularAccommodations = (List<Accommodation>) intent.getSerializableExtra("mostPopularAccommodations");
+//            accommodationImages = (Map<Long, List<Bitmap>>) intent.getSerializableExtra("photosBitmap");
+//
+//            // Use the received lists...
+//        }
 
         bottomNavigationView=findViewById(R.id.bottomNavigationViewHost);
         drawerLayout=findViewById(R.id.drawer_layoutHost);
@@ -94,22 +127,19 @@ public class HostMainScreen extends AppCompatActivity implements NavigationView.
                     return true;
                 }
                 else if(itemId==R.id.nav_accommodationHost){
+                    reservationsIsClicked = false;
                     setMyAccommodations();
                     return true;
                 }
                 else if(itemId==R.id.nav_reservationsHost){
+                    reservationsIsClicked = true;
                     setMyReservations();
                     return true;
                 }
                 else if(itemId==R.id.nav_reportHost){
-                    Toast.makeText(HostMainScreen.this,"Favorites clicked",Toast.LENGTH_SHORT).show();
+                   openFragment(new StatisticFragment());
                     return true;
                 }
-//                else if(itemId==R.id.nav_commentsHost){
-//                    Toast.makeText(HostMainScreen.this,"Favorites clicked",Toast.LENGTH_SHORT).show();
-//                    //openFragment(new AccountFragment());
-//                    return true;
-//                }
                 return false;
             }
         });
@@ -126,6 +156,79 @@ public class HostMainScreen extends AppCompatActivity implements NavigationView.
         });
     }
 
+    private void checkForNewNotifications() {
+        if (LoginScreen.loggedHost != null) {
+            Call<ArrayList<Notification>> allNotifications = ClientUtils.notificationService.getEnabledNotificationsByUserId(LoginScreen.loggedHost.getId());
+            allNotifications.enqueue(new Callback<ArrayList<Notification>>() {
+                @Override
+                public void onResponse(Call<ArrayList<Notification>> call, Response<ArrayList<Notification>> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        Log.d("LoginScreen", "Successful response: " + response.body());
+                        notifications = response.body();
+                        Collections.sort(notifications, (n1, n2) -> n2.getTimestamp().compareTo(n1.getTimestamp()));
+
+                        Notification latestNotification = findLatestNotification(notifications);
+
+                        if (latestNotification != null) {
+                            Log.d("LoginScreen", "Latest Notification: " + latestNotification.toString());
+                            showNotificationPopup(latestNotification);
+
+                        }
+                    } else {
+                        Log.d("LoginScreen", "Unsuccessful response: " + response.code());
+                        try {
+                            Log.d("LoginScreen", "Error Body: " + response.errorBody().string());
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ArrayList<Notification>> call, Throwable t) {
+                    Log.d("LoginScreen", t.getMessage() != null ? t.getMessage() : "error");
+                }
+            });
+        }
+    }
+
+
+    private Notification findLatestNotification(ArrayList<Notification> notificationList) {
+        if (notificationList != null && !notificationList.isEmpty()) {
+            Notification latestNotification = notificationList.get(0);
+
+            for (Notification notification : notificationList) {
+                if (notification.getTimestamp().after(latestNotification.getTimestamp())) {
+                    latestNotification = notification;
+                }
+            }
+
+            return latestNotification;
+        }
+
+        return null;
+    }
+
+    private void showNotificationPopup(Notification notification) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        if (!notification.getTitle().isEmpty()) {
+            builder.setTitle(notification.getTitle());
+        }else {
+            builder.setTitle("New Notification");
+        }
+        builder.setMessage("Message: " + notification.getMessage() +
+                "\nTimestamp: " + notification.getTimestamp());
+
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
     private void setMyReservations() {
         Call<ArrayList<Reservation>> reservations = ClientUtils.reservationService.getReservationsByHostId(LoginScreen.loggedHost.getId());
         reservations.enqueue(new Callback<ArrayList<Reservation>>() {
@@ -133,14 +236,12 @@ public class HostMainScreen extends AppCompatActivity implements NavigationView.
             public void onResponse(Call<ArrayList<Reservation>> call, Response<ArrayList<Reservation>> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     Log.d("HostMainScreen", "Successful response: " + response.body());
-                    List<Reservation> myReservations = response.body();
-                    ReservationRequestFragment reservationRequestFragment = new ReservationRequestFragment();
-                    Bundle bundle = new Bundle();
-                    bundle.putSerializable("reservations", new ArrayList<>(myReservations));
-                    bundle.putInt("layout_caller", R.id.frame_layoutHost);
-
-                    reservationRequestFragment.setArguments(bundle);
-                    openFragment(reservationRequestFragment);
+                    myReservations = response.body();
+                    if(!myReservations.isEmpty()) {
+                        getLoadPictures(myAccommodations, myReservations);
+                    }else {
+                        Toast.makeText(HostMainScreen.this,"Reservations list is empty!",Toast.LENGTH_SHORT).show();
+                    }
                 } else {
                     // Log error details
                     Log.d("HostMainScreen", "Unsuccessful response: " + response.code());
@@ -166,15 +267,12 @@ public class HostMainScreen extends AppCompatActivity implements NavigationView.
             public void onResponse(Call<ArrayList<Accommodation>> call, Response<ArrayList<Accommodation>> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     Log.d("HostMainScreen", "Successful response: " + response.body());
-                    List<Accommodation> myAccommodations = response.body();
-                    AccommodationListFragment accommodationListFragment = new AccommodationListFragment();
-                    Bundle bundle = new Bundle();
-                    bundle.putInt("layout_caller", R.id.frame_layoutHost);
-                    String resultsJson = new Gson().toJson(myAccommodations);
-                    bundle.putString("resultsJson", resultsJson);
-
-                    accommodationListFragment.setArguments(bundle);
-                    openFragment(accommodationListFragment);
+                    myAccommodations = response.body();
+                    if (!myAccommodations.isEmpty()) {
+                        getLoadPictures(myAccommodations, myReservations);
+                    } else {
+                        Toast.makeText(HostMainScreen.this,"Accommodations list is empty!",Toast.LENGTH_SHORT).show();
+                    }
                 } else {
                     Log.d("HostMainScreen", "Unsuccessful response: " + response.code());
                     try {
@@ -187,6 +285,114 @@ public class HostMainScreen extends AppCompatActivity implements NavigationView.
 
             @Override
             public void onFailure(Call<ArrayList<Accommodation>> call, Throwable t) {
+                Log.d("GuestMainScreen", t.getMessage() != null ? t.getMessage() : "error");
+            }
+        });
+    }
+
+    private void getLoadPictures(List<Accommodation> myAccommodations, List<Reservation> myReservations) {
+        Map<Long, List<Bitmap>> accommodationImageMap = new ConcurrentHashMap<>();
+        ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+        AtomicInteger totalImagesToLoad = new AtomicInteger(0);
+
+        List<Accommodation> choosenAccommodations = findChoosenAccommodations(myAccommodations, myReservations);
+
+        for (Accommodation accommodation : choosenAccommodations) {
+            List<Bitmap> photosBitmap = new ArrayList<>();
+            for(Photo photo : accommodation.getPhotos()) {
+                totalImagesToLoad.incrementAndGet();
+
+                executorService.execute(() -> {
+                    try {
+                        Call<ResponseBody> photoCall = ClientUtils.photoService.loadPhoto(photo.getId());
+                        Response<ResponseBody> response = photoCall.execute();
+
+                        try {
+
+                            if (response.isSuccessful()) {
+                                byte[] photoData = response.body().bytes();
+
+                                // Use Glide for efficient image loading
+                                Bitmap bitmap = Glide.with(this)
+                                        .asBitmap()
+                                        .load(photoData)
+                                        .override(300, 300)
+                                        .submit()
+                                        .get();
+
+                                photosBitmap.add(bitmap);
+                                int remainingImages = totalImagesToLoad.decrementAndGet();
+                                if (remainingImages == 0) {
+                                    // All images are loaded, update the adapter
+                                    Fragment fragment = findFragment(myAccommodations, myReservations, accommodationImageMap);
+                                    openFragment(fragment);
+                                }
+                            } else {
+                                Log.d("HostMainScreeen", "Error code " + response.code());
+                            }
+                        } catch (ExecutionException e) {
+                            throw new RuntimeException(e);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        } finally {
+                            response.body().close(); // Close the response body after using it
+                        }
+                    } catch (IOException e) {
+                        Log.e("HostMainScreeen", "Error reading response body: " + e.getMessage());
+                    }
+                });
+            }
+            accommodationImageMap.put(accommodation.getId(), photosBitmap);
+        }
+        executorService.shutdown();
+    }
+
+    private List<Accommodation> findChoosenAccommodations(List<Accommodation> myAccommodations, List<Reservation> myReservations){
+        List<Accommodation> choosenAccommodations = new ArrayList<>();
+        if(reservationsIsClicked){
+            for(Reservation reservation : myReservations){
+                choosenAccommodations.add(reservation.getAccommodation());
+            }
+        } else {
+            choosenAccommodations.addAll(myAccommodations);
+        }
+
+        return  choosenAccommodations;
+    }
+
+    private Fragment findFragment(List<Accommodation> myAccommodations, List<Reservation> myReservations, Map<Long, List<Bitmap>> accommodationImageMap){
+        if (reservationsIsClicked){
+            ReservationRequestFragment reservationRequestFragment = new ReservationRequestFragment(myReservations, accommodationImageMap, R.id.frame_layoutHost);
+            return reservationRequestFragment;
+        } else {
+            AccommodationListFragment accommodationListFragment = new AccommodationListFragment(accommodationImageMap, R.id.frame_layoutHost, myAccommodations);
+            return accommodationListFragment;
+        }
+    }
+
+    private void updateUser(){
+        Call<User> updatedUser = ClientUtils.userService.getUser(LoginScreen.loggedHost.getId());
+        updatedUser.enqueue(new Callback<User>() {
+            @Override
+            public void onResponse(Call<User> call, Response<User> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    Log.d("GuestMainScreen", "Successful response: " + response.body());
+                    User refreshedUser = response.body();
+                    loadProfilePicture(refreshedUser);
+
+                } else {
+                    // Log error details
+                    Log.d("GuestMainScreen", "Unsuccessful response: " + response.code());
+                    try {
+                        Log.d("GuestMainScreen", "Error Body: " + response.errorBody().string());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<User> call, Throwable t) {
                 Log.d("GuestMainScreen", t.getMessage() != null ? t.getMessage() : "error");
             }
         });
@@ -238,7 +444,7 @@ public class HostMainScreen extends AppCompatActivity implements NavigationView.
     public boolean onNavigationItemSelected(@NonNull MenuItem item){
         int itemId = item.getItemId();
         if (itemId == R.id.nav_account){
-            openFragment(new AccountFragment());
+            updateUser();
         } else if (itemId == R.id.nav_language){
             openFragment(new LanguageFragment());
         }
@@ -249,7 +455,7 @@ public class HostMainScreen extends AppCompatActivity implements NavigationView.
             openFragment(new AboutUsFragment());
         }
         else if(itemId == R.id.nav_notifications){
-            openFragment(new NotificationsFragment());
+            openFragment(new NotificationsFragment(notifications, R.id.frame_layoutHost));
         }
         else if(itemId == R.id.nav_logout){
             Toast.makeText(HostMainScreen.this,"Log out",Toast.LENGTH_SHORT).show();
@@ -260,6 +466,28 @@ public class HostMainScreen extends AppCompatActivity implements NavigationView.
         drawerLayout.closeDrawer(GravityCompat.START);
 
         return true;
+    }
+
+    private void loadProfilePicture(User user){
+        ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+
+        executorService.execute(() -> {
+            try {
+                Call<ResponseBody> photoCall = ClientUtils.photoService.loadPhoto(user.getProfilePicture().getId());
+                Response<ResponseBody> response = photoCall.execute();
+
+                if (response.isSuccessful()) {
+                    byte[] photoData = response.body().bytes();
+                    Bitmap profilePicture = BitmapFactory.decodeByteArray(photoData, 0, photoData.length);
+                    openFragment(new AccountFragment(profilePicture));
+                } else {
+                    Log.d("HostMainScreen", "Error code " + response.code());
+                }
+            } catch (IOException e) {
+                Log.e("HostMainScreen", "Error reading response body: " + e.getMessage());
+            }
+        });
+        executorService.shutdown();
     }
 
     @Override

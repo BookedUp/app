@@ -1,6 +1,7 @@
 package com.example.bookedup.fragments.reservations;
 
 import android.app.DatePickerDialog;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -26,19 +27,18 @@ import com.example.bookedup.adapters.ReservationRequestAdapter;
 import com.example.bookedup.adapters.TypeAdapter;
 import com.example.bookedup.clients.ClientUtils;
 import com.example.bookedup.fragments.calendar.CalendarFragment;
-import com.example.bookedup.model.LoginRequest;
 import com.example.bookedup.model.Reservation;
 import com.example.bookedup.model.enums.ReservationStatus;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.IOException;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.TimeZone;
 
 import retrofit2.Call;
@@ -48,32 +48,24 @@ import retrofit2.Response;
 public class ReservationRequestFragment extends Fragment implements TypeAdapter.TypeSelectionListener, DatePickerDialog.OnDateSetListener{
 
 
-    private RecyclerView typeRecyclerView;
-    private RecyclerView reservationRecyclerView;
-
+    private RecyclerView typeRecyclerView, reservationRecyclerView;
     private TypeAdapter typeAdapter;
     private ReservationRequestAdapter reservationAdapter;
-
     private int layout_caller;
-
     private List<Reservation> reservations = new ArrayList<>();
-
     private List<Reservation> originalReservations = new ArrayList<>();
-
     private EditText accommodationName;
-
     private TextView checkInTxt, checkOutTxt;
-
     private ImageView startDateCalendar, endDateCalendar;
+    private boolean isStartDateButtonClicked, isEndDateButtonClicked;
+    private FloatingActionButton search, refresh;
+    private Map<Long, List<Bitmap>> accommodationImages = new HashMap<>();
 
-    private boolean isStartDateButtonClicked;
-    private boolean isEndDateButtonClicked;
-
-    private FloatingActionButton search;
-
-    private FloatingActionButton refresh;
-
-    public ReservationRequestFragment() {}
+    public ReservationRequestFragment(List<Reservation> originalReservations,  Map<Long, List<Bitmap>> accommodationImages, int layout_caller) {
+        this.originalReservations = originalReservations;
+        this.accommodationImages = accommodationImages;
+        this.layout_caller = layout_caller;
+    }
 
 
     @Override
@@ -91,7 +83,8 @@ public class ReservationRequestFragment extends Fragment implements TypeAdapter.
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        getCallerData();
+        reservations.clear();
+        reservations.addAll(originalReservations);
         initView(view);
         initUI(view);
 
@@ -150,19 +143,10 @@ public class ReservationRequestFragment extends Fragment implements TypeAdapter.
 
         reservationRecyclerView = view.findViewById(R.id.cards_reservationRequests);
         reservationRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        reservationAdapter = new ReservationRequestAdapter(new ArrayList<>(reservations), getContext(), layout_caller, this);
+        reservationAdapter = new ReservationRequestAdapter(new ArrayList<>(reservations), getContext(), layout_caller, this, accommodationImages);
         reservationRecyclerView.setAdapter(reservationAdapter);
     }
 
-    private void getCallerData() {
-        Bundle arguments = getArguments();
-        if (arguments != null) {
-            originalReservations = (ArrayList<Reservation>) arguments.getSerializable("reservations");
-            reservations.clear();
-            reservations.addAll(originalReservations);
-            layout_caller = arguments.getInt("layout_caller");
-        }
-    }
 
     private List<String> getTypeList() {
         List<String> types = new ArrayList<>();
@@ -177,7 +161,7 @@ public class ReservationRequestFragment extends Fragment implements TypeAdapter.
 
     @Override
     public void onTypeSelected(String selectedType) {
-        updateReservationAdapter(selectedType);
+        getAllReservations(selectedType);
     }
 
     private void updateReservationAdapter(String selectedType) {
@@ -190,6 +174,7 @@ public class ReservationRequestFragment extends Fragment implements TypeAdapter.
 
         switch (selectedType) {
             case "All Reservations":
+                filteredList.clear();
                 filteredList.addAll(reservations);
                 break;
             case "Waiting For Approval":
@@ -239,7 +224,7 @@ public class ReservationRequestFragment extends Fragment implements TypeAdapter.
         if (reservationRecyclerView != null) {
             reservations.clear();
             reservations.addAll(updatedList);
-            reservationAdapter.updateData(updatedList);
+            reservationAdapter.updateData(reservations);
         }
     }
 
@@ -316,7 +301,34 @@ public class ReservationRequestFragment extends Fragment implements TypeAdapter.
                 textView.setText(formattedDate);
             }
         } catch (Exception e) {
-            Log.e("HomeFragment", "Error in onDateSet", e);
+            Log.e("ReservationRequestFragment", "Error in onDateSet", e);
         }
+    }
+
+    private void getAllReservations(String selectedType){
+        Call<ArrayList<Reservation>> myReservations = ClientUtils.reservationService.getReservationsByHostId(LoginScreen.loggedHost.getId());
+        myReservations.enqueue(new Callback<ArrayList<Reservation>>() {
+            @Override
+            public void onResponse(Call<ArrayList<Reservation>> call, Response<ArrayList<Reservation>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    Log.d("ReservationRequestFragment", "Successful response: " + response.body());
+                    reservations = response.body();
+                    updateReservationAdapter(selectedType);
+                } else {
+                    // Log error details
+                    Log.d("ReservationRequestFragment", "Unsuccessful response: " + response.code());
+                    try {
+                        Log.d("ReservationRequestFragment", "Error Body: " + response.errorBody().string());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ArrayList<Reservation>> call, Throwable t) {
+                Log.d("ReservationRequestFragment", t.getMessage() != null ? t.getMessage() : "error");
+            }
+        });
     }
 }

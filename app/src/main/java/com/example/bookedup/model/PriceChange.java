@@ -1,8 +1,9 @@
 package com.example.bookedup.model;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class PriceChange {
+public class PriceChange implements Serializable {
     private Long id;
     private Date changeDate;
     private double newPrice;

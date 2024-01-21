@@ -2,7 +2,9 @@ package com.example.bookedup.adapters;
 
 import android.annotation.SuppressLint;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -22,34 +24,38 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.CenterCrop;
 import com.bumptech.glide.load.resource.bitmap.GranularRoundedCorners;
 import com.example.bookedup.R;
+import com.example.bookedup.clients.ClientUtils;
 import com.example.bookedup.fragments.accommodations.DetailsFragment;
 import com.example.bookedup.fragments.accommodations.UpdateAccommodationFragment;
 import com.example.bookedup.model.Accommodation;
 import com.example.bookedup.model.Photo;
+import com.example.bookedup.model.Review;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class SearchAccommodationAdapter extends RecyclerView.Adapter<SearchAccommodationAdapter.ViewHolder>{
     private ArrayList<Accommodation> items;
+    private ArrayList<Review> accommodationReviews = new ArrayList<Review>();
+    private String checkIn, checkOut;
+    private Integer guestsNumber, targetLayout;
+    private Map<Long, List<Bitmap>> accommodationImages = new HashMap<>();
 
-    private String checkIn;
-
-    private String checkOut;
-
-    private Integer guestsNumber;
-
-    int targetLayout;
-
-    //DecimalFormat formatter;
-
-    public SearchAccommodationAdapter(ArrayList<Accommodation> items, int targetLayout, String checkIn, String checkOut, Integer guestsNumber) {
+    public SearchAccommodationAdapter(ArrayList<Accommodation> items, int targetLayout, String checkIn, String checkOut, Integer guestsNumber, Map<Long, List<Bitmap>> accommodationImages) {
         this.items = items;
         this.targetLayout = targetLayout;
         this.checkIn = checkIn;
         this.checkOut = checkOut;
         this.guestsNumber = guestsNumber;
+        this.accommodationImages = accommodationImages;
     }
 
     @NonNull
@@ -59,47 +65,99 @@ public class SearchAccommodationAdapter extends RecyclerView.Adapter<SearchAccom
         return new SearchAccommodationAdapter.ViewHolder(inflate);
     }
 
-
-
     @Override
     public void onBindViewHolder(@NonNull SearchAccommodationAdapter.ViewHolder holder, @SuppressLint("RecyclerView") int position) {
         if (items != null && !items.isEmpty() && position < items.size()) {
-            holder.titleTxt.setText(items.get(position).getName());
-            holder.locationTxt.setText(items.get(position).getAddress().getCountry() + " " + items.get(position).getAddress().getCity());
-            holder.averageRatingTxt.setText(String.valueOf(items.get(position).getAverageRating()));
-            holder.typeTxt.setText(items.get(position).getType().name());
-            holder.totalPriceTxt.setText("Total: " + String.valueOf(items.get(position).getTotalPrice()));
-            if (String.valueOf(items.get(position).getPrice()) != null) {
-                holder.priceTxt.setText(String.valueOf(items.get(position).getPrice()) + "$");
+            Accommodation currentAccommodation = items.get(position);
+            holder.titleTxt.setText(currentAccommodation.getName());
+            holder.locationTxt.setText(currentAccommodation.getAddress().getCountry() + " " + items.get(position).getAddress().getCity());
+            holder.averageRatingTxt.setText(String.valueOf(currentAccommodation.getAverageRating()));
+            holder.typeTxt.setText(currentAccommodation.getType().name());
+            holder.totalPriceTxt.setText("Total: " + String.valueOf(currentAccommodation.getTotalPrice()));
+            if (String.valueOf(currentAccommodation.getPrice()) != null) {
+                holder.priceTxt.setText(String.valueOf(currentAccommodation.getPrice()) + "$");
             } else {
                 holder.priceTxt.setText("");
             }
+            holder.priceTypeTxt.setText("/" + String.valueOf(currentAccommodation.getPriceType().getPriceType()));
 
-            holder.priceTypeTxt.setText("/" + String.valueOf(items.get(position).getPriceType().getPriceType()));
-
-            List<Photo> photos = items.get(position).getPhotos();
-
-            String imageUrl = items.get(position).getPhotos().get(0).getUrl();
-            Glide.with(holder.itemView.getContext()).load(imageUrl).transform(new CenterCrop(), new GranularRoundedCorners(40, 40, 40, 40)).into(holder.picImg);
+            List<Bitmap> bitmaps = accommodationImages.get(currentAccommodation.getId());
+            Log.d("SearchAccommodationAdapter", "Accommodation id " + currentAccommodation.getId());
+            Log.d("SearchAccommodationAdapter", "Size " + bitmaps.size());
+            if (!bitmaps.isEmpty())
+                if (bitmaps.get(0) != null) {
+                    holder.picImg.setImageBitmap(bitmaps.get(0));
+                }
+                else {
+                    holder.picImg.setImageResource(R.drawable.default_hotel_img);
+                }
 
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    DetailsFragment detailsFragment = new DetailsFragment();
-                    detailsFragment.setAccommodation(items.get(position));
-                    Bundle bundle = new Bundle();
-                    bundle.putString("checkIn", checkIn);
-                    bundle.putString("checkOut", checkOut);
-                    bundle.putInt("guestsNumber", guestsNumber);
-                    detailsFragment.setArguments(bundle);
-                    FragmentTransaction transaction = ((AppCompatActivity) v.getContext())
-                            .getSupportFragmentManager().beginTransaction();
-                    transaction.replace(targetLayout, detailsFragment);
-                    transaction.addToBackStack(null);
-                    transaction.commit();
+                    getAccommodationComments(currentAccommodation, v);
                 }
             });
         }
+    }
+    private void getAccommodationComments(Accommodation accommodation, View v) {
+        Call<ArrayList<Review>> accommodationReviewsCall = ClientUtils.reviewService.getAccommodationReviews(accommodation.getId());
+        accommodationReviewsCall.enqueue(new Callback<ArrayList<Review>>() {
+            @Override
+            public void onResponse(Call<ArrayList<Review>> call, Response<ArrayList<Review>> response) {
+                if (response.isSuccessful()) {
+                    accommodationReviews = response.body();  // Update the global variable
+                    DetailsFragment detailsFragment = new DetailsFragment(accommodationImages.get(accommodation.getId()));
+                    detailsFragment.setAccommodation(accommodation);
+                    detailsFragment.setAccommodationReviews(accommodationReviews);
+
+                    getHostComments(detailsFragment, accommodation, v);
+                } else {
+                    Log.d("SearchAccommodationAdapter", "Failed to fetch updated guest data. Code: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ArrayList<Review>> call, Throwable t) {
+                Log.d("SearchAccommodationAdapter", "Failed to fetch updated guest data: " + t.getMessage());
+            }
+        });
+    }
+
+    private void getHostComments(DetailsFragment detailsFragment, Accommodation accommodation, View v){
+        Call<ArrayList<Review>> hostReviews = ClientUtils.reviewService.getHostReviewsByHostId(accommodation.getHost().getId());
+        hostReviews.enqueue(new Callback<ArrayList<Review>>() {
+            @Override
+            public void onResponse(Call<ArrayList<Review>> call, Response<ArrayList<Review>> response) {
+                if (response.isSuccessful()) {
+                    ArrayList<Review> hostReviews = response.body();
+                    Context context = v.getContext();
+                    detailsFragment.setHostReviews(hostReviews);
+
+                    openDetailsFragment(detailsFragment,context);
+                } else {
+                    Log.d("SearchAccommodationAdapter", "Failed to fetch updated guest data. Code: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ArrayList<Review>> call, Throwable t) {
+                Log.d("SearchAccommodationAdapter","Failed to fetch updated guest data: "  + t.getMessage());
+            }
+        });
+    }
+
+    private void openDetailsFragment(DetailsFragment detailsFragment, Context context){
+        Bundle bundle = new Bundle();
+        bundle.putString("checkIn", checkIn);
+        bundle.putString("checkOut", checkOut);
+        bundle.putInt("guestsNumber", guestsNumber);
+        detailsFragment.setArguments(bundle);
+        AppCompatActivity activity = (AppCompatActivity) context;
+        FragmentTransaction transaction = activity.getSupportFragmentManager().beginTransaction();
+        transaction.replace(targetLayout, detailsFragment);
+        transaction.addToBackStack(null);
+        transaction.commit();
     }
 
 

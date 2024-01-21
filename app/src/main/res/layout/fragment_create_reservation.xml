@@ -23,28 +23,22 @@
 
                 <ImageView
                     android:id="@+id/picImg"
-                    android:layout_width="wrap_content"
-                    android:layout_height="355dp"
-                    android:scaleType="centerCrop"
+                    android:layout_width="410dp"
+                    android:layout_height="300dp"
+                    android:scaleType="fitCenter"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:srcCompat="@drawable/hotel1" />
-
-                <ImageView
-                    android:id="@+id/fav"
-                    android:layout_width="45dp"
-                    android:layout_height="45dp"
-                    android:layout_marginEnd="16dp"
-                    android:layout_marginBottom="232dp"
-                    android:elevation="1dp"
-                    app:layout_constraintBottom_toBottomOf="@+id/picImg"
-                    app:layout_constraintEnd_toEndOf="@+id/picImg"
-                    app:srcCompat="@drawable/ic_favorites" />
-
-
             </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="Tap for more images"
+                android:layout_marginStart="24dp"
+                android:layout_marginTop="10dp"/>
 
 
             <TextView
@@ -106,7 +100,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_marginStart="32dp"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="10dp"
                 android:layout_marginEnd="32dp"
                 android:layout_marginBottom="16dp"
                 android:orientation="horizontal">
@@ -140,7 +134,7 @@
                 android:text="Check-in: 2023-01-01"
                 android:layout_marginStart="32dp"
                 android:layout_marginEnd="32dp"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="10dp"
                 android:layout_marginBottom="8dp"
                 android:textSize="16sp"
                 android:textColor="@color/black"
@@ -153,7 +147,7 @@
                 android:text="Check-out: 2023-01-10"
                 android:layout_marginStart="32dp"
                 android:layout_marginEnd="32dp"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="10dp"
                 android:layout_marginBottom="8dp"
                 android:textSize="16sp"
                 android:textColor="@color/black"
@@ -166,7 +160,7 @@
                 android:text="Total price: 500$"
                 android:layout_marginStart="32dp"
                 android:layout_marginEnd="32dp"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="10dp"
                 android:layout_marginBottom="8dp"
                 android:textSize="16sp"
                 android:textColor="@color/black"
@@ -179,7 +173,7 @@
                 android:text="2 adults 2 days"
                 android:layout_marginStart="32dp"
                 android:layout_marginEnd="32dp"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="10dp"
                 android:layout_marginBottom="8dp"
                 android:textSize="16sp"
                 android:textColor="@color/black"
@@ -204,34 +198,35 @@
                 android:orientation="horizontal">
 
                 <TextView
-                    android:id="@+id/guest"
+                    android:id="@+id/user"
                     android:layout_width="200dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="32dp"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="15dp"
                     android:layout_marginEnd="32dp"
                     android:layout_marginBottom="8dp"
                     android:inputType="textMultiLine"
-                    android:text="Guest"
+                    android:text="User"
                     android:textColor="@color/black"
                     android:textSize="16sp" />
 
-                <ImageView
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
                     android:id="@+id/reportUserBtn"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:layout_gravity="center_vertical"
-                    android:src="@drawable/ic_report_user"
-                    app:tint="@color/dark_grey"
-                    android:layout_marginStart="5dp"
-                    android:layout_marginEnd="5dp" />
+                    android:layout_width="35dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    app:backgroundTint="@android:color/white"
+                    app:elevation="5dp"
+                    app:fabCustomSize="35dp"
+                    app:srcCompat="@drawable/ic_report_user"
+                    app:tint="#9e8d5f" />
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="32dp"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="10dp"
                 android:layout_marginEnd="32dp"
                 android:layout_marginBottom="16dp"
                 android:orientation="horizontal">

@@ -5,7 +5,11 @@ import com.example.bookedup.adapters.DateTypeAdapter;
 import com.example.bookedup.services.AccommodationService;
 import com.example.bookedup.services.AdminService;
 import com.example.bookedup.services.HostService;
+import com.example.bookedup.services.NotificationService;
+import com.example.bookedup.services.PhotoService;
 import com.example.bookedup.services.ReservationService;
+import com.example.bookedup.services.ReviewService;
+import com.example.bookedup.services.UserReportService;
 import com.example.bookedup.services.UserService;
 import com.example.bookedup.services.GuestService;
 import com.google.gson.Gson;
@@ -77,9 +81,13 @@ public class ClientUtils {
     public static GuestService guestService = retrofit.create(GuestService.class);
     public static HostService hostService = retrofit.create(HostService.class);
     public static AdminService adminService = retrofit.create(AdminService.class);
+
     public static AccommodationService accommodationService = retrofit.create(AccommodationService.class);
     public static ReservationService reservationService = retrofit.create(ReservationService.class);
+    public static UserReportService userReportService = retrofit.create(UserReportService.class);
+    public static ReviewService reviewService = retrofit.create(ReviewService.class);
+    public static PhotoService photoService = retrofit.create(PhotoService.class);
 
-
+    public static NotificationService notificationService = retrofit.create(NotificationService.class);
 
 }

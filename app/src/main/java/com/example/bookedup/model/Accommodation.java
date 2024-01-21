@@ -8,7 +8,7 @@ import com.example.bookedup.model.enums.PriceType;
 import java.io.Serializable;
 import java.util.List;
 
-public class Accommodation {
+public class Accommodation implements Serializable{
     private Long id;
     private String name;
     private String description;

@@ -18,6 +18,7 @@ public class TypeAdapter extends RecyclerView.Adapter<TypeAdapter.ViewHolder> {
     private List<String> items;
     private TypeSelectionListener listener;
 
+
     public TypeAdapter(List<String> items, TypeSelectionListener listener) {
         this.items = items;
         this.listener = listener;

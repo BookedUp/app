@@ -3,7 +3,11 @@ package com.example.bookedup.fragments.home;
 import android.app.DatePickerDialog;
 import android.content.ComponentName;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,6 +24,8 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.bumptech.glide.Glide;
 import com.example.bookedup.R;
 import com.example.bookedup.adapters.PopularDestinationAdapter;
 import com.example.bookedup.adapters.PopularAdapter;
@@ -28,6 +34,8 @@ import com.example.bookedup.fragments.accommodations.SearchFilterFragment;
 import com.example.bookedup.fragments.calendar.CalendarFragment;
 import com.example.bookedup.model.Accommodation;
 import com.example.bookedup.model.Destination;
+import com.example.bookedup.model.Photo;
+import com.example.bookedup.model.Review;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.gson.Gson;
 
@@ -37,9 +45,18 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import kotlinx.coroutines.CoroutineScope;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -48,79 +65,25 @@ public class HomeFragment extends Fragment implements DatePickerDialog.OnDateSet
 
     private RecyclerView recyclerViewPopular, recyclerViewDestinations;
     private RecyclerView.Adapter adapterPopular;
-
-    private ArrayList<Accommodation> mostPopularAccommodations;
-
     private ArrayList<Accommodation> results;
-    private boolean isStartDateButtonClicked;
-    private boolean isEndDateButtonClicked;
+    private boolean isStartDateButtonClicked, isEndDateButtonClicked, isSearch;
     private static int targetLayout;
-
     private EditText whereToGoTxt, guestsNumberTxt;
-
     private TextView checkInTxt, checkOutTxt;
-
     private Integer guestsNumber;
-
     private FloatingActionButton searchButton;
     private ImageView startDateBtn, endDateBtn;
+    private String whereToGo, checkIn, checkOut;
+    private ArrayList<Accommodation> mostPopularAccommodations = new ArrayList<>();
+//    private Map<Long, List<Bitmap>> accommodationImages = new HashMap<>();
 
 
-    public HomeFragment() {}
-    @Override
+    public HomeFragment() {
+
+    }    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
-
-//        Intent intent = getActivity().getIntent();
-//        ComponentName componentName = intent.getComponent();
-//        if (componentName.getClassName().equals("com.example.bookedup.activities.GuestMainScreen")) {
-//            targetLayout = R.id.frame_layout;
-//        } else if (componentName.getClassName().equals("com.example.bookedup.activities.AdministratorMainScreen")){
-//            targetLayout = R.id.frame_layoutAdmin;
-//        } else if (componentName.getClassName().equals("com.example.bookedup.activities.HostMainScreen")){
-//            targetLayout = R.id.frame_layoutHost;
-//        }
-//        FloatingActionButton searchButton = view.findViewById(R.id.searchButtonHome);
-//
-//        recyclerViewPopular = view.findViewById(R.id.view_pop);
-//        recyclerViewDestinations = view.findViewById(R.id.view_destinations);
-//
-//        whereToGoTxt = view.findViewById(R.id.location);
-//        checkInTxt = view.findViewById(R.id.checkInText);
-//        checkOutTxt = view.findViewById(R.id.checkOutText);
-//        guestsNumberTxt = view.findViewById(R.id.guestsNumber);
-//        initRecycleView();
-//
-//        ImageView startDateBtn =  view.findViewById(R.id.startDate);
-//        ImageView endDateBtn =  view.findViewById(R.id.endDate);
-//        startDateBtn.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                DialogFragment datePicker = new CalendarFragment();
-//                datePicker.setTargetFragment(HomeFragment.this, 0);
-//                datePicker.show(requireActivity().getSupportFragmentManager(), "date picker");
-//                isStartDateButtonClicked = true;
-//                isEndDateButtonClicked = false;
-//            }
-//        });
-//
-//        endDateBtn.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                DialogFragment datePicker = new CalendarFragment();
-//                datePicker.setTargetFragment(HomeFragment.this, 0);
-//                datePicker.show(requireActivity().getSupportFragmentManager(), "date picker");
-//                isEndDateButtonClicked = true;
-//                isStartDateButtonClicked = false;
-//            }
-//        });
-//        searchButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                openSearchFilterFragment(whereToGoTxt, guestsNumberTxt, checkInTxt, checkOutTxt);
-//            }
-//        });
 
         return view;
     }
@@ -131,6 +94,7 @@ public class HomeFragment extends Fragment implements DatePickerDialog.OnDateSet
         findTargetLayout();
         initView(view);
         initRecycleView();
+        isSearch = false;
 
         startDateBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -156,12 +120,16 @@ public class HomeFragment extends Fragment implements DatePickerDialog.OnDateSet
         searchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                isSearch = true;
                 if (!guestsNumberTxt.getText().toString().isEmpty()){
                     guestsNumber = Integer.parseInt(guestsNumberTxt.getText().toString());
                 } else {
                     guestsNumber = 0;
                 }
-                searchFilter(whereToGoTxt.getText().toString(), guestsNumber, checkInTxt.getText().toString(), checkOutTxt.getText().toString());
+                whereToGo = whereToGoTxt.getText().toString();
+                checkIn = checkInTxt.getText().toString();
+                checkOut = checkOutTxt.getText().toString();
+                searchFilter();
             }
         });
     }
@@ -192,7 +160,7 @@ public class HomeFragment extends Fragment implements DatePickerDialog.OnDateSet
         endDateBtn =  view.findViewById(R.id.endDate);
     }
 
-    private void searchFilter(String whereToGo, Integer guestsNumber, String checkIn, String checkOut) {
+    private void searchFilter() {
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
         Date startDate = new Date();
@@ -210,10 +178,6 @@ public class HomeFragment extends Fragment implements DatePickerDialog.OnDateSet
         endDate.setHours(13);
         List<Object> amenities = new ArrayList<>();
 
-//        Log.d("HomeFragment", "StartDate " + checkIn);
-//        Log.d("HomeFragment", "EndDate " + checkOut);
-//        Log.d("HomeFragment", "Location " + whereToGo);
-//        Log.d("HomeFragment", "GuestsNumber " + guestsNumber);
 
         Call<ArrayList<Accommodation>> searchedResults = ClientUtils.accommodationService.searchAccommodations(
                 whereToGo,
@@ -236,10 +200,8 @@ public class HomeFragment extends Fragment implements DatePickerDialog.OnDateSet
                     if (response.body() != null) {
                         Log.d("HomeFragment", "Successful response: " + response.body());
                         results = response.body();
-                        for (Accommodation accommodation : results) {
-                            Log.d("HomeFragment", "Accommodation: " + accommodation);
-                        }
-                        openSearchFilterFragment(whereToGo, results, guestsNumber, checkIn, checkOut);
+                        getLoadPictures(results);
+//                        openSearchFilterFragment(whereToGo, results, guestsNumber, checkIn, checkOut);
 
                     } else {
                         Log.d("HomeFragment", "Response body is null");
@@ -262,10 +224,8 @@ public class HomeFragment extends Fragment implements DatePickerDialog.OnDateSet
         });
     }
 
-    private void openSearchFilterFragment(String whereToGo, List<Accommodation> results, Integer guestsNumber, String checkIn, String checkOut){
-        Log.d("HomeFragment", "CHEEEEEEECK-IN: " + checkIn);
-        Log.d("HomeFragment", "CHEEEEEEECK-OUT: " + checkOut);
-        SearchFilterFragment searchFilterFragment = new SearchFilterFragment();
+    private void openSearchFilterFragment(String whereToGo, List<Accommodation> results, Integer guestsNumber, String checkIn, String checkOut, Map<Long, List<Bitmap>> accommodationImages){
+        SearchFilterFragment searchFilterFragment = new SearchFilterFragment(accommodationImages);
 
         Bundle bundle = new Bundle();
         bundle.putString("whereToGo", whereToGo);
@@ -303,10 +263,7 @@ public class HomeFragment extends Fragment implements DatePickerDialog.OnDateSet
                     if (response.body() != null) {
                         Log.d("HomeFragment", "Successful response: " + response.body());
                         mostPopularAccommodations = response.body();
-                        recyclerViewPopular.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
-                        adapterPopular = new PopularAdapter(HomeFragment.this, mostPopularAccommodations, targetLayout);
-                        recyclerViewPopular.setAdapter(adapterPopular);
-                        adapterPopular.notifyDataSetChanged();
+                        getLoadPictures(mostPopularAccommodations);
                     } else {
                         Log.d("HomeFragment", "Response body is null");
                     }
@@ -329,6 +286,80 @@ public class HomeFragment extends Fragment implements DatePickerDialog.OnDateSet
 
     }
 
+    private void getLoadPictures(ArrayList<Accommodation> mostPopularAccommodations) {
+        Map<Long, List<Bitmap>> accommodationImageMap = new ConcurrentHashMap<>();
+        ExecutorService executorService = Executors.newFixedThreadPool(8);
+        AtomicInteger totalImagesToLoad = new AtomicInteger(0);
+
+        for (Accommodation accommodation : mostPopularAccommodations) {
+            List<Bitmap> photosBitmap = new ArrayList<>();
+            for(Photo photo : accommodation.getPhotos()) {
+                totalImagesToLoad.incrementAndGet();
+                executorService.execute(() -> {
+                    try {
+                        Call<ResponseBody> photoCall = ClientUtils.photoService.loadPhoto(photo.getId());
+                        Response<ResponseBody> response = photoCall.execute();
+                        try {
+
+                            if (response.isSuccessful()) {
+                                byte[] photoData = response.body().bytes();
+
+                                Bitmap bitmap = Glide.with(this)
+                                        .asBitmap()
+                                        .load(photoData)
+                                        .override(300, 300)
+                                        .submit()
+                                        .get();
+                                photosBitmap.add(bitmap);
+
+                                int remainingImages = totalImagesToLoad.decrementAndGet();
+
+                                if (remainingImages == 0) {
+                                    // All images are loaded, update the adapter
+                                    if (isSearch) {
+                                        openSearchFilterFragment(whereToGo, results, guestsNumber, checkIn, checkOut, accommodationImageMap);
+                                    } else {
+                                        startPopularFragment(accommodationImageMap);
+                                    }
+                                }
+                            } else {
+                                Log.d("HomeFragment", "Error code " + response.code());
+                            }
+                        } catch (ExecutionException e) {
+                            throw new RuntimeException(e);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        } finally {
+                            response.body().close(); // Close the response body after using it
+                        }
+                    } catch (IOException e) {
+                        Log.e("HomeFragment", "Error reading response body: " + e.getMessage());
+                    }
+                });
+            }
+            accommodationImageMap.put(accommodation.getId(), photosBitmap);
+        }
+        executorService.shutdown();
+    }
+
+
+    private void startPopularFragment(Map<Long, List<Bitmap>> accommodationImages) {
+        adapterPopular = new PopularAdapter(this, mostPopularAccommodations, targetLayout, accommodationImages);
+
+        // Run the UI-related code on the main thread
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                recyclerViewPopular.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
+                recyclerViewPopular.setAdapter(adapterPopular);
+                adapterPopular.notifyDataSetChanged();
+            }
+        });
+    }
+
+
+
+
     @Override
     public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
         try {
@@ -348,4 +379,5 @@ public class HomeFragment extends Fragment implements DatePickerDialog.OnDateSet
             Log.e("HomeFragment", "Error in onDateSet", e);
         }
     }
+
 }
