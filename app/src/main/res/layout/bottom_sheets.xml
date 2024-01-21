@@ -22,7 +22,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAlignment="viewStart"
-            android:text="Create"
+            android:text="Manage"
             android:padding="8dp"
             android:textColor="@color/gold"
             android:layout_marginStart="12dp"
@@ -41,7 +41,7 @@
 
 
     <LinearLayout
-        android:id="@+id/layout_reservation"
+        android:id="@+id/userReportsContainer"
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -51,12 +51,34 @@
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_add_reservation"/>
+            android:src="@drawable/ic_manage_users"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Reservation"
+            android:text="User reports"
+            android:textColor="@color/gold"
+            android:layout_marginLeft="30dp"
+            android:textSize="16sp"/>
+
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/userActivityContainer"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:padding="10dp">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_manage_users"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="User activity"
             android:textColor="@color/gold"
             android:layout_marginLeft="30dp"
             android:textSize="16sp"/>
