@@ -78,7 +78,8 @@ public class AdministratorMainScreen extends AppCompatActivity implements Naviga
     private FragmentManager fragmentManager;
     private Toolbar toolbar;
     private List<Accommodation> allAccommodations = new ArrayList<Accommodation>();
-    private List<UserReport> userReports = new ArrayList<>();
+    private ArrayList<User> reportedUsers = new ArrayList<>();
+    private ArrayList<UserReport> userReports = new ArrayList<>();
     private List<User> users = new ArrayList<>();
     private List<Review> reviews = new ArrayList<>();
     private ProgressBar progressBar;
@@ -115,6 +116,7 @@ public class AdministratorMainScreen extends AppCompatActivity implements Naviga
         bottomNavigationView.setBackground(null);
 
         setAllAccommodations();
+        setUserReports();
         bottomNavigationView.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener(){
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item){
@@ -158,7 +160,7 @@ public class AdministratorMainScreen extends AppCompatActivity implements Naviga
         reportsContainer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                setUserReports();
+                setReportedUsers();
                 dialog.dismiss();
 
             }
@@ -224,15 +226,15 @@ public class AdministratorMainScreen extends AppCompatActivity implements Naviga
             @Override
             public void onResponse(Call<ArrayList<Review>> call, Response<ArrayList<Review>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    Log.d("AccommodationRequestFragment", "Successful response: " + response.body());
+                    Log.d("AdministratorMainScreen", "Successful response: " + response.body());
                     reportedReviews = response.body();
-                    Log.d("AccommodationRequestFragment", "SIZEEEEEEEEEEE: " + reportedReviews.size());
+                    Log.d("AdministratorMainScreen", "SIZEEEEEEEEEEE: " + reportedReviews.size());
                     loadProfilePicturesForComments(reportedReviews, "reported");
                 } else {
                     // Log error details
-                    Log.d("AccommodationRequestFragment", "Unsuccessful response: " + response.code());
+                    Log.d("AdministratorMainScreen", "Unsuccessful response: " + response.code());
                     try {
-                        Log.d("AccommodationRequestFragment", "Error Body: " + response.errorBody().string());
+                        Log.d("AdministratorMainScreen", "Error Body: " + response.errorBody().string());
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -241,7 +243,7 @@ public class AdministratorMainScreen extends AppCompatActivity implements Naviga
 
             @Override
             public void onFailure(Call<ArrayList<Review>> call, Throwable t) {
-                Log.d("AccommodationRequestFragment", t.getMessage() != null ? t.getMessage() : "error");
+                Log.d("AdministratorMainScreen", t.getMessage() != null ? t.getMessage() : "error");
             }
         });
     }
@@ -546,13 +548,13 @@ public class AdministratorMainScreen extends AppCompatActivity implements Naviga
             @Override
             public void onResponse(Call<ArrayList<Accommodation>> call, Response<ArrayList<Accommodation>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    Log.d("AccommodationRequestFragment", "Successful response: " + response.body());
+                    Log.d("AdministratorMainScreen", "Successful response: " + response.body());
                     allAccommodations = response.body();
                 } else {
                     // Log error details
-                    Log.d("AccommodationRequestFragment", "Unsuccessful response: " + response.code());
+                    Log.d("AdministratorMainScreen", "Unsuccessful response: " + response.code());
                     try {
-                        Log.d("AccommodationRequestFragment", "Error Body: " + response.errorBody().string());
+                        Log.d("AdministratorMainScreen", "Error Body: " + response.errorBody().string());
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -561,7 +563,7 @@ public class AdministratorMainScreen extends AppCompatActivity implements Naviga
 
             @Override
             public void onFailure(Call<ArrayList<Accommodation>> call, Throwable t) {
-                Log.d("AccommodationRequestFragment", t.getMessage() != null ? t.getMessage() : "error");
+                Log.d("AdministratorMainScreen", t.getMessage() != null ? t.getMessage() : "error");
             }
         });
     }
@@ -574,7 +576,6 @@ public class AdministratorMainScreen extends AppCompatActivity implements Naviga
                 if (response.isSuccessful() && response.body() != null) {
                     Log.d("AdministratorMainScreen", "Successful response: " + response.body());
                     userReports = response.body();
-                    openFragment(new UserReportFragment(userReports, R.id.frame_layoutAdmin));
                 } else {
                     // Log error details
                     Log.d("AdministratorMainScreen", "Unsuccessful response: " + response.code());
@@ -588,6 +589,34 @@ public class AdministratorMainScreen extends AppCompatActivity implements Naviga
 
             @Override
             public void onFailure(Call<ArrayList<UserReport>> call, Throwable t) {
+                Log.d("AdministratorMainScreen", t.getMessage() != null ? t.getMessage() : "error");
+            }
+        });
+
+    }
+
+    private void setReportedUsers(){
+        Call<ArrayList<User>> reports = ClientUtils.userReportService.getAllReportedUsers();
+        reports.enqueue(new Callback<ArrayList<User>>() {
+            @Override
+            public void onResponse(Call<ArrayList<User>> call, Response<ArrayList<User>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    Log.d("AdministratorMainScreen", "Successful response: " + response.body());
+                    reportedUsers = response.body();
+                    openFragment(new UserReportFragment(reportedUsers, R.id.frame_layoutAdmin));
+                } else {
+                    // Log error details
+                    Log.d("AdministratorMainScreen", "Unsuccessful response: " + response.code());
+                    try {
+                        Log.d("AdministratorMainScreen", "Error Body: " + response.errorBody().string());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ArrayList<User>> call, Throwable t) {
                 Log.d("AdministratorMainScreen", t.getMessage() != null ? t.getMessage() : "error");
             }
         });

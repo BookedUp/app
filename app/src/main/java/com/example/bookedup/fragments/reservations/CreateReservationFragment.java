@@ -39,6 +39,7 @@ import com.example.bookedup.model.UserReport;
 import com.example.bookedup.model.enums.NotificationType;
 import com.example.bookedup.model.enums.ReservationStatus;
 import com.example.bookedup.model.enums.ReviewType;
+import com.example.bookedup.model.enums.Role;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.IOException;
@@ -205,9 +206,9 @@ public class CreateReservationFragment extends Fragment {
     private void reportUser(){
         String reasons = reportReasonsTxt.getText().toString();
         User reportedUser = null;
-        if (LoginScreen.loggedGuest != null){
+        if (LoginScreen.loggedUser.getRole().equals(Role.GUEST)){
             reportedUser = existingReservation.getAccommodation().getHost();
-        } else if (LoginScreen.loggedHost != null){
+        } else if (LoginScreen.loggedUser.getRole().equals(Role.HOST)){
             reportedUser = existingReservation.getGuest();
         }
 

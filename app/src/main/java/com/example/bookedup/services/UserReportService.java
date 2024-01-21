@@ -1,5 +1,6 @@
 package com.example.bookedup.services;
 
+import com.example.bookedup.model.User;
 import com.example.bookedup.model.UserReport;
 
 import java.util.ArrayList;
@@ -31,4 +32,10 @@ public interface UserReportService {
 
     @DELETE("user-reports/{id}")
     Call<UserReport> deleteUserReport(@Path("id") Long id);
+
+    @GET("user-reports/reported-users")
+    Call<ArrayList<User>> getAllReportedUsers();
+
+    @GET("user-reports/reasons/{reportUserId}")
+    Call<ArrayList<String>> getReportReasons(@Path("reportUserId") Long reportUserId);
 }

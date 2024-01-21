@@ -40,12 +40,6 @@ import com.example.bookedup.model.UserReport;
 import com.example.bookedup.model.enums.Amenity;
 import com.example.bookedup.fragments.reviews.ReviewsListFragment;
 import com.example.bookedup.model.enums.Role;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapView;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.IOException;
@@ -62,7 +56,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class DetailsFragment extends Fragment {
+public class DetailsFragment extends Fragment{
 
     private TextView titleTxt, locationTxt, descriptionTxt, scoreTxt, priceTxt, pricePerTxt, staysTimeTxt, seeMoreAccTxt, seeMoreHostTxt;
     private ImageView picImg;
@@ -78,7 +72,9 @@ public class DetailsFragment extends Fragment {
     private ArrayList<Review> hostReviews = new ArrayList<>();
     private CommentAdapter commentAdapter;
     private List<Bitmap> accommodationImages;
-    private MapView mapView;
+
+
+
     public DetailsFragment(List<Bitmap> accommodationImages) {
         this.accommodationImages = accommodationImages;
     }
@@ -92,8 +88,6 @@ public class DetailsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_details, container, false);
-        mapView = view.findViewById(R.id.mapView);
-        mapView.onCreate(savedInstanceState);
 
         return view;
     }
@@ -110,7 +104,6 @@ public class DetailsFragment extends Fragment {
         initView(view);
         initAccommodationCommentsRecyclerView(accommodationReviews);
         initHostCommentsRecyclerView(hostReviews);
-
 
         picImg.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -156,28 +149,8 @@ public class DetailsFragment extends Fragment {
             }
         });
 
-        mapView.onResume();
 
     }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        mapView.getMapAsync(new OnMapReadyCallback() {
-            @Override
-            public void onMapReady(GoogleMap googleMap) {
-                if (googleMap != null) {
-                    LatLng location = new LatLng(accommodation.getAddress().getLatitude(), accommodation.getAddress().getLongitude());
-                    googleMap.addMarker(new MarkerOptions().position(location).title("Accommodation Location"));
-                    googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15.0f));
-                } else {
-                    Log.e("DetailsFragment", "GoogleMap is null");
-                }
-            }
-        });
-        mapView.onResume(); // Dodajte ovde
-    }
-
 
 
     private void showNextImage() {
@@ -390,17 +363,6 @@ public class DetailsFragment extends Fragment {
         seeMoreHostTxt = view.findViewById(R.id.seeMoreHostTxt);
     }
 
-    private void setMapLocation(MapView mapView, double latitude, double longitude) {
-        mapView.getMapAsync(new OnMapReadyCallback() {
-            @Override
-            public void onMapReady(GoogleMap googleMap) {
-                LatLng location = new LatLng(latitude, longitude);
-                googleMap.addMarker(new MarkerOptions().position(location).title("Accommodation Location"));
-                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15.0f));
-            }
-        });
-    }
-
 
 
     private void openFragment(Fragment fragment){
@@ -482,23 +444,6 @@ public class DetailsFragment extends Fragment {
             amenitiesContainer.addView(amenityView);
         }
     }
-
-
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        mapView.onPause();
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        mapView.onDestroy();
-    }
-
-
-
 
 
 }

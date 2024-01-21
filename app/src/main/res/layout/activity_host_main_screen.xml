@@ -76,7 +76,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="@drawable/background_dim"
-                android:visibility="visible"
+                android:visibility="invisible"
                 android:id="@+id/darkBackgroundBottomAppBar"/>
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton

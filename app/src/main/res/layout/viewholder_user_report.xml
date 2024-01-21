@@ -55,18 +55,28 @@
                         android:text="Loren Smith"
                         android:textSize="17sp"
                         android:textStyle="bold"/>
-
                     <TextView
-                        android:id="@+id/reportStatus"
+                        android:id="@+id/status"
                         android:layout_width="300dp"
                         android:layout_height="wrap_content"
-                        android:text="Status" />
+                        android:text="status" />
 
                     <TextView
-                        android:id="@+id/reportReason"
+                        android:id="@+id/address"
                         android:layout_width="300dp"
                         android:layout_height="wrap_content"
-                        android:text="Reason" />
+                        android:text="Address" />
+
+                    <TextView
+                        android:id="@+id/phone"
+                        android:layout_width="300dp"
+                        android:layout_height="wrap_content"
+                        android:text="Phone" />
+                    <TextView
+                        android:id="@+id/email"
+                        android:layout_width="300dp"
+                        android:layout_height="wrap_content"
+                        android:text="Email" />
 
 
 
@@ -79,21 +89,14 @@
                 android:orientation="horizontal">
 
                 <Button
-                    android:id="@+id/acceptUserReport"
+                    android:id="@+id/reasonsButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Accept"
+                    android:text="Reasons"
                     />
 
-                <Button
-                    android:id="@+id/rejectUserReport"
-                    android:layout_marginStart="12dp"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Reject"
-                    />
+
 
             </LinearLayout>
         </LinearLayout>
