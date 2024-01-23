@@ -2,6 +2,7 @@ package com.example.bookedup.adapters;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
@@ -41,13 +42,15 @@ import retrofit2.Response;
 
 public class UserReportAdapter extends RecyclerView.Adapter<UserReportAdapter.ViewHolder>{
 
-    private List<UserReport> reports;
+    private ArrayList<User> reports;
+    private ArrayList<String> reasonsList;
     private Fragment fragment;
     private int layout;
     private Context context;
     private Map<Long, Bitmap> usersImages = new HashMap<>();
+    private Dialog reasonsDialog;
 
-    public UserReportAdapter(Fragment fragment, List<UserReport> reports, int beforeLayout, Map<Long, Bitmap> usersImages) {
+    public UserReportAdapter(Fragment fragment, ArrayList<User> reports, int beforeLayout, Map<Long, Bitmap> usersImages) {
         this.fragment = fragment;
         this.reports = reports;
         this.layout = beforeLayout;
@@ -63,62 +66,103 @@ public class UserReportAdapter extends RecyclerView.Adapter<UserReportAdapter.Vi
     }
 
     @Override
-    public void onBindViewHolder(@NonNull UserReportAdapter.ViewHolder holder, @SuppressLint("RecyclerView") int position) {
-
-        UserReport currentReport = reports.get(position);
-        Bitmap image = usersImages.get(currentReport.getReportedUser().getId());
+    public void onBindViewHolder(@NonNull UserReportAdapter.ViewHolder holder, int position) {
+        User currentUser = reports.get(position);
+        Bitmap image = usersImages.get(currentUser.getId());
         if (image != null) {
             holder.guestImg.setImageBitmap(image);
         } else {
             holder.guestImg.setImageResource(R.drawable.default_hotel_img);
         }
 
-        holder.guestInfo.setText(currentReport.getReportedUser().getFirstName() + " " + currentReport.getReportedUser().getLastName());
-        if (currentReport.isStatus()) {
-            holder.accept.setVisibility(View.INVISIBLE);
-            holder.status.setText("APPROVED");
-            holder.status.setTextColor(Color.GREEN);
-            holder.reject.setText("Delete");
-        } else {
-            holder.status.setText("NOT APPROVED");
+        holder.guestInfo.setText(currentUser.getFirstName() + " " + currentUser.getLastName());
+        if (currentUser.blocked()){
+            holder.status.setText("BLOCKED");
             holder.status.setTextColor(Color.RED);
-            holder.accept.setVisibility(View.VISIBLE);
-            holder.reject.setText("Delete");
+            holder.reasonsBtn.setVisibility(View.INVISIBLE);
+        } else {
+            holder.status.setTextColor(Color.GREEN);
+            holder.status.setText("ACTIVE");
+            holder.reasonsBtn.setVisibility(View.VISIBLE);
         }
+        holder.address.setText("Address: " + currentUser.getAddress().getCountry() + " " + currentUser.getAddress().getCity());
+        holder.email.setText("Email: " + currentUser.getEmail());
+        holder.phone.setText("Phone: " + currentUser.getPhone());
 
-        holder.reason.setText(currentReport.getReason());
-
-        holder.accept.setOnClickListener(new View.OnClickListener() {
+        holder.reasonsBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                UserReport newUserReport = new UserReport(currentReport.getId(), currentReport.getReason(), currentReport.getReportedUser(), true);
-                updateUserReport(newUserReport);
+                getReportReasons(currentUser);
             }
         });
+    }
 
-        if(holder.reject.getText().toString().equals("Delete")) {
 
-            holder.reject.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    showConfirmationDialog("delete", currentReport);
+
+    private void getReportReasons(User user){
+        Call<ArrayList<String>> reasons = ClientUtils.userReportService.getReportReasons(user.getId());
+        reasons.enqueue(new Callback<ArrayList<String>>() {
+            @Override
+            public void onResponse(Call<ArrayList<String>> call, Response<ArrayList<String>> response) {
+                if (response.isSuccessful()) {
+                    reasonsList = response.body();
+                    showReasonsDialog(user, reasonsList);
+                    Log.d("UserReportAdapter", "Reasons size " + reasonsList.size());
+                } else {
+                    Log.d("UserReportAdapter", "Unsuccessful response: " + response.code());
+                    try {
+                        Log.d("UserReportAdapter", "Error Body: " + response.errorBody().string());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
-            });
+            }
+
+            @Override
+            public void onFailure(Call<ArrayList<String>> call, Throwable t) {
+                Log.d("UserReportAdapter", t.getMessage() != null ? t.getMessage() : "error");
+            }
+        });
+    }
+
+
+    private void showReasonsDialog(User currentUser, ArrayList<String> reasons) {
+        reasonsDialog = new Dialog(context);
+        reasonsDialog.setContentView(R.layout.reported_review_reasons_popup);
+        Button deleteBtn = reasonsDialog.findViewById(R.id.deleteButton);
+        deleteBtn.setText("Block");
+        TextView reportReasonsTxt = reasonsDialog.findViewById(R.id.reasonsInput);
+        reasonsDialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        reasonsDialog.show();
+
+        StringBuilder reasonsText = new StringBuilder();
+
+        for (String reason : reasons) {
+            reasonsText.append(reason).append("\n");
         }
 
+        reportReasonsTxt.setText(reasonsText.toString());
+
+        deleteBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showConfirmationDialog("block", currentUser);
+
+            }
+        });
 
     }
 
-    private void updateUserReport(UserReport userReport){
-        Call<UserReport> acceptedUserReport = ClientUtils.userReportService.updateUserReport(userReport, userReport.getId());
-        acceptedUserReport.enqueue(new Callback<UserReport>() {
+    private void blockUser(User user) {
+        Call<User> blockedUser = ClientUtils.userService.blockUser(user.getId());
+        blockedUser.enqueue(new Callback<User>() {
             @Override
-            public void onResponse(Call<UserReport> call, Response<UserReport> response) {
+            public void onResponse(Call<User> call, Response<User> response) {
                 if (response.isSuccessful()) {
-                    UserReport changedUserReport = response.body();
-                    Toast.makeText(fragment.requireContext(), "Acception successful", Toast.LENGTH_SHORT).show();
-
-                    updateListWithUserReport(changedUserReport, "accept");
+                    User blocked = response.body();
+                    reasonsDialog.dismiss();
+                    updateListWithUser(blocked);
+                    Toast.makeText(context, "User blocked!", Toast.LENGTH_SHORT).show();
                 } else {
                     Log.d("UserReportAdapter", "Unsuccessful response: " + response.code());
                     try {
@@ -130,66 +174,26 @@ public class UserReportAdapter extends RecyclerView.Adapter<UserReportAdapter.Vi
             }
 
             @Override
-            public void onFailure(Call<UserReport> call, Throwable t) {
+            public void onFailure(Call<User> call, Throwable t) {
                 Log.d("UserReportAdapter", t.getMessage() != null ? t.getMessage() : "error");
             }
         });
     }
 
+    private void updateListWithUser(User user) {
+        int index = findIndexOfUser(user.getId());
 
-    private void deleteUserReport(UserReport userReport){
-        Call<UserReport> deletedUserReport = ClientUtils.userReportService.deleteUserReport(userReport.getId());
-        deletedUserReport.enqueue(new Callback<UserReport>() {
-            @Override
-            public void onResponse(Call<UserReport> call, Response<UserReport> response) {
-                if (response.isSuccessful()) {
-                    Toast.makeText(fragment.requireContext(), "Deletion successful", Toast.LENGTH_SHORT).show();
-
-                    updateListWithUserReport(userReport, "delete");
-                } else {
-                    Log.d("UserReportAdapter", "Unsuccessful response: " + response.code());
-                    try {
-                        Log.d("UserReportAdapter", "Error Body: " + response.errorBody().string());
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-
-            @Override
-            public void onFailure(Call<UserReport> call, Throwable t) {
-                Log.d("UserReportAdapter", t.getMessage() != null ? t.getMessage() : "error");
-            }
-        });
-    }
-
-    private void updateListWithUserReport(UserReport userReport, String action) {
-        int index = findIndexOfUserReport(userReport.getId());
-
-        if(action.equals("delete")){
             if (index != -1) {
-                reports.remove(index);
+                reports.set(index, user);
                 notifyDataSetChanged();
-            } else {
-                Log.e("UserReportAdapter", "Attempted to remove a non-existing reservation.");
-            }
-        } else {
-            if (index != -1) {
-                reports.set(index, userReport);
-                notifyDataSetChanged();
+                ((UserReportFragment)fragment).updateReportsList(new ArrayList<>(reports));
             } else {
                 Log.e("UserReportAdapter", "Attempted to update a non-existing accommodation.");
             }
-        }
 
-        if (fragment instanceof UserReportFragment) {
-            ((UserReportFragment) fragment).updateReportsList(new ArrayList<>(reports));
-        } else {
-            Log.e("UserReportAdapter", "Fragment is not an instance of ReservationRequestFragment");
-        }
     }
 
-    private int findIndexOfUserReport(Long userReportId) {
+    private int findIndexOfUser(Long userReportId) {
         for (int i = 0; i < reports.size(); i++) {
             if (reports.get(i).getId().equals(userReportId)) {
                 return i;
@@ -198,16 +202,14 @@ public class UserReportAdapter extends RecyclerView.Adapter<UserReportAdapter.Vi
         return -1;
     }
 
-    private void showConfirmationDialog(String action, UserReport userReport) {
+    private void showConfirmationDialog(String action, User user) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle(action + " confirmation")
                 .setMessage("Are you sure you want to " + action + "?")
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        if (action.equals("delete")){
-                            deleteUserReport(userReport);
-                        }
+                        blockUser(user);
                     }
                 })
                 .setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -221,29 +223,30 @@ public class UserReportAdapter extends RecyclerView.Adapter<UserReportAdapter.Vi
     }
 
 
+
     @Override
     public int getItemCount() {
         return reports.size();
     }
+    public class ViewHolder extends RecyclerView.ViewHolder {
 
-    public class ViewHolder extends RecyclerView.ViewHolder{
-
-        TextView guestInfo, reason, status;
+        TextView guestInfo, status, address, phone, email;
         ImageView guestImg;
-        Button accept, reject;
+        Button reasonsBtn;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             guestImg = itemView.findViewById(R.id.guestImg);
             guestInfo = itemView.findViewById(R.id.guestInfo);
-            reason = itemView.findViewById(R.id.reportReason);
-            status = itemView.findViewById(R.id.reportStatus);
-            accept = itemView.findViewById(R.id.acceptUserReport);
-            reject = itemView.findViewById(R.id.rejectUserReport);
+            address = itemView.findViewById(R.id.address);
+            status = itemView.findViewById(R.id.status);
+            phone = itemView.findViewById(R.id.phone);
+            email = itemView.findViewById(R.id.email);
+            reasonsBtn = itemView.findViewById(R.id.reasonsButton);
         }
     }
 
-    public void updateUserReportData(List<UserReport> updatedList) {
+    public void updateUserReportData(List<User> updatedList) {
         reports.clear();
         reports.addAll(updatedList);
         notifyDataSetChanged();

@@ -149,6 +149,7 @@ public class HomeFragment extends Fragment implements DatePickerDialog.OnDateSet
     private void initiateProgressBar() {
         Handler handler = new Handler(Looper.getMainLooper());
         handler.post(() -> {
+            setDarkBackgroundVisibility(true);
             progressBar.setVisibility(View.VISIBLE);
             darkBackground.setVisibility(View.VISIBLE);
             progressBar.setProgress(0);
@@ -176,6 +177,19 @@ public class HomeFragment extends Fragment implements DatePickerDialog.OnDateSet
         };
         timer.schedule(timerTask, 0, 100);
     }
+
+    private void stopProgressBar() {
+        timer.cancel();
+        setDarkBackgroundVisibility(false); // Revert the background visibility
+        progressBar.setVisibility(View.GONE);
+    }
+
+    private void setDarkBackgroundVisibility(boolean visible) {
+        darkBackground.setVisibility(visible ? View.VISIBLE : View.GONE);
+        float alpha = visible ? 0.5f : 0.0f; // Set the alpha value based on your preference
+        darkBackground.setAlpha(alpha);
+    }
+
 
     private void findTargetLayout(){
         Intent intent = getActivity().getIntent();
@@ -363,6 +377,7 @@ public class HomeFragment extends Fragment implements DatePickerDialog.OnDateSet
 
                                 if (remainingImages == 0) {
                                     handler.post(() -> {
+                                        stopProgressBar();
                                         progressBar.setVisibility(View.GONE);
                                         darkBackground.setVisibility(View.GONE);
                                         if (isSearch) {

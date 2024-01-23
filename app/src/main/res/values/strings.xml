@@ -31,4 +31,8 @@
     <string name="prompt_register_country">Country</string>
     <string name="prompt_register_city">City</string>
     <string name="prompt_register_street_and_number">Street and number</string>
+    <string name="oops">oops</string>
+    <string name="location_disabled_message">disabled</string>
+    <string name="sure">sure</string>
+    <string name="no">no</string>
 </resources>

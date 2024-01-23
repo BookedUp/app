@@ -10,9 +10,6 @@
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
 
 
-
-
-
     <application
         android:usesCleartextTraffic="true"
         android:allowBackup="true"
@@ -122,9 +119,10 @@
             android:resource="@xml/file_paths" />
     </provider>
 
-        <meta-data
-            android:name="com.google.android.geo.API_KEY"
-            android:value="YOUR_API_KEY" />
+        <!-- AndroidManifest.xml -->
+
     </application>
+
+
 
 </manifest>

@@ -75,7 +75,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
             holder.guestImg.setImageResource(R.drawable.default_hotel_img);
         }
         if(!LoginScreen.loggedUser.getRole().equals(Role.HOST)){
-            commentReportBtn.setVisibility(View.INVISIBLE);
+            holder.commentReportBtn.setVisibility(View.INVISIBLE);
         }
 
         holder.guestInfo.setText(currentReview.getGuest().getFirstName() + " " + currentReview.getGuest().getLastName());

@@ -25,7 +25,7 @@ public interface GuestService {
     Call<Guest> getGuest(@Path("id") Long id);
 
     @PUT("guests/{id}")
-    Call<Guest> updateGuest(@Body Guest guest, @Path("id") Long id);
+    Call<Guest> updateGuest(@Path("id") Long id, @Body Guest guest);
 
     @PUT("guests/{guestId}/add-favourite/{accommodationId}")
     Call<Void> addFavouriteAccommodation(@Path("guestId") Long guestId, @Path("accommodationId") Long accommodationId);

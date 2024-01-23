@@ -31,6 +31,7 @@ import com.example.bookedup.clients.ClientUtils;
 import com.example.bookedup.model.Address;
 import com.example.bookedup.model.Photo;
 import com.example.bookedup.model.User;
+import com.example.bookedup.model.enums.Role;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -60,9 +61,11 @@ public class AccountFragment extends Fragment {
     private Bitmap profilePicture;
     private static final int PICK_IMAGE_REQUEST = 1;
     private boolean imageChanged = false;
+    private User user;
 
-    public AccountFragment(Bitmap profilePicture) {
+    public AccountFragment(Bitmap profilePicture, User user) {
         this.profilePicture = profilePicture;
+        this.user = user;
     }
 
     @Override
@@ -74,19 +77,19 @@ public class AccountFragment extends Fragment {
         profilePic.setImageBitmap(profilePicture);
 
         firstNameInput = view.findViewById(R.id.profile_first_name);
-        firstNameInput.setText(LoginScreen.loggedUser.getFirstName());
+        firstNameInput.setText(user.getFirstName());
 
         lastNameInput = view.findViewById(R.id.profile_last_name);
-        lastNameInput.setText(LoginScreen.loggedUser.getLastName());
+        lastNameInput.setText(user.getLastName());
 
         phoneInput = view.findViewById(R.id.profile_phone);
-        phoneInput.setText(String.valueOf(LoginScreen.loggedUser.getPhone()));
+        phoneInput.setText(String.valueOf(user.getPhone()));
 
         addressInput = view.findViewById(R.id.profile_address);
-        addressInput.setText(LoginScreen.loggedUser.getAddress().getCountry() + " " + LoginScreen.loggedUser.getAddress().getCity());
+        addressInput.setText(user.getAddress().getCountry() + " " + user.getAddress().getCity());
 
         passwordInput = view.findViewById(R.id.profile_password);
-        passwordInput.setText(LoginScreen.loggedUser.getPassword());
+        passwordInput.setText(user.getPassword());
 
         passwordInput.setTransformationMethod(PasswordTransformationMethod.getInstance());
 
@@ -103,16 +106,21 @@ public class AccountFragment extends Fragment {
 
         updateProfileBtn = view.findViewById(R.id.profile_update_btn);
         deleteProfileBtn = view.findViewById(R.id.profile_delete_btn);
+        if (user.getRole().equals(Role.ADMIN)){
+            deleteProfileBtn.setVisibility(View.INVISIBLE);
+        } else {
+            deleteProfileBtn.setVisibility(View.VISIBLE);
+        }
 
         progressBar = view.findViewById(R.id.profile_progress_bar);
 
-        String[] address = addressInput.getText().toString().split(" ");
-        String country = Character.toUpperCase(address[0].charAt(0)) + address[0].substring(1);
-        String city = Character.toUpperCase(address[1].charAt(0)) + address[1].substring(1);
+//        String[] address = addressInput.getText().toString().split(" ");
+//        String country = Character.toUpperCase(address[0].charAt(0)) + address[0].substring(1);
+//        String city = Character.toUpperCase(address[1].charAt(0)) + address[1].substring(1);
 
         updateProfileBtn.setOnClickListener((v -> {
-            Address oldAddress = LoginScreen.loggedUser.getAddress();
-            Address newAddress = new Address(oldAddress.getId(), country, city, oldAddress.getPostalCode(), oldAddress.getStreetAndNumber(), oldAddress.isActive(), oldAddress.getLatitude(), oldAddress.getLongitude());
+//            Address oldAddress = LoginScreen.loggedUser.getAddress();
+//            Address newAddress = new Address(oldAddress.getId(), country, city, oldAddress.getPostalCode(), oldAddress.getStreetAndNumber(), oldAddress.isActive(), oldAddress.getLatitude(), oldAddress.getLongitude());
 
             uploadImage();
 
@@ -125,7 +133,7 @@ public class AccountFragment extends Fragment {
                     .setMessage("Are you sure you want to delete your profile?")
                     .setPositiveButton(android.R.string.yes, (dialog, which) -> {
 
-                        Call<User> deletedUser = ClientUtils.userService.deleteUser(LoginScreen.loggedUser.getId());
+                        Call<User> deletedUser = ClientUtils.userService.deleteUser(user.getId());
                         deletedUser.enqueue(new Callback<User>() {
                             @Override
                             public void onResponse(Call<User> call, Response<User> response) {
@@ -178,7 +186,7 @@ public class AccountFragment extends Fragment {
         String[] address = addressInput.getText().toString().split(" ");
         String country = Character.toUpperCase(address[0].charAt(0)) + address[0].substring(1);
         String city = Character.toUpperCase(address[1].charAt(0)) + address[1].substring(1);
-        Address oldAddress = LoginScreen.loggedUser.getAddress();
+        Address oldAddress = user.getAddress();
         Address newAddress = new Address(oldAddress.getId(), country, city, oldAddress.getPostalCode(), oldAddress.getStreetAndNumber(), oldAddress.isActive(), oldAddress.getLatitude(), oldAddress.getLongitude());
 
         BitmapDrawable drawable = (BitmapDrawable) profilePic.getDrawable();
@@ -203,7 +211,7 @@ public class AccountFragment extends Fragment {
                             Photo photo = new Photo("images/" + fileName, "Caption", true);
                             Log.d("AccountFragment", "Photo NEWNEW NEW " + photo);
 
-                            User newUser = new User(LoginScreen.loggedUser.getId(), firstNameInput.getText().toString(), lastNameInput.getText().toString(), newAddress, Integer.parseInt(phoneInput.getText().toString()), LoginScreen.loggedUser.getEmail(), passwordInput.getText().toString(), LoginScreen.loggedUser.blocked(), LoginScreen.loggedUser.isVerified(), LoginScreen.loggedUser.isActive(), photo, LoginScreen.loggedUser.getRole());
+                            User newUser = new User(user.getId(), firstNameInput.getText().toString(), lastNameInput.getText().toString(), newAddress, Integer.parseInt(phoneInput.getText().toString()), user.getEmail(), passwordInput.getText().toString(), user.blocked(), user.isVerified(), user.isActive(), photo, user.getRole());
                             updateUser(newUser);
                         } else {
                             // Log error details
@@ -222,14 +230,15 @@ public class AccountFragment extends Fragment {
                     }
                 });
             } else {
-                User newUser = new User(LoginScreen.loggedUser.getId(), firstNameInput.getText().toString(), lastNameInput.getText().toString(), newAddress, Integer.parseInt(phoneInput.getText().toString()), LoginScreen.loggedUser.getEmail(), passwordInput.getText().toString(), LoginScreen.loggedUser.blocked(), LoginScreen.loggedUser.isVerified(), LoginScreen.loggedUser.isActive(), LoginScreen.loggedUser.getProfilePicture(), LoginScreen.loggedUser.getRole());
+                User newUser = new User(user.getId(), firstNameInput.getText().toString(), lastNameInput.getText().toString(), newAddress, Integer.parseInt(phoneInput.getText().toString()), user.getEmail(), passwordInput.getText().toString(), user.blocked(), user.isVerified(), user.isActive(), user.getProfilePicture(), user.getRole());
                 updateUser(newUser);
             }
 
     }
 
     private void updateUser(User newUser){
-        Call<User> updatedUser = ClientUtils.userService.updateUser(newUser, LoginScreen.loggedUser.getId());
+        Log.d("AccountFragment", "USAOO U UPDATE");
+        Call<User> updatedUser = ClientUtils.userService.updateUser(newUser, user.getId());
         updatedUser.enqueue(new Callback<User>() {
             @Override
             public void onResponse(Call<User> call, Response<User> response) {
